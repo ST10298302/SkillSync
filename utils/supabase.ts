@@ -1,0 +1,82 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
+// Create a custom storage adapter that only works in browser
+const customStorage = isBrowser ? {
+  getItem: (key: string) => {
+    try {
+      return AsyncStorage.getItem(key);
+    } catch {
+      return Promise.resolve(null);
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      return AsyncStorage.setItem(key, value);
+    } catch {
+      return Promise.resolve();
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      return AsyncStorage.removeItem(key);
+    } catch {
+      return Promise.resolve();
+    }
+  }
+} : undefined;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: customStorage,
+    autoRefreshToken: isBrowser,
+    persistSession: isBrowser,
+    detectSessionInUrl: false,
+    flowType: 'pkce',
+  },
+});
+
+// Database types
+export interface Skill {
+  id: string;
+  name: string;
+  description?: string;
+  progress: number;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  entries?: SkillEntry[];
+  total_hours?: number;
+  streak?: number;
+  last_updated?: string;
+}
+
+export interface SkillEntry {
+  id: string;
+  skill_id: string;
+  content: string;
+  created_at: string;
+  hours?: number;
+}
+
+export interface ProgressUpdate {
+  id: string;
+  skill_id: string;
+  progress: number;
+  created_at: string;
+  notes?: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  created_at: string;
+  updated_at: string;
+} 

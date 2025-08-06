@@ -1,16 +1,22 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { SupabaseService } from '../services/supabaseService';
+import { calculateSkillStreak } from '../utils/streakCalculator';
+import { SkillEntry } from '../utils/supabase';
+import { useAuth } from './AuthContext';
 
 export interface DiaryEntry {
   id: string;
   text: string;
   date: string;
+  hours?: number;
 }
 
 export interface ProgressUpdate {
   id: string;
-  value: number; // numeric progress value (e.g. percentage or hours)
-  date: string;
+  skill_id: string;
+  progress: number;
+  created_at: string;
+  notes?: string;
 }
 
 export interface Skill {
@@ -22,110 +28,246 @@ export interface Skill {
   progressUpdates: ProgressUpdate[];
   entries: DiaryEntry[];
   createdAt: string;
+  lastUpdated?: string;
+  streak?: number;
+  totalHours?: number;
 }
 
 interface SkillsContextProps {
   skills: Skill[];
   addSkill: (skill: Omit<Skill, 'entries' | 'progress' | 'progressUpdates' | 'createdAt'>) => Promise<void>;
   deleteSkill: (id: string) => Promise<void>;
-  addEntry: (skillId: string, text: string) => Promise<void>;
+  addEntry: (skillId: string, text: string, hours?: number) => Promise<void>;
   addProgressUpdate: (skillId: string, value: number) => Promise<void>;
+  refreshSkills: () => Promise<void>;
 }
 
 const SkillsContext = createContext<SkillsContextProps | undefined>(undefined);
 
-// Storage key for skills array
-const SKILLS_KEY = 'skills';
-
 export const SkillsProvider = ({ children }: { children: ReactNode }) => {
   const [skills, setSkills] = useState<Skill[]>([]);
+  const { user } = useAuth();
 
-  // Load skills from storage on mount
-  useEffect(() => {
-    const loadSkills = async () => {
-      try {
-        const data = await AsyncStorage.getItem(SKILLS_KEY);
-        if (data) {
-          setSkills(JSON.parse(data));
-        }
-      } catch (e) {
-        console.error('Failed to load skills', e);
-      }
-    };
-    loadSkills();
-  }, []);
+  const loadSkills = useCallback(async () => {
+    if (!user || typeof window === 'undefined') return;
+    
+    try {
+      const supabaseSkills = await SupabaseService.getSkills(user.id);
+      const convertedSkills: Skill[] = await Promise.all(
+        supabaseSkills.map(async (supabaseSkill) => {
+          // Load progress updates for this skill
+          const progressUpdates = await SupabaseService.getProgressUpdates(supabaseSkill.id);
+          
+          // Calculate streak for this skill
+          const entries = (supabaseSkill.skill_entries || []).map((entry: SkillEntry) => ({
+            id: entry.id,
+            text: entry.content,
+            date: entry.created_at,
+            hours: entry.hours,
+          }));
+          
+          const streak = calculateSkillStreak(entries, progressUpdates);
+          
+          // Calculate the most recent activity timestamp
+          const allActivities = [
+            ...entries.map((entry: DiaryEntry) => new Date(entry.date)),
+            ...progressUpdates.map((update: ProgressUpdate) => new Date(update.created_at))
+          ];
+          
+          let lastUpdated = supabaseSkill.last_updated;
+          if (allActivities.length > 0) {
+            const mostRecentActivity = new Date(Math.max(...allActivities.map(date => date.getTime())));
+            lastUpdated = mostRecentActivity.toISOString();
+          }
+          
+          return {
+            id: supabaseSkill.id,
+            name: supabaseSkill.name,
+            description: supabaseSkill.description || '',
+            startDate: supabaseSkill.created_at,
+            progress: supabaseSkill.progress,
+            progressUpdates: progressUpdates,
+            entries: entries,
+            createdAt: supabaseSkill.created_at,
+            lastUpdated: lastUpdated,
+            streak: supabaseSkill.streak || 0,
+            totalHours: supabaseSkill.total_hours || 0,
+          };
+        })
+      );
+      setSkills(convertedSkills);
+    } catch (e) {
+      console.error('Failed to load skills', e);
+    }
+  }, [user]);
 
-  // Persist skills whenever they change
+  // Load skills from Supabase on mount and when user changes
   useEffect(() => {
-    const saveSkills = async () => {
-      try {
-        await AsyncStorage.setItem(SKILLS_KEY, JSON.stringify(skills));
-      } catch (e) {
-        console.error('Failed to save skills', e);
-      }
-    };
-    saveSkills();
-  }, [skills]);
+    // Only load skills in browser environment
+    if (typeof window !== 'undefined' && user) {
+      loadSkills();
+    } else if (typeof window !== 'undefined') {
+      setSkills([]);
+    }
+  }, [user, loadSkills]);
+
+  const refreshSkills = async () => {
+    if (typeof window !== 'undefined') {
+      await loadSkills();
+    }
+  };
 
   // Add a new skill with defaults
   const addSkill = async (
     skill: Omit<Skill, 'entries' | 'progress' | 'progressUpdates' | 'createdAt'>
   ) => {
-    const newSkill: Skill = {
-      ...skill,
-      progress: 0,
-      progressUpdates: [],
-      entries: [],
-      createdAt: new Date().toISOString(),
-    };
-    setSkills(prev => [...prev, newSkill]);
+    if (!user || typeof window === 'undefined') return;
+
+    try {
+      const supabaseSkill = await SupabaseService.createSkill({
+        name: skill.name,
+        description: skill.description,
+        progress: 0,
+        user_id: user.id,
+        total_hours: 0,
+        streak: 0,
+      });
+
+      const newSkill: Skill = {
+        id: supabaseSkill.id,
+        name: supabaseSkill.name,
+        description: supabaseSkill.description || '',
+        startDate: supabaseSkill.created_at,
+        progress: supabaseSkill.progress,
+        progressUpdates: [],
+        entries: [],
+        createdAt: supabaseSkill.created_at,
+        lastUpdated: supabaseSkill.last_updated,
+        streak: supabaseSkill.streak || 0,
+        totalHours: supabaseSkill.total_hours || 0,
+      };
+      setSkills(prev => [...prev, newSkill]);
+    } catch (e) {
+      console.error('Failed to add skill', e);
+      throw e;
+    }
   };
 
   // Delete a skill by id
   const deleteSkill = async (id: string) => {
-    setSkills(prev => prev.filter(skill => skill.id !== id));
+    if (typeof window === 'undefined') return;
+    
+    try {
+      await SupabaseService.deleteSkill(id);
+      setSkills(prev => prev.filter(skill => skill.id !== id));
+    } catch (e) {
+      console.error('Failed to delete skill', e);
+      throw e;
+    }
   };
 
   // Add a diary entry to a skill
-  const addEntry = async (skillId: string, text: string) => {
-    const entry: DiaryEntry = {
-      id: Date.now().toString(),
-      text,
-      date: new Date().toISOString(),
-    };
-    setSkills(prev =>
-      prev.map(skill =>
-        skill.id === skillId
-          ? { ...skill, entries: [...skill.entries, entry] }
-          : skill
-      )
-    );
+  const addEntry = async (skillId: string, text: string, hours: number = 0) => {
+    if (!user || typeof window === 'undefined') return;
+
+    try {
+      const entry = await SupabaseService.createSkillEntry({
+        skill_id: skillId,
+        content: text,
+        hours: hours,
+      });
+
+      const diaryEntry: DiaryEntry = {
+        id: entry.id,
+        text: entry.content,
+        date: entry.created_at,
+        hours: entry.hours,
+      };
+
+      // Get the current skill to calculate new totals
+      const currentSkill = skills.find(s => s.id === skillId);
+      if (!currentSkill) return;
+
+      // Calculate new total hours
+      const newTotalHours = (currentSkill.entries?.reduce((sum, e) => sum + (e.hours || 0), 0) || 0) + hours;
+      
+      // Calculate new streak
+      const newEntries = [...currentSkill.entries, diaryEntry];
+      const newStreak = calculateSkillStreak(newEntries, currentSkill.progressUpdates);
+
+      // Update the skill in the database with new totals
+      await SupabaseService.updateSkill(skillId, {
+        total_hours: newTotalHours,
+        streak: newStreak,
+        last_updated: entry.created_at,
+      });
+
+      setSkills(prev =>
+        prev.map(skill => {
+          if (skill.id !== skillId) return skill;
+          
+          return {
+            ...skill,
+            entries: newEntries,
+            streak: newStreak,
+            lastUpdated: entry.created_at,
+            totalHours: newTotalHours,
+          };
+        })
+      );
+    } catch (e) {
+      console.error('Failed to add entry', e);
+      throw e;
+    }
   };
 
-  // Add a progress update to a skill.  The current progress value
-  // becomes the provided value.  We store updates in an array for
-  // history and set the skill's progress accordingly.
+  // Add a progress update to a skill
   const addProgressUpdate = async (skillId: string, value: number) => {
-    setSkills(prev =>
-      prev.map(skill => {
-        if (skill.id !== skillId) return skill;
-        const update: ProgressUpdate = {
-          id: Date.now().toString(),
-          value,
-          date: new Date().toISOString(),
-        };
-        const newUpdates = [...skill.progressUpdates, update];
-        return {
-          ...skill,
-          progressUpdates: newUpdates,
-          progress: value,
-        };
-      })
-    );
+    if (!user || typeof window === 'undefined') return;
+
+    try {
+      const progressUpdate = await SupabaseService.createProgressUpdate({
+        skill_id: skillId,
+        progress: value,
+        notes: `Progress updated to ${value}%`,
+      });
+
+      // Get the current skill to calculate new streak
+      const currentSkill = skills.find(s => s.id === skillId);
+      if (!currentSkill) return;
+
+      // Calculate new streak
+      const newProgressUpdates = [...currentSkill.progressUpdates, progressUpdate];
+      const newStreak = calculateSkillStreak(currentSkill.entries, newProgressUpdates);
+
+      // Update the skill's progress and streak in the database
+      await SupabaseService.updateSkill(skillId, { 
+        progress: value,
+        streak: newStreak,
+        last_updated: progressUpdate.created_at,
+      });
+
+      setSkills(prev =>
+        prev.map(skill => {
+          if (skill.id !== skillId) return skill;
+          
+          return {
+            ...skill,
+            progress: value,
+            progressUpdates: newProgressUpdates,
+            streak: newStreak,
+            lastUpdated: progressUpdate.created_at,
+          };
+        })
+      );
+    } catch (e) {
+      console.error('Failed to add progress update', e);
+      throw e;
+    }
   };
 
   return (
-    <SkillsContext.Provider value={{ skills, addSkill, deleteSkill, addEntry, addProgressUpdate }}>
+    <SkillsContext.Provider value={{ skills, addSkill, deleteSkill, addEntry, addProgressUpdate, refreshSkills }}>
       {children}
     </SkillsContext.Provider>
   );

@@ -8,9 +8,7 @@ import {
     FlatList,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
     ScrollView,
-    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -20,8 +18,10 @@ import {
 
 import DiaryItem from '../../components/DiaryItem';
 import ProgressBar from '../../components/ProgressBar';
+import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useSkills } from '../../context/SkillsContext';
+import { useTheme } from '../../context/ThemeContext';
 
 /**
  * Enhanced skill detail screen with modern design and improved UX
@@ -30,8 +30,11 @@ export default function SkillDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { skills, addEntry, addProgressUpdate } = useSkills();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const skill = skills.find(s => s.id === id);
   const [entryText, setEntryText] = useState('');
+  const [hoursInput, setHoursInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [progressInput, setProgressInput] = useState('');
   const [isAddingEntry, setIsAddingEntry] = useState(false);
@@ -52,17 +55,28 @@ export default function SkillDetail() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim]);
+
+  // Show loading state while skills are being loaded
+  if (skills.length === 0) {
+    return (
+      <UniformLayout>
+        <View style={styles.center}>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </UniformLayout>
+    );
+  }
 
   if (!skill) {
     return (
-      <SafeAreaView style={styles.container}>
+      <UniformLayout>
         <View style={styles.center}>
-          <Ionicons name="alert-circle" size={64} color={Colors.light.error} />
+          <Ionicons name="alert-circle" size={64} color={Colors[safeTheme].error} />
           <Text style={styles.errorTitle}>Skill not found</Text>
-          <Text style={styles.errorSubtitle}>The skill you're looking for doesn't exist</Text>
+          <Text style={styles.errorSubtitle}>The skill you are looking for does not exist</Text>
         </View>
-      </SafeAreaView>
+      </UniformLayout>
     );
   }
 
@@ -73,13 +87,21 @@ export default function SkillDetail() {
       return;
     }
 
+    const hours = hoursInput.trim() ? parseFloat(hoursInput) : 0;
+    if (hoursInput.trim() && (isNaN(hours) || hours < 0)) {
+      setError('Hours must be a positive number');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
     setIsAddingEntry(true);
     try {
-      await addEntry(skill.id, entryText.trim());
+      await addEntry(skill.id, entryText.trim(), hours);
       setEntryText('');
+      setHoursInput('');
       setError(null);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
+    } catch {
       setError('Failed to add entry');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
@@ -106,7 +128,7 @@ export default function SkillDetail() {
       setProgressInput('');
       setError(null);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
+    } catch {
       setError('Failed to update progress');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
@@ -117,34 +139,39 @@ export default function SkillDetail() {
     try {
       await addProgressUpdate(skill.id, newValue);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch (e) {
+    } catch {
       setError('Failed to update progress');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Unknown date';
+      }
+      const now = new Date();
+      const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      return date.toLocaleDateString();
+    } catch (error) {
+      return 'Unknown date';
+    }
   };
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 80) return Colors.light.success;
-    if (progress >= 60) return Colors.light.warning;
-    if (progress >= 40) return Colors.light.info;
-    return Colors.light.secondary;
+    if (progress >= 80) return Colors[safeTheme].success;
+    if (progress >= 60) return Colors[safeTheme].warning;
+    if (progress >= 40) return Colors[safeTheme].info;
+    return Colors[safeTheme].accent;
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
-
+    <UniformLayout>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -173,9 +200,9 @@ export default function SkillDetail() {
                   <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
                 </TouchableOpacity>
                 <View style={styles.skillInfo}>
-                  <Text style={styles.skillName}>{skill.name}</Text>
-                  <Text style={styles.skillDate}>Started {formatDate(skill.startDate)}</Text>
-                  {skill.description && (
+                  <Text style={styles.skillName}>{skill?.name || 'Unnamed Skill'}</Text>
+                  <Text style={styles.skillDate}>Started {formatDate(skill?.startDate || new Date().toISOString())}</Text>
+                  {skill?.description && skill.description.trim() && (
                     <Text style={styles.skillDescription}>{skill.description}</Text>
                   )}
                 </View>
@@ -205,15 +232,15 @@ export default function SkillDetail() {
                   style={styles.progressButton}
                   onPress={handleIncreaseProgress}
                 >
-                  <LinearGradient
-                    colors={Colors.light.gradient.primary}
-                    style={styles.progressButtonGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <Ionicons name="add" size={20} color={Colors.light.text} />
-                    <Text style={styles.progressButtonText}>+10%</Text>
-                  </LinearGradient>
+                                  <LinearGradient
+                  colors={Colors[safeTheme].gradient.primary}
+                  style={styles.progressButtonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Ionicons name="add" size={20} color={Colors[safeTheme].text} />
+                  <Text style={styles.progressButtonText}>+10%</Text>
+                </LinearGradient>
                 </TouchableOpacity>
 
                 <View style={styles.progressInputContainer}>
@@ -257,19 +284,19 @@ export default function SkillDetail() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <FlatList
-                  data={[...skill.progressUpdates].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
-                  keyExtractor={item => item.id}
-                  renderItem={({ item }) => (
-                    <View style={styles.updateItem}>
-                      <View style={styles.updateHeader}>
-                        <Text style={styles.updateValue}>{item.value}%</Text>
-                        <Text style={styles.updateDate}>{formatDate(item.date)}</Text>
+                                  <FlatList
+                    data={[...skill.progressUpdates].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => (
+                      <View style={styles.updateItem}>
+                        <View style={styles.updateHeader}>
+                          <Text style={styles.updateValue}>{item.progress}%</Text>
+                          <Text style={styles.updateDate}>{formatDate(item.created_at)}</Text>
+                        </View>
                       </View>
-                    </View>
-                  )}
-                  scrollEnabled={false}
-                />
+                    )}
+                    scrollEnabled={false}
+                  />
               </LinearGradient>
             )}
           </Animated.View>
@@ -298,7 +325,7 @@ export default function SkillDetail() {
                 <FlatList
                   data={[...skill.entries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
                   keyExtractor={item => item.id}
-                  renderItem={({ item }) => <DiaryItem text={item.text} date={item.date} />}
+                  renderItem={({ item }) => <DiaryItem text={item.text} date={item.date} hours={item.hours} />}
                   scrollEnabled={false}
                 />
               </LinearGradient>
@@ -320,14 +347,25 @@ export default function SkillDetail() {
                 </View>
               )}
 
-              <TextInput
-                style={styles.entryInput}
-                placeholder="Write about your progress..."
-                value={entryText}
-                onChangeText={setEntryText}
-                multiline
-                placeholderTextColor={Colors.light.textSecondary}
-              />
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[styles.entryInput, { flex: 1, marginRight: Spacing.sm }]}
+                  placeholder="Write about your progress..."
+                  value={entryText}
+                  onChangeText={setEntryText}
+                  multiline
+                  placeholderTextColor={Colors.light.textSecondary}
+                  textAlignVertical="top"
+                />
+                <TextInput
+                  style={styles.hoursInput}
+                  placeholder="Hours"
+                  value={hoursInput}
+                  onChangeText={setHoursInput}
+                  keyboardType="numeric"
+                  placeholderTextColor={Colors.light.textSecondary}
+                />
+              </View>
 
               <TouchableOpacity
                 style={[styles.addEntryButton, isAddingEntry && styles.addEntryButtonDisabled]}
@@ -335,7 +373,7 @@ export default function SkillDetail() {
                 disabled={isAddingEntry}
               >
                 <LinearGradient
-                  colors={isAddingEntry ? [Colors.light.secondary, Colors.light.secondary] : Colors.light.gradient.success}
+                  colors={isAddingEntry ? [Colors.light.backgroundSecondary, Colors.light.backgroundSecondary] : Colors.light.gradient.primary}
                   style={styles.addEntryButtonGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -357,15 +395,11 @@ export default function SkillDetail() {
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </UniformLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
   keyboardView: {
     flex: 1,
   },
@@ -486,7 +520,7 @@ const styles = StyleSheet.create({
     color: Colors.light.text,
   },
   progressSetButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.lg,
@@ -576,15 +610,29 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
     flex: 1,
   },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.md,
+  },
   entryInput: {
     backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     minHeight: 100,
-    marginBottom: Spacing.md,
     ...Typography.body,
     color: Colors.light.text,
     textAlignVertical: 'top',
+  },
+  hoursInput: {
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    width: 80,
+    height: 50,
+    ...Typography.body,
+    color: Colors.light.text,
+    textAlign: 'center',
   },
   addEntryButton: {
     borderRadius: BorderRadius.lg,

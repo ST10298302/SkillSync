@@ -1,78 +1,75 @@
 /**
- * Enhanced color system for SkillSync app with modern design principles
- * Includes semantic colors, gradients, and proper light/dark mode support
+ * Metallic UI Color Palette for SkillSync
+ * Supports both light and dark modes, with gradients and semantic roles
  */
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    textSecondary: '#687076',
-    textTertiary: '#9BA1A6',
-    background: '#fff',
-    backgroundSecondary: '#f8f9fa',
-    backgroundTertiary: '#f1f3f4',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-    border: '#e1e5e9',
-    borderSecondary: '#f1f3f4',
-    success: '#34c759',
-    warning: '#ff9500',
-    error: '#ff3b30',
-    info: '#007AFF',
-    primary: '#0a7ea4',
-    primaryLight: '#4da6d1',
-    primaryDark: '#075a7a',
-    secondary: '#6c757d',
-    accent: '#ff6b35',
+    // Core metallic colors
+    background: '#f3f4f6', // Aluminum
+    backgroundSecondary: '#ffffff', // Surface
+    backgroundTertiary: '#d1d5db', // Metal Silver
+    surface: '#ffffff',
+    surfaceShadow: 'inset 0 2px 8px #e5e7eb',
+    border: '#cbd5e1', // Soft silver
+    borderSecondary: '#e5e7eb',
+    text: '#1e293b', // Gunmetal text
+    textSecondary: '#374151', // Gunmetal
+    textTertiary: '#6b7280',
+    accentBlue: '#60a5fa', // Metallic blue
+    accentGold: '#f59e42', // Gold
+    accentEmerald: '#10b981', // Emerald
+    accent: '#60a5fa', // Default accent
+    error: '#ef4444',
+    success: '#22c55e',
+    info: '#60a5fa',
+    warning: '#f59e42',
+    // Gradients
     gradient: {
-      primary: ['#0a7ea4', '#4da6d1'] as const,
-      secondary: ['#ff6b35', '#ff8a65'] as const,
-      success: ['#34c759', '#4caf50'] as const,
-      background: ['#ffffff', '#f8f9fa'] as const,
+      background: ['#f3f4f6', '#d1d5db'] as const, // Light metallic gradient
+      primary: ['#60a5fa', '#f59e42'] as const, // Blue to gold
+      stats: ['#60a5fa', '#f59e42'] as const, // For progress/stats
+      surface: ['#ffffff', '#f3f4f6'] as const,
+      accent: ['#60a5fa', '#10b981'] as const,
     },
     shadow: {
-      light: '#000000',
-      medium: '#000000',
-      heavy: '#000000',
+      light: 'rgba(209,213,219,0.2)', // Metal Silver
+      medium: 'rgba(55,65,81,0.15)', // Gunmetal
+      heavy: 'rgba(17,24,39,0.25)', // Charcoal
     },
   },
   dark: {
-    text: '#ECEDEE',
-    textSecondary: '#9BA1A6',
-    textTertiary: '#687076',
-    background: '#151718',
-    backgroundSecondary: '#1c1e1f',
-    backgroundTertiary: '#2c2e2f',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-    border: '#2c2e2f',
-    borderSecondary: '#3c3e3f',
-    success: '#30d158',
-    warning: '#ff9f0a',
-    error: '#ff453a',
-    info: '#0a84ff',
-    primary: '#4da6d1',
-    primaryLight: '#6bb8e0',
-    primaryDark: '#0a7ea4',
-    secondary: '#8e8e93',
-    accent: '#ff6b35',
+    // Core metallic colors
+    background: '#111827', // Charcoal
+    backgroundSecondary: '#1e293b', // Surface
+    backgroundTertiary: '#374151', // Gunmetal
+    surface: '#1e293b',
+    surfaceShadow: '0 1px 12px #0f172a inset',
+    border: '#374151', // Gunmetal
+    borderSecondary: 'rgba(255,255,255,0.07)',
+    text: '#f3f4f6', // Aluminum text
+    textSecondary: '#d1d5db', // Metal Silver
+    textTertiary: '#9ca3af',
+    accentBlue: '#60a5fa', // Metallic blue
+    accentGold: '#f59e42', // Gold
+    accentEmerald: '#10b981', // Emerald
+    accent: '#60a5fa', // Default accent
+    error: '#ef4444',
+    success: '#22c55e',
+    info: '#60a5fa',
+    warning: '#f59e42',
+    // Gradients
     gradient: {
-      primary: ['#4da6d1', '#0a7ea4'] as const,
-      secondary: ['#ff8a65', '#ff6b35'] as const,
-      success: ['#30d158', '#34c759'] as const,
-      background: ['#151718', '#1c1e1f'] as const,
+      background: ['#111827', '#374151'] as const, // Dark metallic gradient
+      primary: ['#60a5fa', '#f59e42'] as const, // Blue to gold
+      stats: ['#60a5fa', '#f59e42'] as const, // For progress/stats
+      surface: ['#1e293b', '#374151'] as const,
+      accent: ['#60a5fa', '#10b981'] as const,
     },
     shadow: {
-      light: '#000000',
-      medium: '#000000',
-      heavy: '#000000',
+      light: 'rgba(60,72,100,0.15)', // Gunmetal
+      medium: 'rgba(17,24,39,0.25)', // Charcoal
+      heavy: 'rgba(0,0,0,0.4)',
     },
   },
 };

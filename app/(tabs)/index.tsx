@@ -1,75 +1,476 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import {
+  Animated,
+  Dimensions,
+  FlatList,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
-export default function HomeScreen() {
+import SkillCard from '../../components/SkillCard';
+import UniformLayout from '../../components/UniformLayout';
+import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useAuth } from '../../context/AuthContext';
+import { useSkills } from '../../context/SkillsContext';
+import { useTheme } from '../../context/ThemeContext';
+
+/**
+ * Enhanced home screen with professional Material Design look and feel
+ */
+export default function Home() {
+  const { skills, deleteSkill } = useSkills();
+  const { user } = useAuth();
+  const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  
+  // Ensure we have valid colors even during initial render
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'in-progress' | 'completed'>('all');
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(50)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
+  const handleAddSkill = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/skill/new');
+  };
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // TODO: Implement refresh functionality
+    setTimeout(() => setRefreshing(false), 1000);
+  }, []);
+
+  const filteredSkills = skills.filter(skill => {
+    const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (filter === 'completed') return matchesSearch && skill.progress >= 100;
+    if (filter === 'in-progress') return matchesSearch && skill.progress < 100;
+    return matchesSearch;
+  });
+
+  const getStats = () => {
+    const total = skills.length;
+    const completed = skills.filter(s => s.progress >= 100).length;
+    const inProgress = total - completed;
+    const averageProgress = total > 0 ? Math.round(skills.reduce((sum, s) => sum + s.progress, 0) / total) : 0;
+    
+    return { total, completed, inProgress, averageProgress };
+  };
+
+  const stats = getStats();
+  
+  // Get screen dimensions for responsive design
+  const { height } = Dimensions.get('window');
+  const isSmallScreen = height < 800; // iPhone 16 threshold
+  const isVerySmallScreen = height < 750; // Very small screen threshold
+  
+  const styles = StyleSheet.create({
+    header: {
+      paddingTop: Platform.OS === 'ios' ? 50 : Spacing.xxl,
+      paddingBottom: isVerySmallScreen ? Spacing.xs : isSmallScreen ? Spacing.sm : Spacing.md,
+      paddingHorizontal: Spacing.lg,
+      minHeight: isVerySmallScreen ? 80 : isSmallScreen ? 100 : 120,
+      marginBottom: Spacing.xl,
+    },
+    headerContent: {
+      flex: 1,
+    },
+    headerTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: isVerySmallScreen ? Spacing.xs : Spacing.md,
+    },
+    greetingContainer: {
+      flex: 1,
+    },
+    greeting: {
+      ...Typography.h1,
+      color: themeColors.text,
+      marginBottom: Spacing.xs,
+      fontWeight: '700',
+      fontSize: isVerySmallScreen ? 18 : isSmallScreen ? 20 : Typography.h1.fontSize,
+    },
+    subtitle: {
+      ...Typography.body,
+      color: themeColors.textSecondary,
+      opacity: 0.9,
+      fontSize: isVerySmallScreen ? 12 : isSmallScreen ? 14 : Typography.body.fontSize,
+    },
+    profileButton: {
+      marginLeft: Spacing.md,
+    },
+    profileAvatar: {
+      width: isVerySmallScreen ? 36 : isSmallScreen ? 40 : 48,
+      height: isVerySmallScreen ? 36 : isSmallScreen ? 40 : 48,
+      borderRadius: BorderRadius.round,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: themeColors.shadow.heavy,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    statsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: isVerySmallScreen ? Spacing.xs : Spacing.md,
+    },
+    statCard: {
+      flex: 1,
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      padding: isVerySmallScreen ? 4 : isSmallScreen ? Spacing.xs : Spacing.sm,
+      borderRadius: BorderRadius.md,
+      alignItems: 'center',
+      marginHorizontal: Spacing.xs,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    statIconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: BorderRadius.round,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: Spacing.xs,
+    },
+    statNumber: {
+      ...Typography.h3,
+      color: themeColors.text,
+      fontWeight: '700',
+      marginBottom: 2,
+      fontSize: isVerySmallScreen ? 14 : isSmallScreen ? 16 : Typography.h3.fontSize,
+    },
+    statLabel: {
+      ...Typography.caption,
+      color: themeColors.textSecondary,
+      textAlign: 'center',
+      fontWeight: '500',
+      fontSize: isVerySmallScreen ? 8 : isSmallScreen ? 10 : Typography.caption.fontSize,
+    },
+    searchContainer: {
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.lg,
+    },
+    searchRow: {
+      marginBottom: Spacing.lg,
+    },
+    searchInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.xl,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+      borderWidth: 0.5,
+      borderColor: themeColors.border,
+    },
+    searchInput: {
+      flex: 1,
+      marginLeft: Spacing.md,
+      ...Typography.body,
+      color: themeColors.text,
+      fontSize: 16,
+      fontWeight: '400',
+    },
+    clearButton: {
+      padding: Spacing.sm,
+    },
+    filterContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: Spacing.md,
+    },
+    filterButton: {
+      flex: 1,
+      backgroundColor: themeColors.backgroundSecondary,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+      borderRadius: BorderRadius.lg,
+      alignItems: 'center',
+      shadowColor: themeColors.shadow.light,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+      borderWidth: 0.5,
+      borderColor: themeColors.border,
+    },
+    filterButtonActive: {
+      backgroundColor: themeColors.accent + '20',
+      borderColor: themeColors.accent,
+      shadowColor: themeColors.accent,
+      shadowOpacity: 0.15,
+      elevation: 2,
+    },
+    filterButtonText: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      fontWeight: '500',
+      fontSize: 13,
+    },
+    filterButtonTextActive: {
+      color: themeColors.text,
+      fontWeight: '600',
+    },
+    filterBadge: {
+      backgroundColor: themeColors.backgroundTertiary,
+      borderRadius: BorderRadius.round,
+      paddingHorizontal: Spacing.xs,
+      paddingVertical: 2,
+      marginLeft: Spacing.xs,
+      minWidth: 18,
+      alignItems: 'center',
+    },
+    filterBadgeActive: {
+      backgroundColor: themeColors.accent + '25',
+    },
+    filterBadgeText: {
+      ...Typography.caption,
+      color: themeColors.textSecondary,
+      fontWeight: '600',
+      fontSize: 10,
+    },
+    filterBadgeTextActive: {
+      color: themeColors.text,
+    },
+    listContainer: {
+      paddingHorizontal: Spacing.md,
+      paddingBottom: Platform.OS === 'ios' ? 120 : Spacing.xl,
+      paddingTop: Spacing.sm,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+    },
+    emptyCard: {
+      backgroundColor: themeColors.background,
+      padding: Spacing.xl,
+      borderRadius: BorderRadius.xl,
+      alignItems: 'center',
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+    },
+    emptyIconContainer: {
+      width: 80,
+      height: 80,
+      borderRadius: BorderRadius.round,
+      backgroundColor: themeColors.backgroundSecondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: Spacing.md,
+    },
+    emptyTitle: {
+      ...Typography.h3,
+      color: themeColors.text,
+      marginBottom: Spacing.sm,
+      textAlign: 'center',
+      fontWeight: '700',
+    },
+    emptySubtitle: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      textAlign: 'center',
+      marginBottom: Spacing.lg,
+      lineHeight: 20,
+    },
+    emptyButton: {
+      borderRadius: BorderRadius.lg,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    emptyButtonGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      borderRadius: BorderRadius.lg,
+    },
+    emptyButtonText: {
+      ...Typography.bodySmall,
+      color: themeColors.text,
+      marginLeft: Spacing.sm,
+      fontWeight: '600',
+    },
+
+  });
+
+  const EmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <View style={styles.emptyCard}>
+        <View style={styles.emptyIconContainer}>
+          <Ionicons name="add-circle-outline" size={48} color={themeColors.accent} />
+        </View>
+        <Text style={styles.emptyTitle}>Start Your Learning Journey</Text>
+        <Text style={styles.emptySubtitle}>
+          Track your skills, monitor progress, and achieve your goals with SkillSync
+        </Text>
+        <TouchableOpacity style={styles.emptyButton} onPress={handleAddSkill}>
+          <LinearGradient
+            colors={themeColors.gradient.primary}
+            style={styles.emptyButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Ionicons name="add" size={16} color={themeColors.text} />
+            <Text style={styles.emptyButtonText}>Add Your First Skill</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const FilterButton = ({ title, value, count }: { title: string; value: string; count: number }) => (
+    <TouchableOpacity
+      style={[styles.filterButton, filter === value && styles.filterButtonActive]}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setFilter(value as any);
+      }}
+    >
+      <Text style={[styles.filterButtonText, filter === value && styles.filterButtonTextActive]}>
+        {title}
+      </Text>
+      <View style={[styles.filterBadge, filter === value && styles.filterBadgeActive]}>
+        <Text style={[styles.filterBadgeText, filter === value && styles.filterBadgeTextActive]}>
+          {count}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <UniformLayout>
+      {/* Enhanced Header */}
+      <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerTop}>
+            <View style={styles.greetingContainer}>
+              <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0] || 'User'}!</Text>
+              <Text style={styles.subtitle}>Track your learning progress</Text>
+            </View>
+            <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/profile')}>
+              <LinearGradient
+                colors={themeColors.gradient.accent}
+                style={styles.profileAvatar}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Ionicons name="person" size={24} color={themeColors.text} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* Enhanced Search and Filters */}
+      <Animated.View style={[styles.searchContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        <View style={styles.searchRow}>
+          <View style={styles.searchInputContainer}>
+            <Ionicons name="search" size={20} color={themeColors.textSecondary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search skills..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor={themeColors.textSecondary}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity 
+                onPress={() => setSearchQuery('')}
+                style={styles.clearButton}
+              >
+                <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Enhanced Filter Buttons */}
+        <View style={styles.filterContainer}>
+          <FilterButton title="All" value="all" count={stats.total} />
+          <FilterButton title="In Progress" value="in-progress" count={stats.inProgress} />
+          <FilterButton title="Completed" value="completed" count={stats.completed} />
+        </View>
+      </Animated.View>
+
+      {/* Skills List */}
+      <FlatList
+        data={filteredSkills}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <SkillCard
+            id={item.id}
+            name={item.name}
+            progress={item.progress}
+            description={item.description}
+            onPress={() => router.push(`/skill/${item.id}`)}
+            onDelete={deleteSkill}
+            lastUpdated={item.lastUpdated || item.createdAt}
+            totalEntries={item.entries?.length || 0}
+            streak={item.streak || 0}
+          />
+        )}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+        ListEmptyComponent={EmptyState}
+      />
+    </UniformLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

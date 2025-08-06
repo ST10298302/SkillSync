@@ -1,14 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import { SupabaseService } from '../services/supabaseService';
 
 // Types for the context state
 interface AuthContextProps {
-  user: string | null;
+  user: User | null;
   isLoggedIn: boolean;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -44,13 +46,9 @@ const removeSecureItem = async (key: string) => {
  * and AsyncStorage to persist the logged‑in state between launches.
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-
-  // Keys for storage
-  const USER_CRED_KEY = 'userCredentials';
-  const LOGGED_IN_KEY = 'loggedIn';
 
   /**
    * Load persisted auth state on mount.
@@ -58,18 +56,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadAuthState = async () => {
       try {
-        const loggedInFlag = await AsyncStorage.getItem(LOGGED_IN_KEY);
-        if (loggedInFlag === 'true') {
-          const credentialsJson = await getSecureItem(USER_CRED_KEY);
-          if (credentialsJson) {
-            const creds = JSON.parse(credentialsJson);
-            setUser(creds.email);
+        console.log('🔧 AuthContext: Loading auth state...');
+        // Only try to load auth state in browser environment
+        if (typeof window !== 'undefined') {
+          const currentUser = await SupabaseService.getCurrentUser();
+          if (currentUser) {
+            console.log('✅ AuthContext: Found existing user, setting state');
+            setUser(currentUser);
             setIsLoggedIn(true);
+          } else {
+            console.log('ℹ️ AuthContext: No existing user found');
           }
+        } else {
+          console.log('ℹ️ AuthContext: Not in browser environment, skipping auth load');
         }
       } catch (e) {
-        console.error('Failed to load auth state', e);
+        console.error('❌ AuthContext: Failed to load auth state', e);
+        // Don't throw error, just continue without user
       } finally {
+        console.log('✅ AuthContext: Auth state loading complete');
         setLoading(false);
       }
     };
@@ -77,54 +82,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   /**
-   * Save user credentials securely and set logged‑in flag.
+   * Sign up with Supabase authentication.
    */
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, name?: string) => {
     try {
-      const credentials = JSON.stringify({ email, password });
-      await setSecureItem(USER_CRED_KEY, credentials);
-      await AsyncStorage.setItem(LOGGED_IN_KEY, 'true');
-      setUser(email);
-      setIsLoggedIn(true);
-    } catch (e) {
-      console.error('Failed to sign up', e);
-    }
-  };
-
-  /**
-   * Attempt to log in by comparing the provided credentials
-   * against the stored credentials.
-   */
-  const signIn = async (email: string, password: string) => {
-    try {
-      const storedCreds = await getSecureItem(USER_CRED_KEY);
-      if (!storedCreds) {
-        throw new Error('No user found');
-      }
-      const { email: storedEmail, password: storedPassword } = JSON.parse(storedCreds);
-      if (email === storedEmail && password === storedPassword) {
-        await AsyncStorage.setItem(LOGGED_IN_KEY, 'true');
-        setUser(email);
+      console.log('🔧 AuthContext: Starting sign up...', { email, name });
+      const { user } = await SupabaseService.signUp(email, password, name);
+      if (user) {
+        console.log('✅ AuthContext: Sign up successful, setting user state');
+        setUser(user);
         setIsLoggedIn(true);
       } else {
-        throw new Error('Invalid credentials');
+        console.log('⚠️ AuthContext: Sign up successful but no user returned');
       }
     } catch (e) {
-      console.error('Failed to sign in', e);
+      console.error('❌ AuthContext: Failed to sign up', e);
       throw e;
     }
   };
 
   /**
-   * Clear logged‑in flag and user state.
+   * Sign in with Supabase authentication.
+   */
+  const signIn = async (email: string, password: string) => {
+    try {
+      console.log('🔧 AuthContext: Starting sign in...', { email });
+      const { user } = await SupabaseService.signIn(email, password);
+      if (user) {
+        console.log('✅ AuthContext: Sign in successful, setting user state');
+        console.log('🔄 AuthContext: Setting user:', user.id);
+        console.log('🔄 AuthContext: Setting isLoggedIn to true');
+        setUser(user);
+        setIsLoggedIn(true);
+        console.log('✅ AuthContext: State updated, should trigger navigation');
+      } else {
+        console.log('⚠️ AuthContext: Sign in successful but no user returned');
+      }
+    } catch (e) {
+      console.error('❌ AuthContext: Failed to sign in', e);
+      throw e;
+    }
+  };
+
+  /**
+   * Sign out with Supabase authentication.
    */
   const signOut = async () => {
     try {
-      await AsyncStorage.removeItem(LOGGED_IN_KEY);
+      console.log('🔧 AuthContext: Starting sign out...');
+      await SupabaseService.signOut();
+      console.log('🔄 AuthContext: Setting user to null');
       setUser(null);
+      console.log('🔄 AuthContext: Setting isLoggedIn to false');
       setIsLoggedIn(false);
+      console.log('✅ AuthContext: Sign out successful, state updated');
     } catch (e) {
-      console.error('Failed to sign out', e);
+      console.error('❌ AuthContext: Failed to sign out', e);
+      throw e;
     }
   };
 

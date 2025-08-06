@@ -1,14 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, BorderRadius, Typography } from '../constants/Colors';
+import React from 'react';
+import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 interface SkillCardProps {
+  id: string;
   name: string;
   progress: number;
   description?: string;
   onPress: () => void;
+  onDelete?: (id: string) => void;
   lastUpdated?: string;
   totalEntries?: number;
   streak?: number;
@@ -18,16 +20,62 @@ interface SkillCardProps {
  * Enhanced skill card with modern design, animations, and rich information display
  */
 const SkillCard: React.FC<SkillCardProps> = ({ 
+  id,
   name, 
   progress, 
   description, 
   onPress,
+  onDelete,
   lastUpdated,
   totalEntries = 0,
   streak = 0
 }) => {
+  const theme = useColorScheme() ?? 'light';
+  const safeTheme = theme === 'light' || theme === 'dark' ? theme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
+  // Animation refs
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const opacityAnim = React.useRef(new Animated.Value(1)).current;
+  const flameAnim = React.useRef(new Animated.Value(1)).current;
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+  const deleteAnim = React.useRef(new Animated.Value(1)).current;
+
+  // Flame animation
+  React.useEffect(() => {
+    if (streak > 0) {
+      const flameSequence = Animated.sequence([
+        Animated.timing(flameAnim, {
+          toValue: 1.2,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(flameAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]);
+      
+      const pulseSequence = Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]);
+
+      Animated.loop(Animated.parallel([
+        Animated.loop(flameSequence),
+        Animated.loop(pulseSequence, { iterations: -1, resetBeforeIteration: true }),
+      ])).start();
+    }
+  }, [streak, flameAnim, pulseAnim]);
 
   const handlePressIn = () => {
     Animated.parallel([
@@ -59,93 +107,163 @@ const SkillCard: React.FC<SkillCardProps> = ({
     ]).start();
   };
 
-  const getProgressColor = (progress: number) => {
-    if (progress >= 80) return Colors.light.success;
-    if (progress >= 60) return Colors.light.warning;
-    if (progress >= 40) return Colors.light.info;
-    return Colors.light.secondary;
-  };
+  const handleDeletePress = () => {
+    Animated.sequence([
+      Animated.timing(deleteAnim, {
+        toValue: 0.8,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(deleteAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
-  const getProgressGradient = (progress: number) => {
-    if (progress >= 80) return Colors.light.gradient.success;
-    if (progress >= 60) return ['#ff9500', '#ffb74d'];
-    if (progress >= 40) return Colors.light.gradient.primary;
-    return ['#6c757d', '#8e8e93'];
+    Alert.alert(
+      'Delete Skill',
+      `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            if (onDelete) {
+              onDelete(id);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const formatLastUpdated = (dateString?: string) => {
-    if (!dateString) return 'Never';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    if (!dateString) {
+      return 'Never';
+    }
     
-    if (diffInHours < 1) return 'Just now';
+    const date = new Date(dateString);
+    
+    if (isNaN(date.getTime())) {
+      return 'Unknown';
+    }
+    
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
     return date.toLocaleDateString();
   };
 
   return (
-    <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}>
+    <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}> 
       <TouchableOpacity
-        style={styles.touchable}
+        style={[styles.touchable, { shadowColor: themeColors.shadow.medium }]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.9}
       >
-        <LinearGradient
-          colors={Colors.light.gradient.background}
-          style={styles.card}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <View
+          style={[styles.card, { borderColor: themeColors.border, backgroundColor: themeColors.background }]}
         >
+          {/* Header Section */}
           <View style={styles.header}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.name} numberOfLines={1}>{name}</Text>
-              {streak > 0 && (
-                <View style={styles.streakContainer}>
-                  <Ionicons name="flame" size={16} color={Colors.light.accent} />
-                  <Text style={styles.streakText}>{streak}</Text>
-                </View>
-              )}
+            <View style={styles.titleRow}>
+              <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
+                {name}
+              </Text>
+              <View style={styles.headerActions}>
+                {streak > 0 && (
+                  <Animated.View 
+                    style={[
+                      styles.streakContainer, 
+                      { 
+                        backgroundColor: themeColors.accentGold + '20',
+                        transform: [{ scale: flameAnim }]
+                      }
+                    ]}
+                  > 
+                    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                      <Ionicons name="flame" size={16} color={themeColors.accentGold} />
+                    </Animated.View>
+                    <Text style={[styles.streakText, { color: themeColors.accentGold }]}>
+                      {streak}
+                    </Text>
+                  </Animated.View>
+                )}
+                {onDelete && (
+                  <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
+                    <TouchableOpacity
+                      style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
+                      onPress={handleDeletePress}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="trash-outline" size={16} color={themeColors.error} />
+                    </TouchableOpacity>
+                  </Animated.View>
+                )}
+              </View>
             </View>
-            <View style={styles.progressContainer}>
-              <Text style={styles.progressText}>{progress}%</Text>
-              <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBar, { width: `${progress}%` }]}>
-                  <LinearGradient
-                    colors={getProgressGradient(progress)}
-                    style={styles.progressGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                  />
+            
+            {/* Progress Section */}
+            <View style={styles.progressSection}>
+              <View style={styles.progressHeader}>
+                <Text style={[styles.progressText, { color: themeColors.textSecondary }]}>
+                  {progress}% Complete
+                </Text>
+                <View style={styles.progressBarContainer}>
+                  <View style={[styles.progressBar, { width: `${progress}%`, backgroundColor: themeColors.accent }]}> 
+                  </View>
                 </View>
               </View>
             </View>
           </View>
 
+          {/* Description Section */}
           {description && (
-            <Text style={styles.description} numberOfLines={2}>
-              {description}
-            </Text>
+            <View style={styles.descriptionSection}>
+              <Text style={[styles.description, { color: themeColors.textSecondary }]} numberOfLines={2}>
+                {description}
+              </Text>
+            </View>
           )}
 
+          {/* Footer Section */}
           <View style={styles.footer}>
-            <View style={styles.metaContainer}>
-              <Ionicons name="time-outline" size={14} color={Colors.light.textSecondary} />
-              <Text style={styles.metaText}>{formatLastUpdated(lastUpdated)}</Text>
+            <View style={styles.metaRow}>
+              <View style={styles.metaContainer}>
+                <Ionicons name="time-outline" size={14} color={themeColors.textSecondary} />
+                <Text style={[styles.metaText, { color: themeColors.textSecondary }]}>
+                  {formatLastUpdated(lastUpdated)}
+                </Text>
+              </View>
+              <View style={styles.metaContainer}>
+                <Ionicons name="document-text-outline" size={14} color={themeColors.textSecondary} />
+                <Text style={[styles.metaText, { color: themeColors.textSecondary }]}>
+                  {totalEntries} entries
+                </Text>
+              </View>
             </View>
-            <View style={styles.metaContainer}>
-              <Ionicons name="document-text-outline" size={14} color={Colors.light.textSecondary} />
-              <Text style={styles.metaText}>{totalEntries} entries</Text>
+            
+            {/* Arrow Indicator */}
+            <View style={styles.arrowContainer}>
+              <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
             </View>
           </View>
-
-          <View style={styles.arrowContainer}>
-            <Ionicons name="chevron-forward" size={20} color={Colors.light.textSecondary} />
-          </View>
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -157,61 +275,83 @@ const styles = StyleSheet.create({
   },
   touchable: {
     borderRadius: BorderRadius.lg,
-    shadowColor: Colors.light.shadow.medium,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
   },
   card: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    minHeight: 140,
   },
   header: {
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
-  titleContainer: {
+  titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   name: {
     ...Typography.h4,
-    color: Colors.light.text,
     flex: 1,
     marginRight: Spacing.sm,
+    fontWeight: '700',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   streakContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.light.backgroundTertiary,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.round,
+    shadowColor: 'rgba(245, 158, 66, 0.3)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 3,
   },
   streakText: {
     ...Typography.caption,
-    color: Colors.light.accent,
     marginLeft: Spacing.xs,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  progressContainer: {
-    alignItems: 'flex-end',
+  deleteButton: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.round,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: 'rgba(239, 68, 68, 0.3)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressSection: {
+    marginTop: Spacing.sm,
+  },
+  progressHeader: {
+    alignItems: 'flex-start',
   },
   progressText: {
     ...Typography.bodySmall,
-    color: Colors.light.textSecondary,
     marginBottom: Spacing.xs,
+    fontWeight: '600',
   },
   progressBarContainer: {
     width: '100%',
-    height: 6,
-    backgroundColor: Colors.light.backgroundTertiary,
+    height: 8,
     borderRadius: BorderRadius.round,
     overflow: 'hidden',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
   progressBar: {
     height: '100%',
@@ -221,31 +361,40 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: BorderRadius.round,
   },
+  descriptionSection: {
+    marginBottom: Spacing.md,
+  },
   description: {
     ...Typography.bodySmall,
-    color: Colors.light.textSecondary,
-    marginBottom: Spacing.sm,
     lineHeight: 20,
+    fontWeight: '500',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   metaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: Spacing.lg,
   },
   metaText: {
     ...Typography.caption,
-    color: Colors.light.textSecondary,
     marginLeft: Spacing.xs,
+    fontWeight: '500',
   },
   arrowContainer: {
-    position: 'absolute',
-    right: Spacing.md,
-    top: '50%',
-    marginTop: -10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 24,
+    height: 24,
   },
 });
 

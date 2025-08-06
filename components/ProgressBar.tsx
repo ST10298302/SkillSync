@@ -1,5 +1,8 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Colors } from '../constants/Colors';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 interface ProgressBarProps {
   progress: number; // 0–100
@@ -10,11 +13,25 @@ interface ProgressBarProps {
 /**
  * A simple horizontal progress bar that fills according to the
  * provided percentage.  Accepts optional height and color props.
+ * Uses metallic palette and theme system.
  */
-const ProgressBar: React.FC<ProgressBarProps> = ({ progress, height = 10, color = '#4caf50' }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({ progress, height = 10, color }) => {
+  const theme = useColorScheme() ?? 'light';
+  const safeTheme = theme === 'light' || theme === 'dark' ? theme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  const fillGradient = color ? [color, color] : ['#60a5fa', '#f59e42'];
+  const bgColor = themeColors.backgroundTertiary;
+
   return (
-    <View style={[styles.container, { height }] }>
-      <View style={[styles.fill, { width: `${progress}%`, backgroundColor: color }]} />
+    <View style={[styles.container, { height, backgroundColor: bgColor }] }>
+      <View style={[styles.fill, { width: `${progress}%` }]}> 
+        <LinearGradient
+          colors={fillGradient as [string, string]}
+          style={styles.fill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+        />
+      </View>
     </View>
   );
 };
@@ -22,12 +39,16 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress, height = 10, color 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#eee',
     borderRadius: 4,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
+  },
+  gradient: {
+    flex: 1,
+    height: '100%',
+    borderRadius: 4,
   },
 });
 
