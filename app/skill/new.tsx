@@ -1,0 +1,486 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+    Alert,
+    Animated,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
+
+import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useSkills } from '../../context/SkillsContext';
+
+/**
+ * Enhanced new skill creation page with modern design and form validation
+ */
+export default function NewSkill() {
+  const router = useRouter();
+  const { addSkill } = useSkills();
+  
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(50)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!name.trim()) {
+      newErrors.name = 'Skill name is required';
+    } else if (name.trim().length < 2) {
+      newErrors.name = 'Skill name must be at least 2 characters';
+    }
+    
+    if (description.trim().length > 500) {
+      newErrors.description = 'Description must be less than 500 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCreateSkill = async () => {
+    if (!validateForm()) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await addSkill({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        progress: 0,
+        startDate: new Date().toISOString(),
+        entries: [],
+        progressUpdates: [],
+      });
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    } catch (e) {
+      setErrors({ general: 'Failed to create skill. Please try again.' });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (name.trim() || description.trim()) {
+      Alert.alert(
+        'Discard Changes',
+        'Are you sure you want to discard your changes?',
+        [
+          { text: 'Keep Editing', style: 'cancel' },
+          { 
+            text: 'Discard', 
+            style: 'destructive',
+            onPress: () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.back();
+            }
+          },
+        ]
+      );
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      router.back();
+    }
+  };
+
+  const InputField = ({ 
+    label, 
+    value, 
+    onChangeText, 
+    placeholder, 
+    multiline = false, 
+    error 
+  }: { 
+    label: string; 
+    value: string; 
+    onChangeText: (text: string) => void; 
+    placeholder: string; 
+    multiline?: boolean;
+    error?: string;
+  }) => (
+    <View style={styles.inputField}>
+      <Text style={styles.inputLabel}>{label}</Text>
+      <View style={[styles.inputContainer, error && styles.inputContainerError]}>
+        <TextInput
+          style={[styles.input, multiline && styles.inputMultiline]}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          multiline={multiline}
+          placeholderTextColor={Colors.light.textSecondary}
+          autoCapitalize={multiline ? 'sentences' : 'words'}
+          autoCorrect={multiline}
+        />
+      </View>
+      {error && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={16} color={Colors.light.error} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
+      
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <LinearGradient
+              colors={Colors.light.gradient.primary as any}
+              style={styles.headerGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.headerContent}>
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={handleCancel}
+                >
+                  <Ionicons name="close" size={24} color={Colors.light.text} />
+                </TouchableOpacity>
+                <View style={styles.headerInfo}>
+                  <Text style={styles.headerTitle}>Add New Skill</Text>
+                  <Text style={styles.headerSubtitle}>Track your learning progress</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </Animated.View>
+
+          {/* Form */}
+          <Animated.View style={[styles.formSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <LinearGradient
+              colors={Colors.light.gradient.background as any}
+              style={styles.formCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              {errors.general && (
+                <View style={styles.generalErrorContainer}>
+                  <Ionicons name="alert-circle" size={20} color={Colors.light.error} />
+                  <Text style={styles.generalErrorText}>{errors.general}</Text>
+                </View>
+              )}
+
+              <InputField
+                label="Skill Name"
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g., React Native, Guitar, Spanish"
+                error={errors.name}
+              />
+
+              <InputField
+                label="Description (Optional)"
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Describe what you want to learn..."
+                multiline={true}
+                error={errors.description}
+              />
+
+              <View style={styles.characterCount}>
+                <Text style={styles.characterCountText}>
+                  {description.length}/500 characters
+                </Text>
+              </View>
+
+              <View style={styles.tipsContainer}>
+                <Text style={styles.tipsTitle}>💡 Tips for success:</Text>
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={16} color={Colors.light.success} />
+                  <Text style={styles.tipText}>Be specific about what you want to learn</Text>
+                </View>
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={16} color={Colors.light.success} />
+                  <Text style={styles.tipText}>Set realistic goals and milestones</Text>
+                </View>
+                <View style={styles.tipItem}>
+                  <Ionicons name="checkmark-circle" size={16} color={Colors.light.success} />
+                  <Text style={styles.tipText}>Update your progress regularly</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </Animated.View>
+        </ScrollView>
+
+        {/* Action Buttons */}
+        <Animated.View style={[styles.actionSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={handleCancel}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.createButton, isLoading && styles.createButtonDisabled]}
+              onPress={handleCreateSkill}
+              disabled={isLoading}
+            >
+              <LinearGradient
+                colors={isLoading ? [Colors.light.secondary, Colors.light.secondary] : Colors.light.gradient.primary as any}
+                style={styles.createButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                {isLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <Animated.View style={[styles.loadingSpinner, { transform: [{ rotate: '360deg' }] }]} />
+                    <Text style={styles.loadingText}>Creating...</Text>
+                  </View>
+                ) : (
+                  <>
+                    <Ionicons name="add-circle" size={20} color={Colors.light.text} />
+                    <Text style={styles.createButtonText}>Create Skill</Text>
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.light.background,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: Spacing.xxl,
+  },
+  header: {
+    marginBottom: Spacing.lg,
+  },
+  headerGradient: {
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  backButton: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginRight: Spacing.md,
+  },
+  headerInfo: {
+    flex: 1,
+  },
+  headerTitle: {
+    ...Typography.h1,
+    color: Colors.light.text,
+    marginBottom: Spacing.xs,
+  },
+  headerSubtitle: {
+    ...Typography.body,
+    color: Colors.light.textSecondary,
+  },
+  formSection: {
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
+  formCard: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+  },
+  generalErrorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.error + '10',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  generalErrorText: {
+    ...Typography.bodySmall,
+    color: Colors.light.error,
+    marginLeft: Spacing.sm,
+    flex: 1,
+  },
+  inputField: {
+    marginBottom: Spacing.lg,
+  },
+  inputLabel: {
+    ...Typography.body,
+    color: Colors.light.text,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  inputContainer: {
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+  },
+  inputContainerError: {
+    borderColor: Colors.light.error,
+  },
+  input: {
+    padding: Spacing.md,
+    ...Typography.body,
+    color: Colors.light.text,
+  },
+  inputMultiline: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+  },
+  errorText: {
+    ...Typography.bodySmall,
+    color: Colors.light.error,
+    marginLeft: Spacing.xs,
+  },
+  characterCount: {
+    alignItems: 'flex-end',
+    marginBottom: Spacing.lg,
+  },
+  characterCountText: {
+    ...Typography.caption,
+    color: Colors.light.textSecondary,
+  },
+  tipsContainer: {
+    backgroundColor: Colors.light.backgroundTertiary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+  },
+  tipsTitle: {
+    ...Typography.bodySmall,
+    color: Colors.light.text,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  tipItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+  tipText: {
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
+    marginLeft: Spacing.xs,
+    flex: 1,
+  },
+  actionSection: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: Colors.light.backgroundSecondary,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    marginRight: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+  },
+  cancelButtonText: {
+    ...Typography.button,
+    color: Colors.light.textSecondary,
+  },
+  createButton: {
+    flex: 2,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+  },
+  createButtonDisabled: {
+    opacity: 0.7,
+  },
+  createButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+  },
+  createButtonText: {
+    ...Typography.button,
+    color: Colors.light.text,
+    marginLeft: Spacing.xs,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  loadingSpinner: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: Colors.light.text,
+    borderTopColor: 'transparent',
+    borderRadius: BorderRadius.round,
+    marginRight: Spacing.sm,
+  },
+  loadingText: {
+    ...Typography.button,
+    color: Colors.light.text,
+  },
+});
