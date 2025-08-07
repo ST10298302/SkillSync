@@ -1,0 +1,29 @@
+name: Expo CI (Modern)
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  expo-build-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' 
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run expo-doctor
+        run: npx expo-doctor
+
+      - name: Start Expo project (Web)
+        run: npx expo start --web --no-interactive
