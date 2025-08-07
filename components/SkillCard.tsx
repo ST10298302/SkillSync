@@ -10,6 +10,7 @@ interface SkillCardProps {
   progress: number;
   description?: string;
   onPress: () => void;
+  onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   lastUpdated?: string;
   totalEntries?: number;
@@ -25,6 +26,7 @@ const SkillCard: React.FC<SkillCardProps> = ({
   progress, 
   description, 
   onPress,
+  onEdit,
   onDelete,
   lastUpdated,
   totalEntries = 0,
@@ -105,6 +107,12 @@ const SkillCard: React.FC<SkillCardProps> = ({
         useNativeDriver: true,
       }),
     ]).start();
+  };
+
+  const handleEditPress = () => {
+    if (onEdit) {
+      onEdit(id);
+    }
   };
 
   const handleDeletePress = () => {
@@ -203,6 +211,15 @@ const SkillCard: React.FC<SkillCardProps> = ({
                       {streak}
                     </Text>
                   </Animated.View>
+                )}
+                {onEdit && (
+                  <TouchableOpacity
+                    style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
+                    onPress={handleEditPress}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="create-outline" size={16} color={themeColors.accent} />
+                  </TouchableOpacity>
                 )}
                 {onDelete && (
                   <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
@@ -322,6 +339,18 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     marginLeft: Spacing.xs,
     fontWeight: '700',
+  },
+  editButton: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.round,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: 'rgba(59, 130, 246, 0.3)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 3,
   },
   deleteButton: {
     width: 32,

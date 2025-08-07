@@ -4,18 +4,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Animated,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 import { AnimatedInput } from '../../components/AnimatedInput';
-import { AnimatedLogo } from '../../components/AnimatedLogo';
+import AnimatedLogo from '../../components/AnimatedLogo';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
@@ -303,7 +303,7 @@ export default function Signup() {
           >
             {/* Header Section */}
             <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-              <AnimatedLogo />
+              <AnimatedLogo size={150} />
               <Text style={styles.title}>Join SkillSync</Text>
               <Text style={styles.subtitle}>Create your account to start tracking your skills</Text>
             </Animated.View>

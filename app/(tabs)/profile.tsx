@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -14,11 +13,14 @@ import {
     View
 } from 'react-native';
 
+import Logo from '../../components/Logo';
+import ProfilePicture from '../../components/ProfilePicture';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { useSkills } from '../../context/SkillsContext';
 import { ThemeMode, useTheme } from '../../context/ThemeContext';
+import { SupabaseService } from '../../services/supabaseService';
 
 /**
  * Enhanced Profile page with professional Material Design look and feel
@@ -37,11 +39,58 @@ export default function Profile() {
   console.log('🔧 Profile: Current state - isLoggedIn:', isLoggedIn, 'user:', user?.id);
   
   const [isLoading, setIsLoading] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
+  const [userName, setUserName] = useState<string>('User');
   
   // Monitor isLoggedIn state changes
   React.useEffect(() => {
     console.log('🔄 Profile: isLoggedIn state changed to:', isLoggedIn);
   }, [isLoggedIn]);
+
+  // Load profile picture URL and user name
+  const loadUserData = async () => {
+    if (user?.id) {
+      try {
+        // Load profile picture URL
+        const url = await SupabaseService.getProfilePictureUrl(user.id);
+        console.log('🔄 Profile: Loaded profile picture URL:', url);
+        setProfilePictureUrl(url || undefined);
+
+        // Load user name
+        const userProfile = await SupabaseService.getUserProfile(user.id);
+        if (userProfile?.name) {
+          // Split on whitespace and take only the first name
+          const firstName = userProfile.name.split(' ')[0];
+          const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+          setUserName(capitalizedName);
+        } else {
+          // Fallback to email prefix with proper capitalization
+          const emailPrefix = user.email?.split('@')[0] || 'User';
+          const capitalizedEmail = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1).toLowerCase();
+          setUserName(capitalizedEmail);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        // Fallback to email prefix with proper capitalization
+        const emailPrefix = user.email?.split('@')[0] || 'User';
+        const capitalizedEmail = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1).toLowerCase();
+        setUserName(capitalizedEmail);
+      }
+    }
+  };
+
+  // Load user data on mount
+  React.useEffect(() => {
+    loadUserData();
+  }, [user?.id]);
+
+  // Reload user data when screen comes into focus (for profile picture updates)
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('🔄 Profile: Screen focused, reloading user data...');
+      loadUserData();
+    }, [user?.id])
+  );
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
 
@@ -195,27 +244,67 @@ export default function Profile() {
       paddingHorizontal: Spacing.lg,
       marginBottom: Spacing.xl,
     },
+         logoContainer: {
+       alignItems: 'center',
+       justifyContent: 'center',
+       marginBottom: Spacing.md,
+       paddingVertical: Spacing.sm,
+     },
+               profileCard: {
+      backgroundColor: Colors[safeTheme].background,
+      borderRadius: BorderRadius.xl,
+      padding: Spacing.lg,
+      marginHorizontal: Spacing.sm,
+      shadowColor: Colors[safeTheme].shadow.medium,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 6,
+      borderWidth: 1,
+      borderColor: Colors[safeTheme].border,
+    },
     profileSection: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
     },
     avatarContainer: {
       marginRight: Spacing.lg,
+      marginTop: 2, // Align with text baseline
     },
-    avatar: {
-      width: 80,
-      height: 80,
+    profileContainer: {
+      position: 'relative',
+      padding: 3,
       borderRadius: BorderRadius.round,
+      backgroundColor: Colors[safeTheme].backgroundSecondary,
+      shadowColor: Colors[safeTheme].shadow.medium,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    editIconContainer: {
+      position: 'absolute',
+      bottom: 2,
+      right: 2,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: Colors[safeTheme].accent,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: Colors[safeTheme].shadow.heavy,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.4,
-      shadowRadius: 16,
-      elevation: 12,
+      shadowColor: Colors[safeTheme].shadow.medium,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 3,
+      borderWidth: 2,
+      borderColor: Colors[safeTheme].background,
     },
+
     profileInfo: {
       flex: 1,
+      justifyContent: 'center',
+      paddingTop: 4, // Align with profile picture
     },
     userName: {
       ...Typography.h1,
@@ -224,10 +313,11 @@ export default function Profile() {
       fontWeight: '700',
     },
     userEmail: {
-      ...Typography.body,
+      ...Typography.caption,
       color: Colors[safeTheme].textSecondary,
       marginBottom: Spacing.sm,
-      opacity: 0.9,
+      opacity: 0.8,
+      fontSize: 13,
     },
     profileBadge: {
       flexDirection: 'row',
@@ -420,26 +510,35 @@ export default function Profile() {
       >
         {/* Enhanced Header */}
         <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.profileSection}>
-            <View style={styles.avatarContainer}>
-              <LinearGradient
-                colors={themeColors.gradient.accent}
-                style={styles.avatar}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Ionicons name="person" size={40} color={themeColors.text} />
-              </LinearGradient>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.userName}>{user?.email?.split('@')[0] || 'User'}</Text>
-              <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
-              <View style={styles.profileBadge}>
-                <Ionicons name="checkmark-circle" size={16} color={themeColors.success} />
-                <Text style={styles.profileBadgeText}>Active Account</Text>
-              </View>
-            </View>
+          <View style={styles.logoContainer}>
+            <Logo size={60} />
           </View>
+                     <View style={styles.profileCard}>
+             <View style={styles.profileSection}>
+               <View style={styles.avatarContainer}>
+                 <View style={styles.profileContainer}>
+                   <ProfilePicture
+                     userId={user?.id || ''}
+                     imageUrl={profilePictureUrl}
+                     size={100}
+                     onImageUpdate={setProfilePictureUrl}
+                     editable={true}
+                   />
+                   <View style={styles.editIconContainer}>
+                     <Ionicons name="create-outline" size={18} color={themeColors.text} />
+                   </View>
+                 </View>
+               </View>
+               <View style={styles.profileInfo}>
+                 <Text style={styles.userName}>{userName}</Text>
+                 <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
+                 <View style={styles.profileBadge}>
+                   <Ionicons name="checkmark-circle" size={16} color={themeColors.success} />
+                   <Text style={styles.profileBadgeText}>Active Account</Text>
+                 </View>
+               </View>
+             </View>
+           </View>
         </Animated.View>
 
         {/* Enhanced Statistics */}
@@ -489,7 +588,7 @@ export default function Profile() {
               icon="person-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to account settings
+                router.push('/account-settings');
               }}
             />
             <MenuItem

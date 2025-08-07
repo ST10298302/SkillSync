@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Platform } from 'react-native';
+import { HapticTab } from '../../components/HapticTab';
 import { Colors } from '../../constants/Colors';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -104,6 +105,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="library-outline" size={size} color={color} />
           ),
+          tabBarButton: (props) => <HapticTab {...props} />,
         }}
       />
       <Tabs.Screen
@@ -113,6 +115,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="add-circle" size={size + 4} color={Colors[safeTheme].accent} />
           ),
+          tabBarButton: (props) => <HapticTab {...props} />,
         }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
@@ -128,6 +131,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="analytics-outline" size={size} color={color} />
           ),
+          tabBarButton: (props) => <HapticTab {...props} />,
         }}
       />
       <Tabs.Screen
@@ -137,6 +141,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
+          tabBarButton: (props) => <HapticTab {...props} />,
         }}
       />
     </Tabs>

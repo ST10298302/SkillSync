@@ -1,0 +1,469 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useRef, useState } from 'react';
+import {
+    Alert,
+    Animated,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
+} from 'react-native';
+
+import UniformLayout from '../../../components/UniformLayout';
+import { BorderRadius, Colors, Spacing, Typography } from '../../../constants/Colors';
+import { useSkills } from '../../../context/SkillsContext';
+import { useTheme } from '../../../context/ThemeContext';
+
+/**
+ * Enhanced skill edit page with modern design and form validation
+ */
+export default function EditSkill() {
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { skills, updateSkill } = useSkills();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
+  // Find the skill to edit
+  const skill = skills.find(s => s.id === id);
+  
+  const [name, setName] = useState(skill?.name || '');
+  const [description, setDescription] = useState(skill?.description || '');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  
+  // Refs for input focus management
+  const nameInputRef = useRef<TextInput>(null);
+  const descriptionInputRef = useRef<TextInput>(null);
+  
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(50)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
+  // If skill not found, show error
+  if (!skill) {
+    return (
+      <UniformLayout>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={64} color={themeColors.error} />
+          <Text style={[styles.errorTitle, { color: themeColors.text }]}>Skill Not Found</Text>
+          <Text style={[styles.errorSubtitle, { color: themeColors.textSecondary }]}>The skill you're trying to edit doesn't exist.</Text>
+          <TouchableOpacity 
+            style={[styles.errorButton, { backgroundColor: themeColors.accent }]}
+            onPress={() => router.back()}
+          >
+            <Text style={[styles.errorButtonText, { color: themeColors.text }]}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </UniformLayout>
+    );
+  }
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!name.trim()) {
+      newErrors.name = 'Skill name is required';
+    }
+    
+    if (description.trim().length > 500) {
+      newErrors.description = 'Description must be less than 500 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleUpdateSkill = async () => {
+    if (!validateForm()) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await updateSkill(id, {
+        name: name.trim(),
+        description: description.trim(),
+      });
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    } catch {
+      setErrors({ general: 'Failed to update skill. Please try again.' });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (name !== skill.name || description !== skill.description) {
+      Alert.alert(
+        'Discard Changes',
+        'Are you sure you want to discard your changes?',
+        [
+          { text: 'Keep Editing', style: 'cancel' },
+          { 
+            text: 'Discard', 
+            style: 'destructive',
+            onPress: () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.back();
+            }
+          },
+        ]
+      );
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      router.back();
+    }
+  };
+
+  const dismissKeyboard = () => {
+    nameInputRef.current?.blur();
+    descriptionInputRef.current?.blur();
+  };
+
+  return (
+    <UniformLayout>
+      <TouchableWithoutFeedback onPress={dismissKeyboard}>
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <ScrollView 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
+                         {/* Header */}
+             <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+               <LinearGradient
+                 colors={themeColors.gradient.primary as any}
+                 style={styles.headerGradient}
+                 start={{ x: 0, y: 0 }}
+                 end={{ x: 1, y: 1 }}
+               >
+                 <View style={styles.headerContent}>
+                   <TouchableOpacity 
+                     style={styles.backButton}
+                     onPress={handleCancel}
+                   >
+                     <Ionicons name="close" size={24} color={themeColors.text} />
+                   </TouchableOpacity>
+                   <View style={styles.headerInfo}>
+                     <Text style={[styles.headerTitle, { color: themeColors.text }]}>Edit Skill</Text>
+                     <Text style={[styles.headerSubtitle, { color: themeColors.text }]}>Update your skill information</Text>
+                   </View>
+                 </View>
+               </LinearGradient>
+             </Animated.View>
+
+                         {/* Form */}
+             <Animated.View style={[styles.formSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+               <LinearGradient
+                 colors={themeColors.gradient.background as any}
+                 style={styles.formCard}
+                 start={{ x: 0, y: 0 }}
+                 end={{ x: 1, y: 1 }}
+               >
+                 {errors.general && (
+                   <View style={[styles.generalErrorContainer, { backgroundColor: themeColors.error + '15' }]}>
+                     <Ionicons name="alert-circle" size={20} color={themeColors.error} />
+                     <Text style={[styles.generalErrorText, { color: themeColors.error }]}>{errors.general}</Text>
+                   </View>
+                 )}
+
+                                 {/* Skill Name Input */}
+                 <View style={styles.inputField}>
+                   <Text style={[styles.inputLabel, { color: themeColors.text }]}>Skill Name</Text>
+                   <View style={[
+                     styles.inputContainer, 
+                     { backgroundColor: themeColors.background, borderColor: themeColors.border },
+                     errors.name && { borderColor: themeColors.error, backgroundColor: themeColors.error + '10' }
+                   ]}>
+                     <TextInput
+                       ref={nameInputRef}
+                       style={[styles.input, { color: themeColors.text }]}
+                       value={name}
+                       onChangeText={setName}
+                       placeholder="e.g., React Native, Guitar, Spanish"
+                       placeholderTextColor={themeColors.textSecondary}
+                       autoCapitalize="words"
+                       autoCorrect={false}
+                       returnKeyType="next"
+                       onSubmitEditing={() => descriptionInputRef.current?.focus()}
+                       blurOnSubmit={false}
+                     />
+                   </View>
+                   {errors.name && (
+                     <View style={styles.errorContainer}>
+                       <Ionicons name="alert-circle" size={16} color={themeColors.error} />
+                       <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.name}</Text>
+                     </View>
+                   )}
+                 </View>
+
+                                 {/* Description Input */}
+                 <View style={styles.inputField}>
+                   <Text style={[styles.inputLabel, { color: themeColors.text }]}>Description (Optional)</Text>
+                   <View style={[
+                     styles.inputContainer, 
+                     { backgroundColor: themeColors.background, borderColor: themeColors.border },
+                     errors.description && { borderColor: themeColors.error, backgroundColor: themeColors.error + '10' }
+                   ]}>
+                     <TextInput
+                       ref={descriptionInputRef}
+                       style={[styles.input, styles.textArea, { color: themeColors.text }]}
+                       value={description}
+                       onChangeText={setDescription}
+                       placeholder="Describe what you want to learn..."
+                       placeholderTextColor={themeColors.textSecondary}
+                       multiline
+                       numberOfLines={4}
+                       textAlignVertical="top"
+                       autoCapitalize="sentences"
+                       autoCorrect={true}
+                     />
+                   </View>
+                   {errors.description && (
+                     <View style={styles.errorContainer}>
+                       <Ionicons name="alert-circle" size={16} color={themeColors.error} />
+                       <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.description}</Text>
+                     </View>
+                   )}
+                   <Text style={[styles.characterCount, { color: themeColors.textSecondary }]}>
+                     {description.length}/500 characters
+                   </Text>
+                 </View>
+
+                                 {/* Action Buttons */}
+                 <View style={styles.actionButtons}>
+                   <TouchableOpacity
+                     style={[
+                       styles.button, 
+                       styles.secondaryButton,
+                       { backgroundColor: themeColors.backgroundTertiary, borderColor: themeColors.border }
+                     ]}
+                     onPress={handleCancel}
+                     disabled={isLoading}
+                   >
+                     <Text style={[styles.secondaryButtonText, { color: themeColors.textSecondary }]}>Cancel</Text>
+                   </TouchableOpacity>
+                   <TouchableOpacity
+                     style={[
+                       styles.button, 
+                       styles.primaryButton,
+                       { backgroundColor: themeColors.accent, shadowColor: themeColors.accent },
+                       isLoading && styles.disabledButton
+                     ]}
+                     onPress={handleUpdateSkill}
+                     disabled={isLoading}
+                   >
+                     <Text style={[styles.primaryButtonText, { color: themeColors.text }]}>
+                       {isLoading ? 'Updating...' : 'Update Skill'}
+                     </Text>
+                   </TouchableOpacity>
+                 </View>
+              </LinearGradient>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </UniformLayout>
+  );
+}
+
+const styles = StyleSheet.create({
+  keyboardView: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: Platform.OS === 'ios' ? 120 : Spacing.xxl,
+  },
+  header: {
+    marginBottom: Spacing.xl,
+  },
+  headerGradient: {
+    paddingTop: Platform.OS === 'ios' ? 50 : Spacing.xxl,
+    paddingBottom: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.lg,
+  },
+  headerInfo: {
+    flex: 1,
+  },
+  headerTitle: {
+    ...Typography.h1,
+    marginBottom: Spacing.xs,
+    fontWeight: '700',
+  },
+  headerSubtitle: {
+    ...Typography.body,
+    opacity: 0.9,
+  },
+  formSection: {
+    paddingHorizontal: Spacing.lg,
+  },
+  formCard: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  generalErrorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  generalErrorText: {
+    ...Typography.bodySmall,
+    marginLeft: Spacing.sm,
+    fontWeight: '600',
+  },
+  inputField: {
+    marginBottom: Spacing.lg,
+  },
+  inputLabel: {
+    ...Typography.body,
+    marginBottom: Spacing.sm,
+    fontWeight: '600',
+  },
+  inputContainer: {
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  input: {
+    ...Typography.body,
+    fontSize: 16,
+    fontWeight: '400',
+  },
+  textArea: {
+    minHeight: 100,
+    paddingTop: Spacing.sm,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+  },
+  errorText: {
+    ...Typography.caption,
+    marginLeft: Spacing.xs,
+    fontWeight: '500',
+  },
+  characterCount: {
+    ...Typography.caption,
+    textAlign: 'right',
+    marginTop: Spacing.xs,
+    fontWeight: '500',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: Spacing.xl,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: Spacing.sm,
+  },
+  primaryButton: {
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  secondaryButton: {
+    borderWidth: 1,
+  },
+  primaryButtonText: {
+    ...Typography.body,
+    fontWeight: '600',
+  },
+  secondaryButtonText: {
+    ...Typography.body,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+  },
+  errorTitle: {
+    ...Typography.h2,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+    fontWeight: '700',
+  },
+  errorSubtitle: {
+    ...Typography.body,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+    lineHeight: 24,
+  },
+  errorButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  errorButtonText: {
+    ...Typography.body,
+    fontWeight: '600',
+  },
+});

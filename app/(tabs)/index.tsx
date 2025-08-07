@@ -2,7 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   Animated,
@@ -17,12 +17,15 @@ import {
   View
 } from 'react-native';
 
+
+import ProfilePicture from '../../components/ProfilePicture';
 import SkillCard from '../../components/SkillCard';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { useSkills } from '../../context/SkillsContext';
 import { useTheme } from '../../context/ThemeContext';
+import { SupabaseService } from '../../services/supabaseService';
 
 /**
  * Enhanced home screen with professional Material Design look and feel
@@ -40,6 +43,53 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'in-progress' | 'completed'>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
+  const [userName, setUserName] = useState<string>('User');
+
+  // Load profile picture URL and user name
+  const loadUserData = async () => {
+    if (user?.id) {
+      try {
+        // Load profile picture URL
+        const url = await SupabaseService.getProfilePictureUrl(user.id);
+        console.log('🔄 Index: Loaded profile picture URL:', url);
+        setProfilePictureUrl(url || undefined);
+
+        // Load user name
+        const userProfile = await SupabaseService.getUserProfile(user.id);
+        if (userProfile?.name) {
+          // Split on whitespace and take only the first name
+          const firstName = userProfile.name.split(' ')[0];
+          const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+          setUserName(capitalizedName);
+        } else {
+          // Fallback to email prefix with proper capitalization
+          const emailPrefix = user.email?.split('@')[0] || 'User';
+          const capitalizedEmail = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1).toLowerCase();
+          setUserName(capitalizedEmail);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        // Fallback to email prefix with proper capitalization
+        const emailPrefix = user.email?.split('@')[0] || 'User';
+        const capitalizedEmail = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1).toLowerCase();
+        setUserName(capitalizedEmail);
+      }
+    }
+  };
+
+  // Load user data on mount
+  React.useEffect(() => {
+    loadUserData();
+  }, [user?.id]);
+
+  // Reload user data when screen comes into focus (for profile picture updates)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🔄 Index: Screen focused, reloading user data...');
+      loadUserData();
+    }, [user?.id])
+  );
   
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -115,6 +165,7 @@ export default function Home() {
     greetingContainer: {
       flex: 1,
     },
+
     greeting: {
       ...Typography.h1,
       color: themeColors.text,
@@ -131,17 +182,34 @@ export default function Home() {
     profileButton: {
       marginLeft: Spacing.md,
     },
-    profileAvatar: {
-      width: isVerySmallScreen ? 36 : isSmallScreen ? 40 : 48,
-      height: isVerySmallScreen ? 36 : isSmallScreen ? 40 : 48,
+    profileContainer: {
+      position: 'relative',
+      padding: 3,
       borderRadius: BorderRadius.round,
+      backgroundColor: themeColors.backgroundSecondary,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    editIconContainer: {
+      position: 'absolute',
+      bottom: 2,
+      right: 2,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: themeColors.accent,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: themeColors.shadow.heavy,
-      shadowOffset: { width: 0, height: 4 },
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 6,
+      shadowRadius: 4,
+      elevation: 3,
+      borderWidth: 2,
+      borderColor: themeColors.background,
     },
     statsContainer: {
       flexDirection: 'row',
@@ -397,18 +465,22 @@ export default function Home() {
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0] || 'User'}!</Text>
+              <Text style={styles.greeting}>Hello, {userName}!</Text>
               <Text style={styles.subtitle}>Track your learning progress</Text>
             </View>
             <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/profile')}>
-              <LinearGradient
-                colors={themeColors.gradient.accent}
-                style={styles.profileAvatar}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Ionicons name="person" size={24} color={themeColors.text} />
-              </LinearGradient>
+              <View style={styles.profileContainer}>
+                <ProfilePicture
+                  userId={user?.id || ''}
+                  imageUrl={profilePictureUrl}
+                  size={isVerySmallScreen ? 52 : isSmallScreen ? 60 : 72}
+                  onImageUpdate={setProfilePictureUrl}
+                  editable={false}
+                />
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="create-outline" size={14} color={themeColors.text} />
+                </View>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -458,6 +530,7 @@ export default function Home() {
             progress={item.progress}
             description={item.description}
             onPress={() => router.push(`/skill/${item.id}`)}
+            onEdit={(id) => router.push(`/skill/${id}/edit`)}
             onDelete={deleteSkill}
             lastUpdated={item.lastUpdated || item.createdAt}
             totalEntries={item.entries?.length || 0}

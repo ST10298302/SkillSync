@@ -36,6 +36,7 @@ export interface Skill {
 interface SkillsContextProps {
   skills: Skill[];
   addSkill: (skill: Omit<Skill, 'entries' | 'progress' | 'progressUpdates' | 'createdAt'>) => Promise<void>;
+  updateSkill: (id: string, updates: { name?: string; description?: string }) => Promise<void>;
   deleteSkill: (id: string) => Promise<void>;
   addEntry: (skillId: string, text: string, hours?: number) => Promise<void>;
   addProgressUpdate: (skillId: string, value: number) => Promise<void>;
@@ -154,6 +155,24 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Delete a skill by id
+  const updateSkill = async (id: string, updates: { name?: string; description?: string }) => {
+    if (!user) return;
+    
+    try {
+      await SupabaseService.updateSkill(id, updates);
+      setSkills(prevSkills => 
+        prevSkills.map(skill => 
+          skill.id === id 
+            ? { ...skill, ...updates }
+            : skill
+        )
+      );
+    } catch (e) {
+      console.error('Failed to update skill', e);
+      throw e;
+    }
+  };
+
   const deleteSkill = async (id: string) => {
     if (typeof window === 'undefined') return;
     
@@ -267,7 +286,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <SkillsContext.Provider value={{ skills, addSkill, deleteSkill, addEntry, addProgressUpdate, refreshSkills }}>
+    <SkillsContext.Provider value={{ skills, addSkill, updateSkill, deleteSkill, addEntry, addProgressUpdate, refreshSkills }}>
       {children}
     </SkillsContext.Provider>
   );
