@@ -1,4 +1,4 @@
-name: Expo CI (React Native / Web)
+name: Expo CI (Modern)
 
 on:
   push:
@@ -17,16 +17,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '18' 
 
       - name: Install dependencies
         run: npm install
 
-      - name: Install Expo CLI
-        run: npm install -g expo-cli
+      - name: Run expo-doctor
+        run: npx expo-doctor
 
-      - name: Validate Expo project
-        run: expo doctor
-
-      - name: Build check
+      - name: Start Expo project (Web)
         run: npx expo start --web --no-interactive
