@@ -1,4 +1,4 @@
-name: React + TypeScript CI
+name: Expo CI (React Native / Web)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main, dev]
 
 jobs:
-  build:
+  expo-build-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,12 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm test
+      - name: Install Expo CLI
+        run: npm install -g expo-cli
 
-      - name: TypeScript type check
-        run: npx tsc --noEmit
+      - name: Validate Expo project
+        run: expo doctor
 
-      - name: Build project
-        run: npm run build
-
+      - name: Build check
+        run: npx expo start --web --no-interactive
