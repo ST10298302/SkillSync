@@ -28,7 +28,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { SupabaseService } from '../../services/supabaseService';
 
 /**
- * Enhanced home screen with professional Material Design look and feel
+ * Home screen with professional Material Design look and feel
  */
 export default function Home() {
   const { skills, deleteSkill } = useSkills();

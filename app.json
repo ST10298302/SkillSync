@@ -38,6 +38,11 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "doctor": {
+        "reactNativeDirectoryCheck": {
+          "listUnknownPackages": false
+        }
+      }
   }
 }
