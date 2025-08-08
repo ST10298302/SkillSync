@@ -18,6 +18,12 @@ import { calculateUserStreak } from '../../utils/streakCalculator';
 /**
  * Enhanced Analytics page with professional Material Design look and feel
  */
+
+
+
+
+
+
 export default function Analytics() {
   const { skills } = useSkills();
   const { resolvedTheme } = useTheme();
