@@ -70,7 +70,7 @@ export default function EditSkill() {
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={64} color={themeColors.error} />
           <Text style={[styles.errorTitle, { color: themeColors.text }]}>Skill Not Found</Text>
-          <Text style={[styles.errorSubtitle, { color: themeColors.textSecondary }]}>The skill you're trying to edit doesn't exist.</Text>
+          <Text style={[styles.errorSubtitle, { color: themeColors.textSecondary }]}>The skill you&apos;re trying to edit doesn&apos;t exist.</Text>
           <TouchableOpacity 
             style={[styles.errorButton, { backgroundColor: themeColors.accent }]}
             onPress={() => router.back()}
