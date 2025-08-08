@@ -22,7 +22,7 @@ export default function TabLayout() {
     return () => subscription?.remove();
   }, []);
   
-  const { width, height } = screenDimensions;
+  const { width } = screenDimensions;
   const isWeb = Platform.OS === 'web';
   const isSmallScreen = width < 768; // Mobile breakpoint
   
