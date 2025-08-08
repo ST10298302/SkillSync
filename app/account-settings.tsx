@@ -24,7 +24,7 @@ import { SupabaseService } from '../services/supabaseService';
 export default function AccountSettings() {
   const router = useRouter();
   const { user } = useAuth();
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 

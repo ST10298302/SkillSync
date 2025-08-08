@@ -158,7 +158,7 @@ export default function SkillDetail() {
       if (diffDays === 1) return 'Yesterday';
       if (diffDays < 7) return `${diffDays} days ago`;
       return date.toLocaleDateString();
-    } catch (error) {
+    } catch {
       return 'Unknown date';
     }
   };
