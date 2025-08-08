@@ -22,5 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run expo-doctor
+        run: npx expo-doctor
+        
       - name: Start Expo project (Web)
         run: npx expo start --web --no-interactive
