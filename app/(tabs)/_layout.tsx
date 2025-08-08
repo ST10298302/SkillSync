@@ -10,7 +10,7 @@ export default function TabLayout() {
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
-  // State for responsive design
+  // State for responsive designs
   const [screenDimensions, setScreenDimensions] = useState(Dimensions.get('window'));
   
   // Listen for screen dimension changes
