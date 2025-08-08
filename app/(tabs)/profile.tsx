@@ -23,7 +23,7 @@ import { ThemeMode, useTheme } from '../../context/ThemeContext';
 import { SupabaseService } from '../../services/supabaseService';
 
 /**
- * Enhanced Profile page with professional Material Design look and feel
+ * Enhanced Profile page with professional Material Design look and feels
  */
 export default function Profile() {
   const router = useRouter();
