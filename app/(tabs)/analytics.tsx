@@ -16,7 +16,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { calculateUserStreak } from '../../utils/streakCalculator';
 
 /**
- * Enhanced Analytics page with professional Material Design look and feel
+ * Enhanced Analytics page with professional Material Design look and feels
  */
 
 
