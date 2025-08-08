@@ -1,9 +1,9 @@
 import React from 'react';
-import { Image, ViewStyle } from 'react-native';
+import { Image, ImageStyle } from 'react-native';
 
 interface LogoProps {
   size?: number;
-  style?: ViewStyle;
+  style?: ImageStyle;
 }
 
 /**

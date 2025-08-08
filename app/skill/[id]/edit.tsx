@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.5,
   },
-  errorContainer: {
+  fullScreenErrorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

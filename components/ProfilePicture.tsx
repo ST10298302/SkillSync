@@ -134,8 +134,8 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-        maxWidth: 512,
-        maxHeight: 512,
+        width: 512,
+        height: 512,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -158,8 +158,8 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
-        maxWidth: 512,
-        maxHeight: 512,
+        width: 512,
+        height: 512,
       });
 
       if (!result.canceled && result.assets[0]) {
@@ -204,7 +204,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
         { text: 'Cancel', style: 'cancel' },
         { text: 'Take Photo', onPress: takePhoto },
         { text: 'Choose from Library', onPress: pickImage },
-        ...(localImageUrl ? [{ text: 'Remove Picture', style: 'destructive', onPress: removeImage }] : []),
+        ...(localImageUrl ? [{ text: 'Remove Picture', style: 'destructive' as const, onPress: removeImage }] : []),
       ]
     );
   };
