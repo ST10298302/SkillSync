@@ -1,5 +1,5 @@
 name: Expo CI (Modern)
-
+#rr
 on:
   push:
     branches: [main, dev]
@@ -12,18 +12,31 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18' 
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Expo CLI
+        run: npm install -g @expo/cli
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run expo-doctor
         run: npx expo-doctor
-        
-      - name: Start Expo project (Web)
-        run: npx expo start --web --no-interactive
+
+      - name: Check TypeScript
+        run: npx tsc --noEmit
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Validate Expo configuration
+        run: npx expo config --type introspect
+
+      - name: Build check (Web)
+        run: npx expo export --platform web --clear
