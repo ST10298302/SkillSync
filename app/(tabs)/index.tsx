@@ -5,16 +5,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  FlatList,
-  Platform,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Animated,
+    Dimensions,
+    FlatList,
+    Keyboard,
+    Platform,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 
 
@@ -489,26 +491,28 @@ export default function Home() {
       {/* Enhanced Search and Filters */}
       <Animated.View style={[styles.searchContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         <View style={styles.searchRow}>
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={20} color={themeColors.textSecondary} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search skills..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholderTextColor={themeColors.textSecondary}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity 
-                onPress={() => setSearchQuery('')}
-                style={styles.clearButton}
-              >
-                <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
-              </TouchableOpacity>
-            )}
-          </View>
+          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <View style={styles.searchInputContainer}>
+              <Ionicons name="search" size={20} color={themeColors.textSecondary} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search skills..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholderTextColor={themeColors.textSecondary}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity 
+                  onPress={() => setSearchQuery('')}
+                  style={styles.clearButton}
+                >
+                  <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableWithoutFeedback>
         </View>
 
         {/* Enhanced Filter Buttons */}

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { Platform, StyleSheet, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 import Animated, {
   interpolate,
@@ -19,7 +19,7 @@ interface AnimatedInputProps extends TextInputProps {
   onRightIconPress?: () => void;
 }
 
-export function AnimatedInput({
+export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
   icon,
   label,
   error,
@@ -29,7 +29,7 @@ export function AnimatedInput({
   onBlur,
   value,
   ...props
-}: AnimatedInputProps) {
+}, ref) => {
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
@@ -95,6 +95,7 @@ export function AnimatedInput({
         )}
         <View style={styles.inputWrapper}>
           <TextInput
+            ref={ref}
             style={[
               styles.input, 
               { 
@@ -126,7 +127,9 @@ export function AnimatedInput({
       )}
     </View>
   );
-}
+});
+
+AnimatedInput.displayName = 'AnimatedInput';
 
 const styles = StyleSheet.create({
   wrapper: {

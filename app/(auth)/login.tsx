@@ -2,14 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     Animated,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 
@@ -34,6 +36,10 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Refs for input focus management
+  const emailInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<TextInput>(null);
   
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(30)).current;
@@ -96,6 +102,11 @@ export default function Login() {
   const togglePasswordVisibility = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowPassword(!showPassword);
+  };
+
+  const dismissKeyboard = () => {
+    emailInputRef.current?.blur();
+    passwordInputRef.current?.blur();
   };
 
   const styles = StyleSheet.create({
@@ -234,83 +245,88 @@ export default function Login() {
 
   return (
     <UniformLayout gradientColors={Colors[safeTheme].gradient.primary as [string, string]} statusBarStyle="light-content">
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-          {/* Header Section */}
-          <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <AnimatedLogo size={150} />
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to continue your learning journey</Text>
-          </Animated.View>
+      <TouchableWithoutFeedback onPress={dismissKeyboard}>
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+            {/* Header Section */}
+            <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+              <AnimatedLogo size={150} />
+              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.subtitle}>Sign in to continue your learning journey</Text>
+            </Animated.View>
 
-          {/* Form Section */}
-          <Animated.View style={[styles.formContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <LinearGradient
-              colors={Colors[safeTheme].gradient.background}
-              style={styles.formCard}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              {error && (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="alert-circle" size={20} color={Colors[safeTheme].error} />
-                  <Text style={styles.errorText}>{error}</Text>
-                </View>
-              )}
-
-              <AnimatedInput
-                icon="mail-outline"
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-
-              <AnimatedInput
-                icon="lock-closed-outline"
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                rightIcon={showPassword ? "eye-off-outline" : "eye-outline"}
-                onRightIconPress={togglePasswordVisibility}
-              />
-
-              <TouchableOpacity 
-                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
-                onPress={handleLogin}
-                disabled={isLoading}
+            {/* Form Section */}
+            <Animated.View style={[styles.formContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+              <LinearGradient
+                colors={Colors[safeTheme].gradient.background}
+                style={styles.formCard}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
               >
-                <LinearGradient
-                  colors={isLoading ? [Colors[safeTheme].backgroundSecondary, Colors[safeTheme].backgroundSecondary] : Colors[safeTheme].gradient.primary}
-                  style={styles.loginButtonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  {isLoading ? (
-                    <View style={styles.loadingContainer}>
-                      <Animated.View style={[styles.loadingSpinner, { transform: [{ rotate: '360deg' }] }]} />
-                      <Text style={styles.loadingText}>Signing in...</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.loginButtonText}>Sign In</Text>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
+                {error && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle" size={20} color={Colors[safeTheme].error} />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
 
-                          <TouchableOpacity onPress={handleSignUpPress} style={styles.signupContainer}>
-              <Text style={styles.signupText}>Don&apos;t have an account? </Text>
-              <Text style={styles.signupLink}>Sign up</Text>
-            </TouchableOpacity>
-            </LinearGradient>
-          </Animated.View>
-        </KeyboardAvoidingView>
+                <AnimatedInput
+                  ref={emailInputRef}
+                  icon="mail-outline"
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+
+                <AnimatedInput
+                  ref={passwordInputRef}
+                  icon="lock-closed-outline"
+                  placeholder="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  rightIcon={showPassword ? "eye-off-outline" : "eye-outline"}
+                  onRightIconPress={togglePasswordVisibility}
+                />
+
+                <TouchableOpacity 
+                  style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                >
+                  <LinearGradient
+                    colors={isLoading ? [Colors[safeTheme].backgroundSecondary, Colors[safeTheme].backgroundSecondary] : Colors[safeTheme].gradient.primary}
+                    style={styles.loginButtonGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    {isLoading ? (
+                      <View style={styles.loadingContainer}>
+                        <Animated.View style={[styles.loadingSpinner, { transform: [{ rotate: '360deg' }] }]} />
+                        <Text style={styles.loadingText}>Signing in...</Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.loginButtonText}>Sign In</Text>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleSignUpPress} style={styles.signupContainer}>
+                  <Text style={styles.signupText}>Don&apos;t have an account? </Text>
+                  <Text style={styles.signupLink}>Sign up</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </Animated.View>
+          </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </UniformLayout>
   );
 }
