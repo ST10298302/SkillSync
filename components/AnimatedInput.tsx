@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 import Animated, {
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
@@ -66,9 +66,26 @@ export function AnimatedInput({
     };
   });
 
+  // Dynamic styles that adapt to theme
+  const containerStyle = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: themeColors.backgroundSecondary,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Platform.OS === 'ios' ? 6 : 4, // Slightly more padding for iOS
+    borderWidth: 1,
+    borderColor: isFocused ? themeColors.accent : themeColors.border,
+    shadowColor: themeColors.shadow.medium,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  };
+
   return (
     <View style={styles.wrapper}>
-      <Animated.View style={[styles.container, animatedStyle]}>
+      <Animated.View style={[containerStyle, animatedStyle]}>
         {icon && (
           <Ionicons 
             name={icon} 
@@ -78,7 +95,12 @@ export function AnimatedInput({
         )}
         <View style={styles.inputWrapper}>
           <TextInput
-            style={[styles.input, { color: themeColors.text }]}
+            style={[
+              styles.input, 
+              { 
+                color: themeColors.black,
+              }
+            ]}
             onFocus={handleFocus}
             onBlur={handleBlur}
             value={value}
@@ -110,20 +132,6 @@ const styles = StyleSheet.create({
   wrapper: {
     marginBottom: Spacing.md,
   },
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.light.backgroundSecondary,
-    borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderWidth: 1,
-    shadowColor: Colors.light.shadow.medium,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
   inputWrapper: {
     flex: 1,
     marginLeft: Spacing.sm,
@@ -131,6 +139,15 @@ const styles = StyleSheet.create({
   input: {
     ...Typography.body,
     paddingVertical: 0,
+    textAlignVertical: 'center',
+    includeFontPadding: false,
+    height: 32, // Fixed height to ensure consistent positioning
+    ...(Platform.OS === 'ios' && {
+      paddingTop: 0, // Remove padding to prevent shifting
+      paddingBottom: 0, // Remove padding to prevent shifting
+      lineHeight: Typography.body.fontSize + 4, // Slightly larger line height for stability
+      textAlignVertical: 'center',
+    }),
   },
   rightIcon: {
     marginLeft: Spacing.sm,

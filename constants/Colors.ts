@@ -16,6 +16,7 @@ export const Colors = {
     text: '#1e293b', // Gunmetal text
     textSecondary: '#374151', // Gunmetal
     textTertiary: '#6b7280',
+    black: '#000000', // Pure black for high contrast
     accentBlue: '#60a5fa', // Metallic blue
     accentGold: '#f59e42', // Gold
     accentEmerald: '#10b981', // Emerald
@@ -50,6 +51,7 @@ export const Colors = {
     text: '#f3f4f6', // Aluminum text
     textSecondary: '#d1d5db', // Metal Silver
     textTertiary: '#9ca3af',
+    black: '#ffffff', // Pure white for dark theme (inverted black)
     accentBlue: '#60a5fa', // Metallic blue
     accentGold: '#f59e42', // Gold
     accentEmerald: '#10b981', // Emerald
