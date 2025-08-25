@@ -31,7 +31,6 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   onImageUpdate,
   editable = true,
 }) => {
-  console.log('🔄 ProfilePicture: Rendering with imageUrl:', imageUrl);
   const theme = useColorScheme() ?? 'light';
   const safeTheme = theme === 'light' || theme === 'dark' ? theme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
@@ -43,18 +42,16 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
   React.useEffect(() => {
-    console.log('🔄 ProfilePicture: imageUrl changed:', imageUrl);
     setLocalImageUrl(imageUrl);
     
     // Test if the URL is accessible
     if (imageUrl) {
-      console.log('🔧 ProfilePicture: Testing URL accessibility:', imageUrl);
       fetch(imageUrl, { method: 'HEAD' })
         .then(response => {
-          console.log('✅ ProfilePicture: URL is accessible, status:', response.status);
+          // URL is accessible
         })
         .catch(error => {
-          console.error('❌ ProfilePicture: URL is not accessible:', error);
+          console.error('ProfilePicture: URL is not accessible:', error);
         });
     }
   }, [imageUrl]);
@@ -207,15 +204,13 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   const removeImage = async () => {
     try {
-      console.log('🔧 ProfilePicture: Starting image removal...');
       setIsUploading(true);
       await SupabaseService.removeProfilePicture(userId);
-      console.log('✅ ProfilePicture: Image removed successfully');
       setLocalImageUrl(undefined);
       onImageUpdate?.('');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
-      console.error('❌ ProfilePicture: Error removing image:', error);
+      console.error('ProfilePicture: Error removing image:', error);
       Alert.alert('Error', 'Failed to remove image. Please try again.');
     } finally {
       setIsUploading(false);
@@ -257,12 +252,12 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
              placeholder={require('../assets/images/adaptive-icon.png')}
              transition={200}
              onError={(error) => {
-               console.error('❌ ProfilePicture: Image failed to load:', error);
-               console.error('❌ ProfilePicture: Failed URL:', localImageUrl);
-               console.error('❌ ProfilePicture: Error details:', JSON.stringify(error, null, 2));
+               console.error('ProfilePicture: Image failed to load:', error);
+               console.error('ProfilePicture: Failed URL:', localImageUrl);
+               console.error('ProfilePicture: Error details:', JSON.stringify(error, null, 2));
              }}
              onLoad={() => {
-               console.log('✅ ProfilePicture: Image loaded successfully:', localImageUrl);
+               // Image loaded successfully
              }}
            />
          ) : (

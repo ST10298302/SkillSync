@@ -9,7 +9,7 @@ This guide will help you set up Supabase Storage for handling profile pictures i
 3. Click **Create a new bucket**
 4. Set the following:
    - **Name**: `avatars`
-   - **Public bucket**: ✅ Check this (allows public read access)
+   - **Public bucket**: Check this (allows public read access)
    - **File size limit**: `5 MB`
    - **Allowed MIME types**: `image/*`
 

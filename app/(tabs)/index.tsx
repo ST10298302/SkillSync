@@ -54,7 +54,6 @@ export default function Home() {
       try {
         // Load profile picture URL
         const url = await SupabaseService.getProfilePictureUrl(user.id);
-        console.log('🔄 Index: Loaded profile picture URL:', url);
         setProfilePictureUrl(url || undefined);
 
         // Load user name
@@ -88,7 +87,6 @@ export default function Home() {
   // Reload user data when screen comes into focus (for profile picture updates)
   useFocusEffect(
     useCallback(() => {
-      console.log('🔄 Index: Screen focused, reloading user data...');
       loadUserData();
     }, [user?.id])
   );
