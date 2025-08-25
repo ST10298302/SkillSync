@@ -5,18 +5,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  FlatList,
-  Keyboard,
-  Platform,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    Animated,
+    Dimensions,
+    FlatList,
+    Keyboard,
+    Platform,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 
 
@@ -529,10 +529,10 @@ export default function Home() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
-            <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>Hello, {userName}!</Text>
-              <Text style={styles.subtitle}>{t('trackYourLearningProgress')}</Text>
-            </View>
+                         <View style={styles.greetingContainer}>
+               <Text style={styles.greeting}>{t('greeting')}, {userName}!</Text>
+               <Text style={styles.subtitle}>{t('trackYourLearningProgress')}</Text>
+             </View>
             <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/profile')}>
               <View style={styles.profileContainer}>
                 <ProfilePicture
@@ -559,28 +559,28 @@ export default function Home() {
               <Ionicons name="book-outline" size={16} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{stats.total}</Text>
-            <Text style={styles.statLabel}>Skills</Text>
+            <Text style={styles.statLabel}>{t('skills')}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
               <Ionicons name="trending-up-outline" size={16} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{stats.averageProgress}%</Text>
-            <Text style={styles.statLabel}>Avg Progress</Text>
+            <Text style={styles.statLabel}>{t('avgProgress')}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
               <Ionicons name="time-outline" size={16} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.totalHours || 0), 0)}</Text>
-            <Text style={styles.statLabel}>Hours</Text>
+            <Text style={styles.statLabel}>{t('hours')}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
               <Ionicons name="document-text-outline" size={16} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.entries?.length || 0), 0)}</Text>
-            <Text style={styles.statLabel}>Entries</Text>
+            <Text style={styles.statLabel}>{t('entries')}</Text>
           </View>
         </View>
       </View>
@@ -596,13 +596,13 @@ export default function Home() {
               end={{ x: 1, y: 1 }}
             >
               <Ionicons name="add" size={20} color={themeColors.text} />
-              <Text style={styles.quickActionText}>Add Skill</Text>
+              <Text style={styles.quickActionText}>{t('addSkill')}</Text>
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity style={styles.quickActionButton} onPress={() => router.push('/analytics')}>
             <View style={[styles.quickActionSecondary, { backgroundColor: themeColors.backgroundSecondary }]}> 
               <Ionicons name="analytics-outline" size={20} color={themeColors.accent} />
-              <Text style={[styles.quickActionText, { color: themeColors.accent }]}>Analytics</Text>
+              <Text style={[styles.quickActionText, { color: themeColors.accent }]}>{t('analytics')}</Text>
             </View>
           </TouchableOpacity>
         </View>
