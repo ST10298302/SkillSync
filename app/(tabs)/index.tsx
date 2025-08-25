@@ -52,7 +52,7 @@ export default function Home() {
   const [userName, setUserName] = useState<string>('User');
 
   // Load profile picture URL and user name
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     if (user?.id) {
       try {
         // Load profile picture URL
@@ -80,18 +80,18 @@ export default function Home() {
         setUserName(capitalizedEmail);
       }
     }
-  };
+  }, [user?.id, user?.email]);
 
   // Load user data on mount
   React.useEffect(() => {
     loadUserData();
-  }, [user?.id]);
+  }, [loadUserData]);
 
   // Reload user data when screen comes into focus (for profile picture updates)
   useFocusEffect(
     useCallback(() => {
       loadUserData();
-    }, [user?.id])
+    }, [loadUserData])
   );
   
   const fadeAnim = React.useRef(new Animated.Value(0)).current;

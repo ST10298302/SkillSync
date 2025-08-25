@@ -3,14 +3,14 @@ import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Alert,
-  Animated,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Animated,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 import LanguageSelector from '../../components/LanguageSelector';
@@ -29,7 +29,7 @@ import { SupabaseService } from '../../services/supabaseService';
  */
 export default function Profile() {
   const router = useRouter();
-  const { signOut, user, isLoggedIn } = useAuth();
+  const { signOut, user } = useAuth();
   const { skills } = useSkills();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { t } = useLanguage();
@@ -43,7 +43,7 @@ export default function Profile() {
   const [userName, setUserName] = useState<string>('User');
 
   // Load profile picture URL and user name
-  const loadUserData = async () => {
+  const loadUserData = React.useCallback(async () => {
     if (user?.id) {
       try {
         // Load profile picture URL
@@ -71,18 +71,18 @@ export default function Profile() {
         setUserName(capitalizedEmail);
       }
     }
-  };
+  }, [user?.id, user?.email]);
 
   // Load user data on mount
   React.useEffect(() => {
     loadUserData();
-  }, [user?.id]);
+  }, [loadUserData]);
 
   // Reload user data when screen comes into focus (for profile picture updates)
   useFocusEffect(
     React.useCallback(() => {
       loadUserData();
-    }, [user?.id])
+    }, [loadUserData])
   );
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;

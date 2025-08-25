@@ -425,7 +425,7 @@ export default function HelpSupport() {
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <View style={styles.infoSection}>
             <Text style={styles.infoText}>
-              Can't find what you're looking for? Our support team is here to help! 
+              Can&apos;t find what you&apos;re looking for? Our support team is here to help! 
               We typically respond within 24 hours during business days.
             </Text>
           </View>

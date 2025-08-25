@@ -6,13 +6,13 @@ import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useTheme } from '../context/ThemeContext';
 
 interface RecentActivityProps {
-  skills: Array<{
+  skills: {
     id: string;
     name: string;
     lastUpdated?: string;
     progress: number;
-    entries: Array<{ date: string; text: string }>; // minimal shape
-  }>;
+    entries: { date: string; text: string }[]; // minimal shape
+  }[];
   onSkillPress: (skillId: string) => void;
 }
 
