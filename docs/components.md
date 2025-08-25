@@ -1,8 +1,31 @@
 # Component Library
 
+A comprehensive guide to SkillSync's reusable UI components, design system, and component architecture.
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Design System](#design-system)
+3. [Core Components](#core-components)
+4. [UI Components](#ui-components)
+5. [Layout Components](#layout-components)
+6. [Form Components](#form-components)
+7. [Component Guidelines](#component-guidelines)
+
+---
+
 ## Overview
 
 SkillSync uses a comprehensive component library built with React Native, featuring custom components designed for cross-platform compatibility and consistent user experience. All components follow the design system defined in `constants/Colors.ts`.
+
+### Key Principles
+- **Consistent Design** - Unified visual language
+- **Theme Support** - Light/dark mode compatibility
+- **Cross-Platform** - Works on iOS, Android, and Web
+- **Accessibility** - Built-in accessibility features
+- **Performance** - Optimized for smooth interactions
+
+---
 
 ## Design System
 
@@ -17,7 +40,16 @@ export const Colors = {
     text: '#1A1A1A',
     textSecondary: '#6C757D',
     accent: '#007AFF',
-    // ... more colors
+    success: '#34C759',
+    error: '#FF3B30',
+    warning: '#FF9500',
+    border: '#E5E5EA',
+    borderSecondary: '#F2F2F7',
+    shadow: {
+      light: 'rgba(0, 0, 0, 0.05)',
+      medium: 'rgba(0, 0, 0, 0.1)',
+      heavy: 'rgba(0, 0, 0, 0.2)'
+    }
   },
   dark: {
     background: '#1A1A1A',
@@ -26,7 +58,16 @@ export const Colors = {
     text: '#FFFFFF',
     textSecondary: '#8E8E93',
     accent: '#0A84FF',
-    // ... more colors
+    success: '#30D158',
+    error: '#FF453A',
+    warning: '#FF9F0A',
+    border: '#38383A',
+    borderSecondary: '#48484A',
+    shadow: {
+      light: 'rgba(0, 0, 0, 0.3)',
+      medium: 'rgba(0, 0, 0, 0.5)',
+      heavy: 'rgba(0, 0, 0, 0.7)'
+    }
   }
 };
 ```
@@ -34,11 +75,13 @@ export const Colors = {
 ### Typography
 ```typescript
 export const Typography = {
-  h1: { fontSize: 32, fontWeight: '700' },
-  h2: { fontSize: 24, fontWeight: '600' },
-  body: { fontSize: 16, fontWeight: '400' },
-  bodySmall: { fontSize: 14, fontWeight: '400' },
-  caption: { fontSize: 12, fontWeight: '400' },
+  h1: { fontSize: 32, fontWeight: '700', lineHeight: 40 },
+  h2: { fontSize: 24, fontWeight: '600', lineHeight: 32 },
+  h3: { fontSize: 20, fontWeight: '600', lineHeight: 28 },
+  h4: { fontSize: 18, fontWeight: '600', lineHeight: 24 },
+  body: { fontSize: 16, fontWeight: '400', lineHeight: 24 },
+  bodySmall: { fontSize: 14, fontWeight: '400', lineHeight: 20 },
+  caption: { fontSize: 12, fontWeight: '400', lineHeight: 16 },
 };
 ```
 
@@ -52,7 +95,18 @@ export const Spacing = {
   xl: 32,
   xxl: 48,
 };
+
+export const BorderRadius = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  round: 50,
+};
 ```
+
+---
 
 ## Core Components
 
@@ -62,10 +116,11 @@ export const Spacing = {
 **Purpose**: Provides consistent layout wrapper for all screens
 
 **Features**:
-- Safe area handling
-- Theme-aware background
-- Consistent padding
+- Safe area handling for all platforms
+- Theme-aware background colors
+- Consistent padding and margins
 - Status bar management
+- Loading state support
 
 **Usage**:
 ```typescript
@@ -80,86 +135,87 @@ export default function MyScreen() {
 }
 ```
 
-### ThemedView
-**Location**: `components/ThemedView.tsx`
-
-**Purpose**: Theme-aware View component
-
-**Features**:
-- Automatic theme switching
-- Consistent styling
-- TypeScript support
-
-**Usage**:
+**Props**:
 ```typescript
-import ThemedView from '../components/ThemedView';
-
-<ThemedView style={styles.container}>
-  {/* Content */}
-</ThemedView>
+interface UniformLayoutProps {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  loading?: boolean;
+  safeArea?: boolean;
+}
 ```
 
-### ThemedText
-**Location**: `components/ThemedText.tsx`
-
-**Purpose**: Theme-aware Text component
-
-**Features**:
-- Automatic color adaptation
-- Typography system integration
-- Accessibility support
-
-**Usage**:
-```typescript
-import ThemedText from '../components/ThemedText';
-
-<ThemedText style={Typography.h1}>
-  Hello World
-</ThemedText>
-```
+---
 
 ## UI Components
 
 ### SkillCard
 **Location**: `components/SkillCard.tsx`
 
-**Purpose**: Displays individual skill information
+**Purpose**: Displays individual skill information with actions
 
 **Features**:
 - Progress visualization
-- Touch interactions
-- Animated progress bars
-- Gradient backgrounds
-
-**Props**:
-```typescript
-interface SkillCardProps {
-  skill: Skill;
-  onPress: () => void;
-  style?: ViewStyle;
-}
-```
+- Streak indicators
+- Edit/delete actions
+- Animated interactions
+- Theme-aware styling
 
 **Usage**:
 ```typescript
 import SkillCard from '../components/SkillCard';
 
 <SkillCard
-  skill={skill}
-  onPress={() => router.push(`/skill/${skill.id}`)}
+  id="skill-1"
+  name="React Native"
+  progress={75}
+  description="Mobile app development"
+  onPress={() => handleSkillPress(id)}
+  onEdit={handleEdit}
+  onDelete={handleDelete}
+  totalEntries={12}
+  streak={5}
 />
+```
+
+**Props**:
+```typescript
+interface SkillCardProps {
+  id: string;
+  name: string;
+  progress: number;
+  description?: string;
+  onPress: () => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  lastUpdated?: string;
+  totalEntries?: number;
+  streak?: number;
+}
 ```
 
 ### ProgressBar
 **Location**: `components/ProgressBar.tsx`
 
-**Purpose**: Visual progress indicator
+**Purpose**: Visual progress indicator with gradient support
 
 **Features**:
-- Animated progress updates
-- Customizable colors
-- Smooth transitions
-- Accessibility labels
+- Percentage-based progress
+- Customizable height
+- Gradient colors
+- Theme-aware styling
+- Smooth animations
+
+**Usage**:
+```typescript
+import ProgressBar from '../components/ProgressBar';
+
+<ProgressBar 
+  progress={75} 
+  height={8} 
+  color="#007AFF" 
+/>
+```
 
 **Props**:
 ```typescript
@@ -167,32 +223,33 @@ interface ProgressBarProps {
   progress: number; // 0-100
   height?: number;
   color?: string;
-  backgroundColor?: string;
 }
-```
-
-**Usage**:
-```typescript
-import ProgressBar from '../components/ProgressBar';
-
-<ProgressBar
-  progress={75}
-  height={8}
-  color={themeColors.accent}
-/>
 ```
 
 ### ProfilePicture
 **Location**: `components/ProfilePicture.tsx`
 
-**Purpose**: User profile picture with upload functionality
+**Purpose**: User profile image with upload capabilities
 
 **Features**:
 - Image upload from camera/gallery
-- Circular design
+- Profile picture management
 - Loading states
 - Haptic feedback
-- Supabase storage integration
+- Error handling
+
+**Usage**:
+```typescript
+import ProfilePicture from '../components/ProfilePicture';
+
+<ProfilePicture
+  userId="user-123"
+  imageUrl={profileImageUrl}
+  size={80}
+  onImageUpdate={handleImageUpdate}
+  editable={true}
+/>
+```
 
 **Props**:
 ```typescript
@@ -205,18 +262,66 @@ interface ProfilePictureProps {
 }
 ```
 
+### DiaryItem
+**Location**: `components/DiaryItem.tsx`
+
+**Purpose**: Displays individual diary entries
+
+**Features**:
+- Date formatting
+- Time tracking
+- Text display
+- Theme-aware styling
+
 **Usage**:
 ```typescript
-import ProfilePicture from '../components/ProfilePicture';
+import DiaryItem from '../components/DiaryItem';
 
-<ProfilePicture
-  userId={user.id}
-  imageUrl={profilePictureUrl}
-  size={100}
-  onImageUpdate={setProfilePictureUrl}
-  editable={true}
+<DiaryItem
+  text="Studied React Native components today"
+  date="2024-01-15T10:00:00Z"
+  hours={2.5}
 />
 ```
+
+**Props**:
+```typescript
+interface DiaryItemProps {
+  text: string;
+  date: string;
+  hours?: number;
+}
+```
+
+---
+
+## Layout Components
+
+### HapticTab
+**Location**: `components/HapticTab.tsx`
+
+**Purpose**: Tab bar with haptic feedback
+
+**Features**:
+- Platform-specific styling
+- Haptic feedback integration
+- Custom tab icons
+- Badge support
+
+### AnimatedLogo
+**Location**: `components/AnimatedLogo.tsx`
+
+**Purpose**: Animated app logo
+
+**Features**:
+- Smooth animations
+- Theme-aware colors
+- Loading states
+- Responsive sizing
+
+---
+
+## Form Components
 
 ### AnimatedInput
 **Location**: `components/AnimatedInput.tsx`
@@ -226,251 +331,147 @@ import ProfilePicture from '../components/ProfilePicture';
 **Features**:
 - Floating label animation
 - Error state handling
-- Focus animations
-- Theme integration
-
-**Props**:
-```typescript
-interface AnimatedInputProps {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  error?: string;
-  placeholder?: string;
-  secureTextEntry?: boolean;
-}
-```
+- Theme-aware styling
+- Validation support
 
 **Usage**:
 ```typescript
 import AnimatedInput from '../components/AnimatedInput';
 
 <AnimatedInput
-  label="Email"
-  value={email}
-  onChangeText={setEmail}
-  error={emailError}
-  placeholder="Enter your email"
+  label="Skill Name"
+  value={skillName}
+  onChangeText={setSkillName}
+  error={errors.name}
+  placeholder="Enter skill name"
 />
 ```
 
-## Animation Components
-
-### AnimatedLogo
-**Location**: `components/AnimatedLogo.tsx`
-
-**Purpose**: Animated app logo
-
-**Features**:
-- Entrance animations
-- Pulse effects
-- Responsive sizing
-- Performance optimized
-
-**Usage**:
-```typescript
-import AnimatedLogo from '../components/AnimatedLogo';
-
-<AnimatedLogo size={120} />
-```
-
-### HelloWave
-**Location**: `components/HelloWave.tsx`
-
-**Purpose**: Animated wave greeting
-
-**Features**:
-- SVG-based animation
-- Customizable colors
-- Smooth wave motion
-- Performance optimized
-
-**Usage**:
-```typescript
-import HelloWave from '../components/HelloWave';
-
-<HelloWave color={themeColors.accent} />
-```
-
-## Navigation Components
-
-### HapticTab
-**Location**: `components/HapticTab.tsx`
-
-**Purpose**: Tab bar button with haptic feedback
-
-**Features**:
-- Haptic feedback on press
-- Platform-specific behavior
-- Accessibility support
-- Custom styling
-
-**Usage**:
-```typescript
-// Used automatically in tab navigation
-<Tabs.Screen
-  name="index"
-  options={{
-    tabBarButton: (props) => <HapticTab {...props} />,
-  }}
-/>
-```
-
-## Utility Components
-
-### Collapsible
-**Location**: `components/Collapsible.tsx`
-
-**Purpose**: Animated collapsible content
-
-**Features**:
-- Smooth height animations
-- Customizable duration
-- Performance optimized
-- Accessibility support
-
-**Usage**:
-```typescript
-import Collapsible from '../components/Collapsible';
-
-<Collapsible expanded={isExpanded}>
-  <Text>Collapsible content</Text>
-</Collapsible>
-```
-
-### ExternalLink
-**Location**: `components/ExternalLink.tsx`
-
-**Purpose**: External link handling
-
-**Features**:
-- Platform-specific link opening
-- Error handling
-- Loading states
-- User feedback
-
-**Usage**:
-```typescript
-import ExternalLink from '../components/ExternalLink';
-
-<ExternalLink url="https://example.com">
-  <Text>Visit Website</Text>
-</ExternalLink>
-```
-
-## Form Components
-
-### DiaryItem
-**Location**: `components/DiaryItem.tsx`
-
-**Purpose**: Individual diary/practice log entry
-
-**Features**:
-- Rich text display
-- Timestamp formatting
-- Touch interactions
-- Theme integration
-
-**Props**:
-```typescript
-interface DiaryItemProps {
-  entry: SkillEntry;
-  onPress?: () => void;
-  onLongPress?: () => void;
-}
-```
-
-**Usage**:
-```typescript
-import DiaryItem from '../components/DiaryItem';
-
-<DiaryItem
-  entry={entry}
-  onPress={() => handleEntryPress(entry)}
-  onLongPress={() => handleEntryLongPress(entry)}
-/>
-```
-
-## Platform-Specific Components
-
-### UI Components
-**Location**: `components/ui/`
-
-**Purpose**: Platform-specific UI implementations
-
-**Files**:
-- `IconSymbol.ios.tsx` / `IconSymbol.tsx`
-- `TabBarBackground.ios.tsx` / `TabBarBackground.tsx`
-
-**Features**:
-- iOS-specific styling
-- Android-specific styling
-- Web-specific optimizations
-- Consistent API across platforms
+---
 
 ## Component Guidelines
 
 ### Naming Conventions
-- **PascalCase**: Component names
-- **camelCase**: Props and methods
-- **kebab-case**: File names for platform-specific components
+- **Components**: PascalCase (e.g., `SkillCard`)
+- **Files**: PascalCase with `.tsx` extension
+- **Props**: camelCase (e.g., `onPress`, `backgroundColor`)
+- **Styles**: camelCase (e.g., `containerStyle`, `textColor`)
 
-### Props Interface
-- Always define TypeScript interfaces
-- Use descriptive prop names
-- Include optional props with default values
-- Document complex props
+### Props Structure
+```typescript
+interface ComponentProps {
+  // Required props first
+  id: string;
+  title: string;
+  
+  // Optional props with defaults
+  size?: number;
+  color?: string;
+  
+  // Event handlers
+  onPress?: () => void;
+  onChange?: (value: string) => void;
+  
+  // Style props last
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+}
+```
 
-### Styling
-- Use the design system constants
-- Support theme switching
-- Provide style prop for customization
-- Use StyleSheet.create for performance
+### Styling Best Practices
+```typescript
+// Use StyleSheet.create for performance
+const styles = StyleSheet.create({
+  container: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: themeColors.background,
+  },
+  text: {
+    ...Typography.body,
+    color: themeColors.text,
+  },
+});
+
+// Apply theme colors dynamically
+<View style={[styles.container, { backgroundColor: themeColors.background }]}>
+  <Text style={[styles.text, { color: themeColors.text }]}>
+    Content
+  </Text>
+</View>
+```
+
+### Theme Integration
+```typescript
+import { useTheme } from '../context/ThemeContext';
+
+const MyComponent = () => {
+  const { resolvedTheme } = useTheme();
+  const themeColors = Colors[resolvedTheme] || Colors.light;
+  
+  return (
+    <View style={{ backgroundColor: themeColors.background }}>
+      {/* Component content */}
+    </View>
+  );
+};
+```
 
 ### Accessibility
-- Include accessibility labels
-- Support screen readers
-- Provide keyboard navigation
-- Use semantic HTML elements (web)
+```typescript
+// Always include accessibility props
+<TouchableOpacity
+  accessible={true}
+  accessibilityLabel="Edit skill button"
+  accessibilityHint="Opens skill editing form"
+  accessibilityRole="button"
+  onPress={handleEdit}
+>
+  <Text>Edit</Text>
+</TouchableOpacity>
+```
 
-### Performance
-- Memoize expensive components
-- Use React.memo for pure components
-- Optimize re-renders
-- Lazy load when appropriate
+---
 
 ## Testing Components
 
-### Unit Testing
+### Test IDs
 ```typescript
-import { render, fireEvent } from '@testing-library/react-native';
-import SkillCard from '../components/SkillCard';
+// Use consistent test IDs
+<TouchableOpacity testID="edit-button">
+  <Text>Edit</Text>
+</TouchableOpacity>
 
-test('SkillCard renders correctly', () => {
-  const mockSkill = { id: '1', name: 'React', progress: 75 };
-  const { getByText } = render(<SkillCard skill={mockSkill} onPress={jest.fn()} />);
+<TouchableOpacity testID="delete-button">
+  <Text>Delete</Text>
+</TouchableOpacity>
+```
+
+### Component Testing
+```typescript
+// Example test structure
+describe('SkillCard', () => {
+  it('renders skill information correctly', () => {
+    render(<SkillCard {...mockProps} />);
+    expect(screen.getByText('React Native')).toBeTruthy();
+    expect(screen.getByText('75% progress')).toBeTruthy();
+  });
   
-  expect(getByText('React')).toBeTruthy();
+  it('handles edit button press', () => {
+    const mockEdit = jest.fn();
+    render(<SkillCard {...mockProps} onEdit={mockEdit} />);
+    fireEvent.press(screen.getByTestId('edit-button'));
+    expect(mockEdit).toHaveBeenCalledWith('skill-1');
+  });
 });
 ```
 
-### Integration Testing
-- Test component interactions
-- Verify theme switching
-- Test accessibility features
-- Validate prop handling
+---
 
-## Future Enhancements
+## Related Documentation
 
-### Planned Components
-- **DataTable**: Sortable data display
-- **Calendar**: Date picker component
-- **Charts**: Data visualization components
-- **Modal**: Custom modal implementation
-- **Toast**: Notification system
-
-### Component Library
-- **Storybook**: Component documentation
-- **Design Tokens**: Automated design system
-- **Component Testing**: Automated testing suite
-- **Performance Monitoring**: Component performance tracking
+- [App Structure](./app-structure.md) - Navigation and screen organization
+- [Authentication](./authentication.md) - Auth system details
+- [Development Setup](./development-setup.md) - Environment configuration
+- [Unit Testing](./unit-testing.md) - Testing strategies and examples
+- [README](./README.md) - Main project overview

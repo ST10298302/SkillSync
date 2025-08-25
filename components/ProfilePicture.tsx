@@ -13,7 +13,7 @@ import {
     View,
 } from 'react-native';
 import { Colors, Spacing, Typography } from '../constants/Colors';
-import { useColorScheme } from '../hooks/useColorScheme';
+import { useTheme } from '../context/ThemeContext';
 import { SupabaseService } from '../services/supabaseService';
 
 interface ProfilePictureProps {
@@ -31,8 +31,8 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   onImageUpdate,
   editable = true,
 }) => {
-  const theme = useColorScheme() ?? 'light';
-  const safeTheme = theme === 'light' || theme === 'dark' ? theme : 'light';
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const [isUploading, setIsUploading] = useState(false);

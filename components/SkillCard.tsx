@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useLanguage } from '../context/LanguageContext';
-import { useColorScheme } from '../hooks/useColorScheme';
+import { useTheme } from '../context/ThemeContext';
 
 interface SkillCardProps {
   id: string;
@@ -30,8 +30,8 @@ export default function SkillCard({
   totalEntries = 0,
   streak = 0,
 }: SkillCardProps) {
-  const theme = useColorScheme();
-  const safeTheme = theme === 'light' || theme === 'dark' ? theme : 'light';
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const { translateText, currentLanguage, t } = useLanguage();

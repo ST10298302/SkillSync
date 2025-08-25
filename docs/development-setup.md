@@ -1,362 +1,421 @@
 # Development Setup
 
+A comprehensive guide to setting up your development environment for SkillSync, including prerequisites, installation, and configuration.
+
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Installation](#installation)
+3. [Environment Configuration](#environment-configuration)
+4. [Supabase Setup](#supabase-setup)
+5. [Development Commands](#development-commands)
+6. [VS Code Setup](#vs-code-setup)
+7. [Troubleshooting](#troubleshooting)
+
+---
+
 ## Prerequisites
 
 ### Required Software
-- **Node.js**: Version 18 or higher
-- **npm**: Version 8 or higher
-- **Git**: Latest version
-- **Expo CLI**: `npm install -g @expo/cli`
+- **Node.js** - Version 18 or higher
+- **npm** - Version 8 or higher  
+- **Git** - Latest version
+- **Expo CLI** - `npm install -g @expo/cli`
 
 ### Platform-Specific Requirements
 
 #### iOS Development
-- **macOS**: Required for iOS development
-- **Xcode**: Latest version from App Store
-- **iOS Simulator**: Included with Xcode
-- **CocoaPods**: `sudo gem install cocoapods`
+- **macOS** - Required for iOS development
+- **Xcode** - Latest version from App Store
+- **iOS Simulator** - Included with Xcode
+- **CocoaPods** - `sudo gem install cocoapods`
 
 #### Android Development
-- **Android Studio**: Latest version
-- **Android SDK**: API level 33 or higher
-- **Android Emulator**: Set up through Android Studio
-- **Java Development Kit**: Version 11 or higher
+- **Android Studio** - Latest version
+- **Android SDK** - API level 33 or higher
+- **Android Emulator** - Set up through Android Studio
+- **Java Development Kit** - Version 11 or higher
 
 #### Web Development
-- **Modern Browser**: Chrome, Firefox, Safari, or Edge
-- **Web Developer Tools**: Built into browsers
+- **Modern Browser** - Chrome, Firefox, Safari, or Edge
+- **Web Developer Tools** - Built into browsers
+
+---
 
 ## Installation
 
-### 1. Clone the Repository
+### Step 1: Clone Repository
 ```bash
+# Clone the repository
 git clone https://github.com/ST10298302/SkillSync.git
+
+# Navigate to project directory
 cd SkillSyncApp
 ```
 
-### 2. Install Dependencies
+### Step 2: Install Dependencies
 ```bash
+# Install all dependencies
 npm install
+
+# Verify installation
+npm --version
+npx expo --version
 ```
 
-### 3. Environment Setup
-
-#### Create Environment File
+### Step 3: Verify Setup
 ```bash
+# Check if everything is working
+npx expo doctor
+
+# Should show: "No issues detected!"
+```
+
+---
+
+## Environment Configuration
+
+### Create Environment File
+```bash
+# Copy example environment file
 cp .env.example .env.local
+
+# Or create manually
+touch .env.local
 ```
 
-#### Configure Environment Variables
+### Configure Environment Variables
 Edit `.env.local` with your Supabase credentials:
+
 ```bash
+# Supabase Configuration
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Optional: Google Translate API (for translations)
+EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key
+
+# Optional: App Configuration
+EXPO_PUBLIC_APP_NAME=SkillSync
+EXPO_PUBLIC_APP_VERSION=1.0.0
 ```
 
-### 4. Supabase Setup
+### Environment File Structure
+```
+.env.local          # Local development (git ignored)
+.env.example        # Example template (committed)
+.env.production     # Production settings (git ignored)
+```
 
-#### Create Supabase Project
-1. Go to [supabase.com](https://supabase.com)
-2. Create a new project
-3. Note your project URL and anon key
+---
 
-#### Database Setup
-Run the SQL scripts in order:
+## Supabase Setup
+
+### Create Supabase Project
+
+1. **Visit Supabase**
+   - Go to [supabase.com](https://supabase.com)
+   - Sign up or log in
+
+2. **Create New Project**
+   - Click "New Project"
+   - Choose organization
+   - Enter project name (e.g., "skillsync-dev")
+   - Set database password
+   - Choose region
+
+3. **Wait for Setup**
+   - Project creation takes 2-3 minutes
+   - You'll receive email when ready
+
+### Get Project Credentials
+
+1. **Go to Project Settings**
+   - Click gear icon → Settings
+   - Select "API" from sidebar
+
+2. **Copy Credentials**
+   - **Project URL**: `https://your-project.supabase.co`
+   - **Anon Key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+### Database Setup
+
+#### Run Schema Scripts
 ```bash
-# 1. Create tables
+# Option 1: Using Supabase Dashboard
+# Go to SQL Editor → Run database-schema.sql
+
+# Option 2: Using psql CLI
 psql -h your-project.supabase.co -U postgres -d postgres -f database-schema.sql
 
-# 2. Apply updates (if any)
-psql -h your-project.supabase.co -U postgres -d postgres -f database-schema-update.sql
+# Option 3: Using Supabase CLI
+supabase db push
 ```
 
-#### Storage Setup
-1. Go to Storage in your Supabase dashboard
-2. Create a bucket called `profile-pictures`
-3. Set bucket permissions to allow authenticated users to upload
+#### Verify Tables Created
+```sql
+-- Check if tables exist
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public';
+
+-- Should show: profiles, skills, skill_entries, etc.
+```
+
+### Storage Configuration
+
+1. **Create Storage Bucket**
+   - Go to Storage → New Bucket
+   - Name: `profile-pictures`
+   - Public: `false`
+   - File size limit: `5MB`
+
+2. **Set Bucket Policies**
+   ```sql
+   -- Allow authenticated users to upload
+   CREATE POLICY "Users can upload profile pictures" ON storage.objects
+   FOR INSERT WITH CHECK (auth.uid()::text = (storage.foldername(name))[1]);
+   
+   -- Allow users to view their own pictures
+   CREATE POLICY "Users can view own profile pictures" ON storage.objects
+   FOR SELECT USING (auth.uid()::text = (storage.foldername(name))[1]);
+   ```
+
+---
 
 ## Development Commands
 
 ### Start Development Server
 ```bash
+# Start Expo development server
 npm start
+# or
+npx expo start
 ```
 
 ### Platform-Specific Commands
 ```bash
-# iOS
+# iOS Simulator
 npm run ios
+# or
+npx expo run:ios
 
-# Android
+# Android Emulator
 npm run android
+# or
+npx expo run:android
 
-# Web
+# Web Browser
 npm run web
+# or
+npx expo start --web
+```
+
+### Development Tools
+```bash
+# Type checking
+npx tsc --noEmit
+
+# Linting
+npm run lint
+
+# Testing
+npm test
+
+# Clear cache
+npx expo start --clear
 ```
 
 ### Build Commands
 ```bash
-# Build for development
+# Development build
 npx expo build
 
-# Build for production
+# Platform-specific builds
+npx expo build:ios
+npx expo build:android
+
+# Production build
 npx expo build --release-channel production
-
-# Export for web
-npx expo export --platform web
 ```
 
-### Testing Commands
+---
+
+## VS Code Setup
+
+### Required Extensions
+Install these VS Code extensions for optimal development:
+
+1. **ES7+ React/Redux/React-Native snippets**
+   - Provides React Native code snippets
+   - ID: `dsznajder.es7-react-js-snippets`
+
+2. **Prettier - Code formatter**
+   - Automatic code formatting
+   - ID: `esbenp.prettier-vscode`
+
+3. **ESLint**
+   - JavaScript/TypeScript linting
+   - ID: `dbaeumer.vscode-eslint`
+
+4. **Auto Rename Tag**
+   - Auto-rename JSX tags
+   - ID: `formulahendry.auto-rename-tag`
+
+5. **Bracket Pair Colorizer**
+   - Color-coded bracket matching
+   - ID: `CoenraadS.bracket-pair-colorizer`
+
+### Extension Installation
 ```bash
-# Run TypeScript check
-npx tsc --noEmit
-
-# Run ESLint
-npm run lint
-
-# Run expo-doctor
-npx expo-doctor
+# Install via VS Code command palette
+# Press Ctrl+Shift+P (Cmd+Shift+P on Mac)
+# Type: "Extensions: Install Extensions"
+# Search for each extension name
 ```
 
-## Development Workflow
+### VS Code Settings
+Create `.vscode/settings.json` in your project:
 
-### 1. Feature Development
-```bash
-# Create feature branch
-git checkout -b feature/your-feature-name
-
-# Make changes and commit
-git add .
-git commit -m "feat: add your feature"
-
-# Push to remote
-git push origin feature/your-feature-name
-```
-
-### 2. Code Quality
-- Run `npm run lint` before committing
-- Ensure TypeScript compilation passes
-- Follow the component guidelines in `docs/components.md`
-
-### 3. Testing
-- Test on all target platforms
-- Verify theme switching works
-- Check accessibility features
-- Test offline functionality
-
-## Development Tools
-
-### VS Code Extensions
 ```json
 {
-  "recommendations": [
-    "ms-vscode.vscode-typescript-next",
-    "bradlc.vscode-tailwindcss",
-    "esbenp.prettier-vscode",
-    "ms-vscode.vscode-eslint",
-    "expo.vscode-expo-tools"
-  ]
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "emmet.includeLanguages": {
+    "typescript": "html"
+  }
 }
 ```
 
-### Debugging
-
-#### React Native Debugger
-```bash
-# Install React Native Debugger
-brew install --cask react-native-debugger
-
-# Start debugger
-open "rndebugger://set-debugger-loc?host=localhost&port=19000"
-```
-
-#### Flipper (Optional)
-```bash
-# Install Flipper
-brew install --cask flipper
-
-# Start Flipper
-open -a Flipper
-```
-
-### Performance Monitoring
-```bash
-# Install performance monitoring
-npm install --save-dev @expo/metro-config
-
-# Monitor bundle size
-npx expo export --platform web --analyze
-```
-
-## Platform-Specific Setup
-
-### iOS Development
-
-#### Xcode Configuration
-1. Open Xcode
-2. Go to Preferences → Locations
-3. Set Command Line Tools to latest version
-4. Install iOS Simulator if needed
-
-#### iOS Simulator
-```bash
-# List available simulators
-xcrun simctl list devices
-
-# Start specific simulator
-xcrun simctl boot "iPhone 14 Pro"
-```
-
-### Android Development
-
-#### Android Studio Setup
-1. Install Android Studio
-2. Open SDK Manager
-3. Install Android SDK Platform 33
-4. Install Android SDK Build-Tools
-5. Create Android Virtual Device (AVD)
-
-#### Environment Variables
-```bash
-# Add to your shell profile
-export ANDROID_HOME=$HOME/Library/Android/sdk
-export PATH=$PATH:$ANDROID_HOME/emulator
-export PATH=$PATH:$ANDROID_HOME/tools
-export PATH=$PATH:$ANDROID_HOME/tools/bin
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-```
-
-### Web Development
-
-#### Browser Testing
-- Test in Chrome, Firefox, Safari, and Edge
-- Check responsive design on different screen sizes
-- Verify keyboard navigation
-- Test with screen readers
+---
 
 ## Troubleshooting
 
 ### Common Issues
 
-#### Metro Bundler Issues
+#### Node.js Version Problems
 ```bash
-# Clear Metro cache
+# Check Node.js version
+node --version
+
+# If version < 18, install newer version
+# Use nvm (Node Version Manager)
+nvm install 18
+nvm use 18
+```
+
+#### Expo CLI Issues
+```bash
+# Clear Expo cache
 npx expo start --clear
 
-# Reset cache completely
-rm -rf node_modules && npm install
+# Reset Metro bundler
+npx expo start --reset-cache
+
+# Reinstall Expo CLI
+npm uninstall -g @expo/cli
+npm install -g @expo/cli
 ```
 
-#### iOS Build Issues
+#### Dependencies Issues
 ```bash
-# Clean iOS build
-cd ios && xcodebuild clean && cd ..
+# Clear npm cache
+npm cache clean --force
 
-# Reset iOS simulator
-xcrun simctl erase all
+# Delete node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
 ```
 
-#### Android Build Issues
+#### Platform-Specific Issues
+
+##### iOS
+```bash
+# Install CocoaPods dependencies
+cd ios && pod install && cd ..
+
+# Clear Xcode build folder
+# Xcode → Product → Clean Build Folder
+```
+
+##### Android
 ```bash
 # Clean Android build
 cd android && ./gradlew clean && cd ..
 
 # Reset Android emulator
-adb emu kill
+# Android Studio → AVD Manager → Wipe Data
 ```
-
-#### Supabase Connection Issues
-1. Verify environment variables are set correctly
-2. Check Supabase project is active
-3. Verify network connectivity
-4. Check browser console for CORS issues
-
-### Performance Issues
-
-#### Bundle Size
-```bash
-# Analyze bundle size
-npx expo export --platform web --analyze
-
-# Optimize images
-npx expo install expo-image-optimizer
-```
-
-#### Memory Leaks
-- Use React DevTools Profiler
-- Monitor component re-renders
-- Check for memory leaks in animations
-
-## CI/CD Setup
-
-### GitHub Actions
-The project includes a CI workflow in `.github/workflows/ci.yml` that:
-- Runs on push to main/dev branches
-- Installs dependencies
-- Runs linting and type checking
-- Builds the web version
-- Requires Supabase environment variables
-
-### Environment Variables for CI
-Add these secrets to your GitHub repository:
-- `EXPO_PUBLIC_SUPABASE_URL`
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
-
-## Deployment
-
-### Web Deployment
-```bash
-# Build for production
-npx expo export --platform web --clear
-
-# Deploy to Vercel
-npx vercel --prod
-
-# Deploy to Netlify
-npx netlify deploy --prod
-```
-
-### Mobile Deployment
-```bash
-# Build for iOS
-npx expo build --platform ios
-
-# Build for Android
-npx expo build --platform android
-```
-
-## Contributing Guidelines
-
-### Code Style
-- Follow TypeScript best practices
-- Use functional components with hooks
-- Implement proper error handling
-- Add comprehensive comments
-
-### Git Workflow
-1. Create feature branch from main
-2. Make focused, atomic commits
-3. Write descriptive commit messages
-4. Test thoroughly before pushing
-5. Create pull request with detailed description
-
-### Documentation
-- Update relevant documentation files
-- Add inline comments for complex logic
-- Document new components and APIs
-- Update README.md if needed
-
-## Support
 
 ### Getting Help
-- Check the [Expo documentation](https://docs.expo.dev/)
-- Review [React Native docs](https://reactnative.dev/)
-- Consult [Supabase documentation](https://supabase.com/docs)
-- Search existing issues in the repository
 
-### Reporting Issues
-1. Check existing issues first
-2. Create detailed bug report
-3. Include platform and version information
-4. Provide steps to reproduce
-5. Include error logs and screenshots
+1. **Check Terminal Output**
+   - Look for error messages
+   - Note line numbers and file paths
+
+2. **Search Documentation**
+   - [Expo Documentation](https://docs.expo.dev/)
+   - [React Native Guide](https://reactnative.dev/)
+   - [Supabase Docs](https://supabase.com/docs)
+
+3. **Community Support**
+   - [Expo Discord](https://chat.expo.dev/)
+   - [React Native Community](https://github.com/react-native-community)
+   - [Stack Overflow](https://stackoverflow.com/)
+
+---
+
+## Testing Your Setup
+
+### Quick Test
+```bash
+# 1. Start development server
+npm start
+
+# 2. Press 'w' for web
+# 3. Press 'i' for iOS (if on Mac)
+# 4. Press 'a' for Android
+# 5. Scan QR code with Expo Go app
+```
+
+### Verify Features
+- ✅ App launches without errors
+- ✅ Authentication screens load
+- ✅ Navigation works between tabs
+- ✅ Theme switching works
+- ✅ No console errors
+
+---
+
+## Next Steps
+
+After successful setup:
+
+1. **Read Documentation**
+   - [App Structure](./app-structure.md)
+   - [Components](./components.md)
+   - [Authentication](./authentication.md)
+
+2. **Start Development**
+   - Create your first skill
+   - Test authentication flow
+   - Explore the codebase
+
+3. **Join Community**
+   - Follow project updates
+   - Report issues
+   - Contribute improvements
+
+---
+
+## Related Documentation
+
+- [README](./README.md) - Main project overview
+- [App Structure](./app-structure.md) - Navigation and screen organization
+- [Components](./components.md) - UI component library
+- [Authentication](./authentication.md) - Auth system details
+- [Unit Testing](./unit-testing.md) - Testing strategies and examples

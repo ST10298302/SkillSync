@@ -1,296 +1,225 @@
-# SkillSync App 📚
+# SkillSync App Documentation
 
-A modern React Native learning tracker app built with Expo, featuring skill management, progress tracking, analytics, and beautiful UI/UX.
+A comprehensive guide to the SkillSync learning tracker app built with React Native and Expo.
 
-## 🚀 Quick Start Guide
+## Table of Contents
+
+1. [Getting Started](#getting-started)
+2. [App Overview](#app-overview)
+3. [Development Guide](#development-guide)
+4. [Architecture](#architecture)
+5. [Testing](#testing)
+6. [Deployment](#deployment)
+7. [Troubleshooting](#troubleshooting)
+
+---
+
+## Getting Started
 
 ### Prerequisites
+- **Node.js** v18+ ([Download](https://nodejs.org/))
+- **Git** ([Download](https://git-scm.com/))
+- **VS Code** (Recommended)
 
-Before you begin, make sure you have the following installed:
-
-#### **Required Software:**
-- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
-- **Git** - [Download here](https://git-scm.com/)
-- **VS Code** - [Download here](https://code.visualstudio.com/)
-
-#### **For Mobile Development:**
-- **Expo CLI** (will be installed automatically)
-- **Expo Go app** on your phone (for testing)
-
----
-
-## 📋 Step-by-Step Setup Instructions
-
-### **Step 1: Clone the Repository**
-
-1. **Open VS Code**
-2. **Open Terminal in VS Code:**
-   - Press `Ctrl + Shift + `` (backtick) or
-   - Go to `Terminal` → `New Terminal`
-
-3. **Navigate to your desired folder:**
-   ```bash
-   cd C:\Users\YourUsername\Desktop
-   ```
-
-4. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yourusername/SkillSyncApp.git
-   ```
-
-5. **Navigate to the project folder:**
-   ```bash
-   cd SkillSyncApp
-   ```
-
-### **Step 2: Install Dependencies**
-
-1. **In the VS Code terminal, run:**
-   ```bash
-   npm install
-   ```
-
-2. **Wait for installation to complete** (this may take a few minutes)
-
-3. **Verify installation:**
-   ```bash
-   npm --version
-   npx expo --version
-   ```
-
-### **Step 3: Set Up Your Development Environment**
-
-#### **Option A: Web Development (Easiest for Beginners)**
-
-1. **Start the development server:**
-   ```bash
-   npx expo start
-   ```
-
-2. **Press `w`** in the terminal to open in web browser
-
-3. **Your app will open in your default browser** at `http://localhost:8081`
-
-#### **Option B: Mobile Development (Recommended)**
-
-1. **Install Expo Go on your phone:**
-   - **Android:** Search "Expo Go" in Google Play Store
-   - **iOS:** Search "Expo Go" in App Store
-
-2. **Start the development server:**
-   ```bash
-   npx expo start
-   ```
-
-3. **Connect your phone:**
-   - **Same WiFi:** Scan the QR code with Expo Go app
-   - **Different WiFi:** Use tunnel mode (press `t` in terminal)
-
----
-
-## Advanced Setup
-
-### **Database Setup (Supabase)**
-
-The app uses Supabase for data storage. To set up your own database:
-
-1. **Create a Supabase account** at [supabase.com](https://supabase.com)
-
-2. **Create a new project**
-
-3. **Run the database schema:**
-   - Copy the contents of `database-schema.sql`
-   - Paste into Supabase SQL editor
-   - Click "Run"
-
-4. **Get your credentials:**
-   - Go to Settings → API
-   - Copy your `URL` and `anon key`
-
-5. **Update environment variables:**
-   - Create a `.env` file in the root directory
-   - Add your Supabase credentials
-
-### **VS Code Extensions (Recommended)**
-
-Install these VS Code extensions for better development experience:
-
-1. **ES7+ React/Redux/React-Native snippets**
-2. **Prettier - Code formatter**
-3. **ESLint**
-4. **Auto Rename Tag**
-5. **Bracket Pair Colorizer**
-
-**To install extensions:**
-1. Press `Ctrl + Shift + X`
-2. Search for each extension
-3. Click "Install"
-
----
-
-## Running the App
-
-### **Development Mode**
-
-1. **Start the development server:**
-   ```bash
-   npx expo start
-   ```
-
-2. **Choose your platform:**
-   - Press `w` for web
-   - Press `a` for Android (requires Android Studio)
-   - Press `i` for iOS (requires Xcode, Mac only)
-   - Scan QR code with Expo Go app
-
-### **Common Commands**
-
+### Quick Setup
 ```bash
+# Clone repository
+git clone https://github.com/yourusername/SkillSyncApp.git
+cd SkillSyncApp
+
+# Install dependencies
+npm install
+
 # Start development server
 npx expo start
+```
 
-# Start with tunnel (for different WiFi networks)
-npx expo start --tunnel
+### First Run Options
+- **Web**: Press `w` in terminal
+- **Mobile**: Scan QR code with Expo Go app
+- **Tunnel**: Press `t` for different WiFi networks
 
-# Clear cache and restart
-npx expo start --clear
+---
 
-# Build for production
-npx expo build
+## App Overview
 
-# Run linting
-npx eslint .
+### Core Features
+- **Skill Management** - Create, edit, and track learning goals
+- **Progress Tracking** - Log study sessions and monitor advancement
+- **Analytics Dashboard** - Visual insights and learning statistics
+- **Streak System** - Maintain learning momentum
+- **Cross-Platform** - iOS, Android, and Web support
 
-# Run TypeScript check
+### User Stories
+- **Authentication** - Secure user accounts and sessions
+- **Skill CRUD** - Full skill lifecycle management
+- **Progress Monitoring** - Visual progress indicators and streaks
+- **Learning Diary** - Session logging and reflection
+- **Theme System** - Light/dark mode support
+- **Dashboard Stats** - Quick overview of learning progress
+
+---
+
+## Development Guide
+
+### Project Structure
+```
+SkillSyncApp/
+├── app/                    # App screens and navigation
+│   ├── (auth)/            # Authentication flows
+│   ├── (tabs)/            # Main app tabs
+│   └── skill/             # Skill management
+├── components/             # Reusable UI components
+├── context/               # React Context providers
+├── services/              # API and external services
+├── utils/                 # Helper functions
+└── constants/             # App configuration
+```
+
+### Key Technologies
+- **React Native** with Expo SDK 53
+- **TypeScript** for type safety
+- **Expo Router** for navigation
+- **Supabase** for backend services
+- **React Native Animated** for smooth interactions
+
+### Development Commands
+```bash
+# Start development
+npx expo start
+
+# Type checking
 npx tsc --noEmit
+
+# Linting
+npm run lint
+
+# Testing
+npm test
+
+# Clear cache
+npx expo start --clear
 ```
 
 ---
 
-## 📱 App Features
+## Architecture
 
-### **Core Functionality:**
-- **Skill Management** - Add, edit, and track learning skills
-- **Progress Tracking** - Log hours and track progress
-- **Analytics Dashboard** - Beautiful charts and insights
-- **Streak System** - Maintain learning momentum
-- **Modern UI/UX** - Material Design with animations
-- **Cross-Platform** - Works on iOS, Android, and Web
+### State Management
+- **AuthContext** - User authentication and session management
+- **SkillsContext** - Skill data and CRUD operations
+- **ThemeContext** - Light/dark theme switching
+- **LanguageContext** - Multi-language support
 
-### **Technical Stack:**
-- **React Native** with Expo
-- **TypeScript** for type safety
-- **Supabase** for backend
-- **Expo Router** for navigation
-- **React Native Animated** for smooth animations
+### Data Flow
+1. **User Input** → Component → Context
+2. **Context** → Service → Supabase
+3. **Response** → Context → Component → UI Update
+
+### Component Architecture
+- **Atomic Design** principles
+- **Theme-aware** styling system
+- **Responsive** layouts for all screen sizes
+- **Accessibility** features built-in
+
+---
+
+## Testing
+
+### Test Coverage
+- **Unit Tests** - Component logic and utilities
+- **Integration Tests** - Context and service interactions
+- **E2E Tests** - User workflow validation
+
+### Running Tests
+```bash
+# All tests
+npm test
+
+# Watch mode
+npm test -- --watch
+
+# Coverage report
+npm test -- --coverage
+```
+
+### Test Structure
+- `__tests__/components/` - UI component tests
+- `__tests__/context/` - Context provider tests
+- `__tests__/utils/` - Utility function tests
+
+---
+
+## Deployment
+
+### Production Build
+```bash
+# Build for production
+npx expo build
+
+# Platform-specific builds
+npx expo build:android
+npx expo build:ios
+```
+
+### App Store Submission
+- Follow Expo's deployment guide
+- Submit to Apple App Store and Google Play Store
+- Configure app signing and certificates
 
 ---
 
 ## Troubleshooting
 
-### **Common Issues & Solutions:**
+### Common Issues
 
-#### **"Command not found" errors:**
+#### Development Server
 ```bash
-# Reinstall Node.js and npm
-# Clear npm cache
-npm cache clean --force
-```
-
-#### **"Metro bundler" errors:**
-```bash
-# Clear Expo cache
+# Clear cache
 npx expo start --clear
+
+# Reset Metro bundler
+npx expo start --reset-cache
 ```
 
-#### **"Cannot resolve module" errors:**
+#### Dependencies
 ```bash
-# Delete node_modules and reinstall
-rm -rf node_modules
+# Clean install
+rm -rf node_modules package-lock.json
 npm install
 ```
 
-#### **"Expo Go connection" issues:**
-- Ensure phone and computer are on same WiFi
-- Try tunnel mode: `npx expo start --tunnel`
-- Check firewall settings
-
-#### **"TypeScript errors":**
+#### TypeScript Errors
 ```bash
-# Check TypeScript
+# Check types
 npx tsc --noEmit
 
-# Fix linting issues
-npx eslint . --fix
+# Fix linting
+npm run lint --fix
 ```
 
-### **Getting Help:**
-
-1. **Check the terminal output** for error messages
-2. **Google the error message** - most issues have solutions online
-3. **Check Expo documentation** at [docs.expo.dev](https://docs.expo.dev)
-4. **Ask in the community** - Discord, Stack Overflow, or GitHub Issues
-
----
-
-## 📁 Project Structure
-
-```
-SkillSyncApp/
-├── app/                    # Main app screens
-│   ├── (auth)/            # Authentication screens
-│   ├── (tabs)/            # Main tab screens
-│   └── skill/             # Skill detail screens
-├── components/             # Reusable components
-├── context/               # React Context providers
-├── constants/             # App constants and colors
-├── hooks/                 # Custom React hooks
-├── services/              # API services
-├── utils/                 # Utility functions
-└── assets/                # Images and fonts
-```
+### Getting Help
+- Check terminal output for error messages
+- Review [Expo documentation](https://docs.expo.dev/)
+- Search [React Native docs](https://reactnative.dev/)
+- Ask in community forums
 
 ---
 
-## 🎨 Customization
+## Additional Resources
 
-### **Theming:**
-- Edit `constants/Colors.ts` to change app colors
-- Modify `components/UniformLayout.tsx` for layout changes
+### Documentation
+- [App Structure](./app-structure.md) - Navigation and screen organization
+- [Components](./components.md) - UI component library
+- [Authentication](./authentication.md) - Auth system details
+- [Development Setup](./development-setup.md) - Environment configuration
+- [Unit Testing](./unit-testing.md) - Testing strategies and examples
 
-### **Adding Features:**
-- New screens go in `app/` directory
-- Components go in `components/` directory
-- API calls go in `services/` directory
-
----
-
-## 🚀 Deployment
-
-### **For Production:**
-
-1. **Build the app:**
-   ```bash
-   npx expo build
-   ```
-
-2. **Deploy to app stores:**
-   - Follow Expo's deployment guide
-   - Submit to Apple App Store and Google Play Store
-
----
-
-## 📚 Learning Resources
-
-### **For Beginners:**
-- [React Native Documentation](https://reactnative.dev/)
+### External Links
 - [Expo Documentation](https://docs.expo.dev/)
+- [React Native Guide](https://reactnative.dev/)
+- [Supabase Docs](https://supabase.com/docs)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-
-### **For Advanced Users:**
-- [React Native Performance](https://reactnative.dev/docs/performance)
-- [Expo SDK Reference](https://docs.expo.dev/versions/latest/)
-- [Supabase Documentation](https://supabase.com/docs)
 
 ---
 
@@ -310,15 +239,4 @@ This project is licensed under the MIT License.
 
 ---
 
-## 🆘 Need Help?
-
-- **Documentation:** Check the links above
-- **Community:** Join our Discord server
-- **Issues:** Report bugs on GitHub
-- **Questions:** Ask in the community forums
-
----
-
-**Happy coding!**
-
-*Made with React Native and Expo*
+**Happy learning and coding!**

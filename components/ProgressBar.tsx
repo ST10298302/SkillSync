@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Colors } from '../constants/Colors';
-import { useColorScheme } from '../hooks/useColorScheme';
+import { useTheme } from '../context/ThemeContext';
 
 interface ProgressBarProps {
   progress: number; // 0–100
@@ -16,8 +16,8 @@ interface ProgressBarProps {
  * Uses metallic palette and theme system.
  */
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress, height = 10, color }) => {
-  const theme = useColorScheme() ?? 'light';
-  const safeTheme = theme === 'light' || theme === 'dark' ? theme : 'light';
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   const fillGradient = color ? [color, color] : ['#60a5fa', '#f59e42'];
   const bgColor = themeColors.backgroundTertiary;
