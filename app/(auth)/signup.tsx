@@ -103,7 +103,6 @@ export default function Signup() {
       
       // Add a small delay to ensure state is updated, then redirect
       setTimeout(() => {
-        console.log('🔄 Signup: Redirecting to main app...');
         router.replace('/(tabs)');
       }, 100);
     } catch {

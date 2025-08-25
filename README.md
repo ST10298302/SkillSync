@@ -88,7 +88,7 @@ Before you begin, make sure you have the following installed:
 
 ---
 
-## 🔧 Advanced Setup
+## Advanced Setup
 
 ### **Database Setup (Supabase)**
 
@@ -128,7 +128,7 @@ Install these VS Code extensions for better development experience:
 
 ---
 
-## 🎯 Running the App
+## Running the App
 
 ### **Development Mode**
 
@@ -170,12 +170,12 @@ npx tsc --noEmit
 ## 📱 App Features
 
 ### **Core Functionality:**
-- ✅ **Skill Management** - Add, edit, and track learning skills
-- ✅ **Progress Tracking** - Log hours and track progress
-- ✅ **Analytics Dashboard** - Beautiful charts and insights
-- ✅ **Streak System** - Maintain learning momentum
-- ✅ **Modern UI/UX** - Material Design with animations
-- ✅ **Cross-Platform** - Works on iOS, Android, and Web
+- **Skill Management** - Add, edit, and track learning skills
+- **Progress Tracking** - Log hours and track progress
+- **Analytics Dashboard** - Beautiful charts and insights
+- **Streak System** - Maintain learning momentum
+- **Modern UI/UX** - Material Design with animations
+- **Cross-Platform** - Works on iOS, Android, and Web
 
 ### **Technical Stack:**
 - **React Native** with Expo
@@ -186,7 +186,7 @@ npx tsc --noEmit
 
 ---
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### **Common Issues & Solutions:**
 
@@ -319,6 +319,6 @@ This project is licensed under the MIT License.
 
 ---
 
-**Happy coding! 🎉**
+**Happy coding!**
 
-*Made with ❤️ using React Native and Expo*
+*Made with React Native and Expo*

@@ -82,7 +82,6 @@ export default function Login() {
       
       // Add a small delay to ensure state is updated, then redirect
       setTimeout(() => {
-        console.log('🔄 Login: Redirecting to main app...');
         router.replace('/(tabs)');
       }, 100);
       

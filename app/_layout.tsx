@@ -23,14 +23,9 @@ function AppLayout() {
   const { isLoggedIn, loading } = useAuth();
   const { resolvedTheme } = useTheme();
 
-  console.log('🔧 AppLayout: isLoggedIn =', isLoggedIn, 'loading =', loading);
-
   if (loading) {
-    console.log('⏳ AppLayout: Still loading, showing nothing');
     return null;
   }
-
-  console.log('🎯 AppLayout: Rendering layout, isLoggedIn =', isLoggedIn);
 
   return (
     <NavigationThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>

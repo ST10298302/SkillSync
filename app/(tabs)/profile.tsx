@@ -35,17 +35,9 @@ export default function Profile() {
   // Ensure we have valid colors even during initial render
   const themeColors = Colors[safeTheme] || Colors.light;
   
-  // Debug logging
-  console.log('🔧 Profile: Current state - isLoggedIn:', isLoggedIn, 'user:', user?.id);
-  
   const [isLoading, setIsLoading] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
   const [userName, setUserName] = useState<string>('User');
-  
-  // Monitor isLoggedIn state changes
-  React.useEffect(() => {
-    console.log('🔄 Profile: isLoggedIn state changed to:', isLoggedIn);
-  }, [isLoggedIn]);
 
   // Load profile picture URL and user name
   const loadUserData = async () => {
@@ -53,7 +45,6 @@ export default function Profile() {
       try {
         // Load profile picture URL
         const url = await SupabaseService.getProfilePictureUrl(user.id);
-        console.log('🔄 Profile: Loaded profile picture URL:', url);
         setProfilePictureUrl(url || undefined);
 
         // Load user name
@@ -87,7 +78,6 @@ export default function Profile() {
   // Reload user data when screen comes into focus (for profile picture updates)
   useFocusEffect(
     React.useCallback(() => {
-      console.log('🔄 Profile: Screen focused, reloading user data...');
       loadUserData();
     }, [user?.id])
   );
@@ -122,18 +112,15 @@ export default function Profile() {
           onPress: async () => {
             try {
               setIsLoading(true);
-              console.log('🔄 Profile: Starting logout...');
               await signOut();
-              console.log('✅ Profile: Logout successful');
               
               // Force navigation to login screen as backup
               setTimeout(() => {
-                console.log('🔄 Profile: Forcing navigation to login...');
                 router.replace('/(auth)');
               }, 100);
               
             } catch (error) {
-              console.error('❌ Profile: Logout error:', error);
+              console.error('Profile: Logout error:', error);
               Alert.alert('Error', 'Failed to sign out. Please try again.');
             } finally {
               setIsLoading(false);
