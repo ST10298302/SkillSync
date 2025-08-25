@@ -1,23 +1,24 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    Animated,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View
+  Animated,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
-import { useSkills } from '../../context/SkillsContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSkills } from '../../context/SkillsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { calculateUserStreak } from '../../utils/streakCalculator';
 
 /**
- * Enhanced Analytics page with professional Material Design look and feels
+ * Analytics page - Comprehensive learning progress insights and statistics
+ * Features professional Material Design interface with data visualization and trend analysis
  */
 
 
@@ -31,7 +32,7 @@ export default function Analytics() {
   const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
-  // Ensure we have valid colors even during initial render
+  // Ensure we have valid colors even during initial render to prevent crashes
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -62,11 +63,11 @@ export default function Analytics() {
       return sum + (s.totalHours || 0);
     }, 0);
     
-    // Calculate streaks
+    // Calculate learning streaks for motivation tracking
     const currentStreak = calculateUserStreak(skills);
     const maxStreak = Math.max(...skills.map(s => s.streak || 0), 0);
     
-    // Calculate recent activity
+    // Calculate recent learning activity (last 7 days)
     const now = new Date();
     const lastWeek = skills.filter(skill => {
       const lastUpdate = skill.lastUpdated ? new Date(skill.lastUpdated) : null;
@@ -75,7 +76,7 @@ export default function Analytics() {
       return diffDays <= 7;
     }).length;
     
-    // Calculate progress distribution
+    // Calculate progress distribution across different completion ranges
     const progressRanges = {
       '0-25%': skills.filter(s => s.progress >= 0 && s.progress <= 25).length,
       '26-50%': skills.filter(s => s.progress > 25 && s.progress <= 50).length,
@@ -84,7 +85,7 @@ export default function Analytics() {
       '100%': skills.filter(s => s.progress === 100).length,
     };
 
-    // Calculate top skills by hours
+    // Calculate top skills by time investment for priority insights
     const topSkillsByHours = skills
       .filter(s => s.totalHours && s.totalHours > 0)
       .sort((a, b) => (b.totalHours || 0) - (a.totalHours || 0))

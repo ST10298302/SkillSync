@@ -17,6 +17,7 @@ export default function LanguageSelector({ onLanguageChange }: LanguageSelectorP
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
+  // Handle language selection with haptic feedback and error handling
   const handleLanguageChange = async (language: SupportedLanguage) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     

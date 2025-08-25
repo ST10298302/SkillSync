@@ -25,7 +25,8 @@ import { ThemeMode, useTheme } from '../../context/ThemeContext';
 import { SupabaseService } from '../../services/supabaseService';
 
 /**
- * Enhanced Profile page with professional Material Design look and feels
+ * Profile page - User account management, settings, and personal information
+ * Features professional Material Design interface with theme switching and language selection
  */
 export default function Profile() {
   const router = useRouter();
@@ -35,25 +36,25 @@ export default function Profile() {
   const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
-  // Ensure we have valid colors even during initial render
+  // Ensure we have valid colors even during initial render to prevent crashes
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const [isLoading, setIsLoading] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
   const [userName, setUserName] = useState<string>('User');
 
-  // Load profile picture URL and user name
+  // Load user profile data including profile picture and display name
   const loadUserData = React.useCallback(async () => {
     if (user?.id) {
       try {
-        // Load profile picture URL
+        // Load profile picture URL from Supabase storage
         const url = await SupabaseService.getProfilePictureUrl(user.id);
         setProfilePictureUrl(url || undefined);
 
-        // Load user name
+        // Load user profile and extract display name
         const userProfile = await SupabaseService.getUserProfile(user.id);
         if (userProfile?.name) {
-          // Split on whitespace and take only the first name
+          // Extract first name from full name for friendly display
           const firstName = userProfile.name.split(' ')[0];
           const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
           setUserName(capitalizedName);

@@ -21,6 +21,7 @@ export default function RecentActivity({ skills, onSkillPress }: RecentActivityP
   const theme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[theme] || Colors.light;
 
+  // Calculate and sort recent activities by last update time
   const recentActivities = React.useMemo(() => {
     const now = new Date();
     return skills
@@ -34,6 +35,7 @@ export default function RecentActivity({ skills, onSkillPress }: RecentActivityP
       .slice(0, 3);
   }, [skills]);
 
+  // Convert days ago to human-readable time format
   const formatTimeAgo = (daysAgo: number) => {
     if (daysAgo <= 0) return 'Today';
     if (daysAgo === 1) return 'Yesterday';

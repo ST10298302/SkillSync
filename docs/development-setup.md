@@ -1,6 +1,6 @@
 # Development Setup
 
-A comprehensive guide to setting up your development environment for SkillSync, including prerequisites, installation, and configuration.
+A comprehensive guide to setting up your development environment for SkillSync, including prerequisites, installation, configuration, and Supabase setup.
 
 ## Table of Contents
 
@@ -8,9 +8,13 @@ A comprehensive guide to setting up your development environment for SkillSync, 
 2. [Installation](#installation)
 3. [Environment Configuration](#environment-configuration)
 4. [Supabase Setup](#supabase-setup)
-5. [Development Commands](#development-commands)
-6. [VS Code Setup](#vs-code-setup)
-7. [Troubleshooting](#troubleshooting)
+5. [Storage Setup](#storage-setup)
+6. [Development Commands](#development-commands)
+7. [VS Code Setup](#vs-code-setup)
+8. [Troubleshooting](#troubleshooting)
+9. [Testing Your Setup](#testing-your-setup)
+10. [Next Steps](#next-steps)
+11. [Related Documentation](#related-documentation)
 
 ---
 
@@ -85,17 +89,17 @@ touch .env.local
 ```
 
 ### Configure Environment Variables
-Edit `.env.local` with your Supabase credentials:
+Edit `.env.local` with your credentials:
 
 ```bash
 # Supabase Configuration
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Optional: Google Translate API (for translations)
+# Google Translate API (for translations)
 EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key
 
-# Optional: App Configuration
+# App Configuration
 EXPO_PUBLIC_APP_NAME=SkillSync
 EXPO_PUBLIC_APP_VERSION=1.0.0
 ```
@@ -143,7 +147,7 @@ EXPO_PUBLIC_APP_VERSION=1.0.0
 #### Run Schema Scripts
 ```bash
 # Option 1: Using Supabase Dashboard
-# Go to SQL Editor → Run database-schema.sql
+# Go to SQL Editor → Run the schema from database-schema.md
 
 # Option 2: Using psql CLI
 psql -h your-project.supabase.co -U postgres -d postgres -f database-schema.sql
@@ -152,6 +156,8 @@ psql -h your-project.supabase.co -U postgres -d postgres -f database-schema.sql
 supabase db push
 ```
 
+**Note**: See [Database Schema](./database-schema.md) for detailed table structure and relationships.
+
 #### Verify Tables Created
 ```sql
 -- Check if tables exist
@@ -159,27 +165,93 @@ SELECT table_name
 FROM information_schema.tables 
 WHERE table_schema = 'public';
 
--- Should show: profiles, skills, skill_entries, etc.
+-- Should show: users, skills, skill_entries, progress_updates
 ```
 
-### Storage Configuration
+### Authentication Setup
 
-1. **Create Storage Bucket**
-   - Go to Storage → New Bucket
-   - Name: `profile-pictures`
-   - Public: `false`
-   - File size limit: `5MB`
+#### Configure Email Auth
+1. In your Supabase dashboard, go to **Authentication** → **Settings**
+2. Make sure **Email Auth** is enabled
+3. Optionally configure email templates under **Email Templates**
 
-2. **Set Bucket Policies**
-   ```sql
-   -- Allow authenticated users to upload
-   CREATE POLICY "Users can upload profile pictures" ON storage.objects
-   FOR INSERT WITH CHECK (auth.uid()::text = (storage.foldername(name))[1]);
-   
-   -- Allow users to view their own pictures
-   CREATE POLICY "Users can view own profile pictures" ON storage.objects
-   FOR SELECT USING (auth.uid()::text = (storage.foldername(name))[1]);
-   ```
+#### Configure Row Level Security (RLS)
+The SQL schema already includes RLS policies, but verify they're working:
+1. Go to **Authentication** → **Policies**
+2. You should see policies for all tables (users, skills, skill_entries, progress_updates)
+
+---
+
+## Storage Setup
+
+### Create Storage Bucket
+
+1. Go to your Supabase Dashboard
+2. Navigate to **Storage** in the left sidebar
+3. Click **Create a new bucket**
+4. Set the following:
+   - **Name**: `avatars`
+   - **Public bucket**: Check this (allows public read access)
+   - **File size limit**: `5 MB`
+   - **Allowed MIME types**: `image/*`
+
+### Set Up Storage Policies
+
+Run these SQL commands in your Supabase SQL Editor:
+
+#### Enable RLS on storage.objects
+```sql
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+```
+
+#### Allow users to upload their own profile pictures
+```sql
+CREATE POLICY "Users can upload own profile pictures" ON storage.objects
+FOR INSERT WITH CHECK (
+  bucket_id = 'avatars' AND
+  auth.uid()::text = (storage.foldername(name))[1]
+);
+```
+
+#### Allow public read access to profile pictures
+```sql
+CREATE POLICY "Public read access to profile pictures" ON storage.objects
+FOR SELECT USING (bucket_id = 'avatars');
+```
+
+#### Allow users to update their own profile pictures
+```sql
+CREATE POLICY "Users can update own profile pictures" ON storage.objects
+FOR UPDATE USING (
+  bucket_id = 'avatars' AND
+  auth.uid()::text = (storage.foldername(name))[1]
+);
+```
+
+#### Allow users to delete their own profile pictures
+```sql
+CREATE POLICY "Users can delete own profile pictures" ON storage.objects
+FOR DELETE USING (
+  bucket_id = 'avatars' AND
+  auth.uid()::text = (storage.foldername(name))[1]
+);
+```
+
+### Update Database Schema
+
+Run this SQL to add the profile_picture_url column to your users table:
+
+```sql
+-- Add profile_picture_url column to users table
+ALTER TABLE public.users
+ADD COLUMN IF NOT EXISTS profile_picture_url TEXT;
+
+-- Create index for profile_picture_url for better query performance
+CREATE INDEX IF NOT EXISTS idx_users_profile_picture_url ON public.users(profile_picture_url);
+
+-- Add comment to the column for documentation
+COMMENT ON COLUMN public.users.profile_picture_url IS 'URL to the user''s profile picture stored in Supabase Storage';
+```
 
 ---
 
@@ -221,6 +293,8 @@ npm run lint
 
 # Testing
 npm test
+npm run test:watch
+npm run test:coverage
 
 # Clear cache
 npx expo start --clear
@@ -229,14 +303,14 @@ npx expo start --clear
 ### Build Commands
 ```bash
 # Development build
-npx expo build
+npx expo build --profile development
 
 # Platform-specific builds
-npx expo build:ios
-npx expo build:android
+npx expo build:ios --profile development
+npx expo build:android --profile development
 
 # Production build
-npx expo build --release-channel production
+npx expo build --profile production
 ```
 
 ---
@@ -331,6 +405,22 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
+#### Supabase Connection Issues
+```bash
+# Verify API key in .env.local
+# Check that the key is the "anon public" key, not the service role key
+# Make sure RLS policies were created correctly
+# Verify Email Auth is enabled in Supabase
+```
+
+#### Storage Issues
+```bash
+# Check bucket name is exactly "avatars"
+# Verify storage policies were created
+# Check file path format: {userId}/{userId}-{timestamp}.{extension}
+# Ensure user is authenticated when uploading
+```
+
 #### Platform-Specific Issues
 
 ##### iOS
@@ -389,6 +479,14 @@ npm start
 - ✅ Theme switching works
 - ✅ No console errors
 
+### Test Supabase Connection
+```bash
+# 1. Try to sign up with a new account
+# 2. Check Supabase dashboard → Authentication → Users
+# 3. Check Table Editor → users to see if profile was created
+# 4. Try creating a skill and adding diary entries
+```
+
 ---
 
 ## Next Steps
@@ -405,10 +503,10 @@ After successful setup:
    - Test authentication flow
    - Explore the codebase
 
-3. **Join Community**
-   - Follow project updates
-   - Report issues
-   - Contribute improvements
+3. **Customize**
+   - Modify database schema if needed
+   - Add new features
+   - Configure additional services
 
 ---
 

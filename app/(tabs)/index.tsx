@@ -32,7 +32,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { SupabaseService } from '../../services/supabaseService';
 
 /**
- * Home screen with professional Material Design look and feel
+ * Home screen - Main dashboard showing user's skills, progress, and recent activity
+ * Features a professional Material Design interface with search, filtering, and statistics
  */
 export default function Home() {
   const { skills, deleteSkill, refreshSkills } = useSkills();
@@ -42,7 +43,7 @@ export default function Home() {
   const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
-  // Ensure we have valid colors even during initial render
+  // Ensure we have valid colors even during initial render to prevent crashes
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,18 +52,18 @@ export default function Home() {
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
   const [userName, setUserName] = useState<string>('User');
 
-  // Load profile picture URL and user name
+  // Load user profile data including profile picture and display name
   const loadUserData = useCallback(async () => {
     if (user?.id) {
       try {
-        // Load profile picture URL
+        // Load profile picture URL from Supabase storage
         const url = await SupabaseService.getProfilePictureUrl(user.id);
         setProfilePictureUrl(url || undefined);
 
-        // Load user name
+        // Load user profile and extract display name
         const userProfile = await SupabaseService.getUserProfile(user.id);
         if (userProfile?.name) {
-          // Split on whitespace and take only the first name
+          // Extract first name from full name for friendly display
           const firstName = userProfile.name.split(' ')[0];
           const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
           setUserName(capitalizedName);
@@ -94,9 +95,11 @@ export default function Home() {
     }, [loadUserData])
   );
   
+  // Animation values for smooth entrance effects
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
 
+  // Animate content entrance with fade-in and slide-up effects
   React.useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -112,11 +115,13 @@ export default function Home() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
+  // Navigate to skill creation screen with haptic feedback
   const handleAddSkill = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push('/skill/new');
   };
 
+  // Refresh skills data with loading state and haptic feedback
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -130,6 +135,7 @@ export default function Home() {
     }
   }, [refreshSkills]);
 
+  // Filter skills based on search query and completion status
   const filteredSkills = skills.filter(skill => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -139,6 +145,7 @@ export default function Home() {
     return matchesSearch;
   });
 
+  // Calculate dashboard statistics from skills data
   const getStats = () => {
     const total = skills.length;
     const completed = skills.filter(s => s.progress >= 100).length;
@@ -150,7 +157,7 @@ export default function Home() {
 
   const stats = getStats();
   
-  // Get screen dimensions for responsive design
+  // Get screen dimensions for responsive design and layout adjustments
   const { height } = Dimensions.get('window');
   const isSmallScreen = height < 800; // iPhone 16 threshold
   const isVerySmallScreen = height < 750; // Very small screen threshold

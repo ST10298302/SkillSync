@@ -41,14 +41,15 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
+  // Update local image URL when prop changes and verify URL accessibility
   React.useEffect(() => {
     setLocalImageUrl(imageUrl);
     
-    // Test if the URL is accessible
+    // Verify the image URL is still accessible by making a HEAD request
     if (imageUrl) {
       fetch(imageUrl, { method: 'HEAD' })
         .then(response => {
-          // URL is accessible
+          // URL is accessible, no action needed
         })
         .catch(error => {
           console.error('ProfilePicture: URL is not accessible:', error);
@@ -98,6 +99,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     pulseAnim.setValue(1);
   };
 
+  // Request appropriate permissions for camera or photo library access
   const requestPermissions = async (forCamera: boolean = false) => {
     if (Platform.OS !== 'web') {
       let permissionResult;
@@ -120,6 +122,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     return true;
   };
 
+  // Open photo library picker and handle selected image
   const pickImage = async () => {
     if (!editable) return;
 
@@ -142,6 +145,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     }
   };
 
+  // Launch camera to take a new photo for profile picture
   const takePhoto = async () => {
     if (!editable) return;
 
@@ -164,6 +168,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
     }
   };
 
+  // Upload selected image to Supabase storage and update profile
   const uploadImage = async (uri: string) => {
     try {
       setIsUploading(true);

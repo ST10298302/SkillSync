@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState, forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { Platform, StyleSheet, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 import Animated, {
   interpolate,
@@ -38,6 +38,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
   const focusAnim = useSharedValue(0);
   const scaleAnim = useSharedValue(1);
 
+  // Handle input focus with smooth animations and state updates
   const handleFocus = (e: any) => {
     setIsFocused(true);
     focusAnim.value = withTiming(1, { duration: 200 });
@@ -45,6 +46,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
     onFocus?.(e);
   };
 
+  // Handle input blur with smooth animations and state updates
   const handleBlur = (e: any) => {
     setIsFocused(false);
     focusAnim.value = withTiming(0, { duration: 200 });
@@ -52,6 +54,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
     onBlur?.(e);
   };
 
+  // Create animated scale transform for focus effect
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -66,7 +69,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
     };
   });
 
-  // Dynamic styles that adapt to theme
+  // Dynamic styles that adapt to theme and focus state
   const containerStyle = {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,

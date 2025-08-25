@@ -38,14 +38,14 @@ export default function SkillCard({
   const [translatedName, setTranslatedName] = useState(name);
   const [translatedDescription, setTranslatedDescription] = useState(description || '');
 
-  // ---- Animations (Unit_Tests branch) ----
+  // Animation values for interactive feedback and visual effects
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const flameAnim = useRef(new Animated.Value(1)).current;
   const deleteAnim = useRef(new Animated.Value(1)).current;
 
-  // subtle flame/pulse loop if there's a streak
+  // Create subtle animation loops for skills with active streaks to show momentum
   useEffect(() => {
     if (streak > 0) {
       const loop = Animated.loop(
@@ -116,7 +116,7 @@ export default function SkillCard({
     ]).start(() => handleDelete());
   };
 
-  // Translate content when language changes - FOR DISPLAY ONLY
+  // Automatically translate skill content when user changes language (display only, not stored)
   useEffect(() => {
     const translateContent = async () => {
       if (currentLanguage !== 'en') {
@@ -155,17 +155,18 @@ export default function SkillCard({
     return `${Math.floor(diffDays / 30)} months ago`;
   };
 
-  // ---- Progress helpers (main branch logic, with clamp) ----
+  // Calculate progress values and colors with safety bounds
   const progressPercentage = Math.min(Math.max(typeof progress === 'number' ? progress : 0, 0), 100);
   const progressColor = progressPercentage >= 100 ? themeColors.success : themeColors.accent;
   const accentGold = (themeColors as any)?.accentGold ?? themeColors.accent;
 
-  // ---- Styles (main + Unit_Tests union) ----
+  // Component styling with theme-aware colors and consistent spacing
   const styles = StyleSheet.create({
-    // Unit_Tests wrappers
+    // Container wrapper for consistent width
     container: {
       width: '100%',
     },
+    // Touchable area with shadow effects
     touchable: {
       borderRadius: BorderRadius.xl,
       shadowOffset: { width: 0, height: 4 },
@@ -174,7 +175,7 @@ export default function SkillCard({
       elevation: 4,
     },
 
-    // Card
+    // Main card container with border and shadow
     card: {
       backgroundColor: themeColors.background,
       borderRadius: BorderRadius.xl,
@@ -286,12 +287,12 @@ export default function SkillCard({
       overflow: 'hidden',
       marginLeft: Spacing.sm,
     },
-    // Unit_Tests used "progressBar" as the inner fill
+    // Progress bar fill element (inner bar showing completion)
     progressBar: {
       height: '100%',
       borderRadius: BorderRadius.round,
     },
-    // main kept for compatibility
+    // Alternative progress fill for compatibility
     progressFill: {
       height: '100%',
       borderRadius: BorderRadius.round,
@@ -347,7 +348,7 @@ export default function SkillCard({
     },
   });
 
-  // ---- Final merged return (animated Unit_Tests UI + main sections) ----
+  // Render the skill card with animations and interactive elements
   return (
     <Animated.View
       style={[styles.container, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}

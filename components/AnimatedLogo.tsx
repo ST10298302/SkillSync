@@ -24,8 +24,9 @@ export default function AnimatedLogo({
   const wiggleAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
+  // Set up logo animations on component mount
   useEffect(() => {
-    // Initial scale animation
+    // Initial scale animation for entrance effect
     Animated.spring(scaleAnim, {
       toValue: 1,
       tension: 50,
@@ -33,9 +34,9 @@ export default function AnimatedLogo({
       useNativeDriver: true,
     }).start();
 
-    // Continuous bounce and wiggle animation
+    // Start continuous bounce and wiggle animations
     const startAnimations = () => {
-      // Bounce animation
+      // Continuous bounce animation for playful movement
       Animated.loop(
         Animated.sequence([
           Animated.timing(bounceAnim, {
@@ -51,7 +52,7 @@ export default function AnimatedLogo({
         ])
       ).start();
 
-      // Wiggle animation
+      // Continuous wiggle animation for dynamic rotation
       Animated.loop(
         Animated.sequence([
           Animated.timing(wiggleAnim, {
@@ -73,7 +74,7 @@ export default function AnimatedLogo({
       ).start();
     };
 
-    // Start animations after a short delay
+    // Start animations after a short delay for better user experience
     const timer = setTimeout(startAnimations, 500);
     return () => clearTimeout(timer);
   }, [bounceAnim, wiggleAnim, scaleAnim, bounceIntensity, wiggleIntensity, animationDuration]);
