@@ -12,6 +12,7 @@ import {
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useSkills } from '../../context/SkillsContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { calculateUserStreak } from '../../utils/streakCalculator';
 
@@ -27,6 +28,7 @@ import { calculateUserStreak } from '../../utils/streakCalculator';
 export default function Analytics() {
   const { skills } = useSkills();
   const { resolvedTheme } = useTheme();
+  const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
   // Ensure we have valid colors even during initial render
@@ -441,24 +443,24 @@ export default function Analytics() {
             <View style={styles.headerIconContainer}>
               <Ionicons name="analytics" size={40} color={themeColors.text} />
             </View>
-            <Text style={styles.headerTitle}>Analytics</Text>
-            <Text style={styles.headerSubtitle}>Your learning insights and progress</Text>
+            <Text style={styles.headerTitle}>{t('analytics')}</Text>
+            <Text style={styles.headerSubtitle}>{t('learningInsights')}</Text>
           </View>
         </Animated.View>
 
         {/* Enhanced Key Metrics */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Key Metrics</Text>
+          <Text style={styles.sectionTitle}>{t('progressOverview')}</Text>
           <View style={styles.metricsGrid}>
             <StatCard 
-              title="Total Skills" 
+              title={t('totalSkills')} 
               value={analytics.total} 
               icon="library-outline" 
               color={Colors[safeTheme].accent}
               trend="up"
             />
             <StatCard 
-              title="Completed" 
+              title={t('completed')} 
               value={analytics.completed} 
               subtitle={`${analytics.total > 0 ? Math.round((analytics.completed / analytics.total) * 100) : 0}% of total`}
               icon="checkmark-circle-outline" 
@@ -466,14 +468,14 @@ export default function Analytics() {
               trend="up"
             />
             <StatCard 
-              title="Avg Progress" 
+              title={t('averageProgress')} 
               value={`${analytics.averageProgress}%`} 
               icon="trending-up-outline" 
               color={Colors[safeTheme].warning}
               trend="up"
             />
             <StatCard 
-              title="Total Entries" 
+              title={t('totalEntries')} 
               value={analytics.totalEntries} 
               icon="document-text-outline" 
               color={Colors[safeTheme].info}
@@ -484,7 +486,7 @@ export default function Analytics() {
 
         {/* Top Skills by Hours */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Top Skills by Hours</Text>
+          <Text style={styles.sectionTitle}>{t('mostActiveSkill')}</Text>
           <View style={styles.topSkillsCard}>
             {analytics.topSkillsByHours.map((skill, index) => (
               <View key={skill.id} style={styles.skillItem}>
@@ -494,7 +496,7 @@ export default function Analytics() {
             ))}
             {analytics.topSkillsByHours.length === 0 && (
               <Text style={[styles.skillName, { textAlign: 'center', opacity: 0.6 }]}>
-                No skills with logged hours yet
+                {t('noDataAvailable')}
               </Text>
             )}
           </View>
@@ -502,7 +504,7 @@ export default function Analytics() {
 
         {/* Enhanced Activity Insights */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Activity Insights</Text>
+          <Text style={styles.sectionTitle}>{t('recentActivity')}</Text>
           <View style={styles.insightsCard}>
             <View style={styles.insightRow}>
               <View style={styles.insightLeft}>
@@ -527,7 +529,7 @@ export default function Analytics() {
                 <View style={[styles.insightIcon, { backgroundColor: Colors[safeTheme].info + '15' }]}>
                   <Ionicons name="time" size={20} color={Colors[safeTheme].info} />
                 </View>
-                <Text style={styles.insightTitle}>Recent Activity</Text>
+                <Text style={styles.insightTitle}>{t('recentActivity')}</Text>
               </View>
               <Text style={styles.insightValue}>{analytics.lastWeek} skills updated</Text>
             </View>
@@ -536,7 +538,7 @@ export default function Analytics() {
                 <View style={[styles.insightIcon, { backgroundColor: Colors[safeTheme].accent + '15' }]}>
                   <Ionicons name="hourglass" size={20} color={Colors[safeTheme].accent} />
                 </View>
-                <Text style={styles.insightTitle}>Total Hours</Text>
+                <Text style={styles.insightTitle}>{t('totalHours')}</Text>
               </View>
               <Text style={styles.insightValue}>{analytics.totalHours}h logged</Text>
             </View>
@@ -545,7 +547,7 @@ export default function Analytics() {
 
         {/* Enhanced Progress Distribution */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Progress Distribution</Text>
+          <Text style={styles.sectionTitle}>{t('skillBreakdown')}</Text>
           <View style={styles.distributionCard}>
             {Object.entries(analytics.progressRanges).map(([range, count]) => (
               <ProgressRangeCard 

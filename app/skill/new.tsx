@@ -20,6 +20,7 @@ import {
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useSkills } from '../../context/SkillsContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 /**
  * Enhanced new skill creation page with modern design and form validation
@@ -27,6 +28,7 @@ import { useSkills } from '../../context/SkillsContext';
 export default function NewSkill() {
   const router = useRouter();
   const { addSkill } = useSkills();
+  const { t } = useLanguage();
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -154,8 +156,8 @@ export default function NewSkill() {
                     <Ionicons name="close" size={24} color={Colors.light.text} />
                   </TouchableOpacity>
                   <View style={styles.headerInfo}>
-                    <Text style={styles.headerTitle}>Add New Skill</Text>
-                    <Text style={styles.headerSubtitle}>Track your learning progress</Text>
+                    <Text style={styles.headerTitle}>{t('addNewSkill')}</Text>
+                    <Text style={styles.headerSubtitle}>{t('trackYourLearningProgress')}</Text>
                   </View>
                 </View>
               </LinearGradient>
@@ -178,14 +180,14 @@ export default function NewSkill() {
 
                 {/* Skill Name Input */}
                 <View style={styles.inputField}>
-                  <Text style={styles.inputLabel}>Skill Name</Text>
+                  <Text style={styles.inputLabel}>{t('skillName')}</Text>
                   <View style={[styles.inputContainer, errors.name && styles.inputContainerError]}>
                     <TextInput
                       ref={nameInputRef}
                       style={styles.input}
                       value={name}
                       onChangeText={setName}
-                      placeholder="e.g., React Native, Guitar, Spanish"
+                      placeholder={t('skillNamePlaceholder')}
                       placeholderTextColor={Colors.light.textSecondary}
                       autoCapitalize="words"
                       autoCorrect={false}
@@ -204,14 +206,14 @@ export default function NewSkill() {
 
                 {/* Description Input */}
                 <View style={styles.inputField}>
-                  <Text style={styles.inputLabel}>Description (Optional)</Text>
+                  <Text style={styles.inputLabel}>{t('description')} (Optional)</Text>
                   <View style={[styles.inputContainer, errors.description && styles.inputContainerError]}>
                     <TextInput
                       ref={descriptionInputRef}
                       style={[styles.input, styles.inputMultiline]}
                       value={description}
                       onChangeText={setDescription}
-                      placeholder="Describe what you want to learn..."
+                      placeholder={t('descriptionPlaceholder')}
                       placeholderTextColor={Colors.light.textSecondary}
                       multiline={true}
                       autoCapitalize="sentences"
@@ -262,7 +264,7 @@ export default function NewSkill() {
                 style={styles.cancelButton}
                 onPress={handleCancel}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -279,12 +281,12 @@ export default function NewSkill() {
                   {isLoading ? (
                     <View style={styles.loadingContainer}>
                       <Animated.View style={[styles.loadingSpinner, { transform: [{ rotate: '360deg' }] }]} />
-                      <Text style={styles.loadingText}>Creating...</Text>
+                      <Text style={styles.loadingText}>{t('creatingSkill')}</Text>
                     </View>
                   ) : (
                     <>
                       <Ionicons name="add-circle" size={20} color={Colors.light.text} />
-                      <Text style={styles.createButtonText}>Create Skill</Text>
+                      <Text style={styles.createButtonText}>{t('createSkill')}</Text>
                     </>
                   )}
                 </LinearGradient>
