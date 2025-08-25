@@ -3,21 +3,23 @@ import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Animated,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
+import LanguageSelector from '../../components/LanguageSelector';
 import Logo from '../../components/Logo';
 import ProfilePicture from '../../components/ProfilePicture';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSkills } from '../../context/SkillsContext';
 import { ThemeMode, useTheme } from '../../context/ThemeContext';
 import { SupabaseService } from '../../services/supabaseService';
@@ -30,22 +32,15 @@ export default function Profile() {
   const { signOut, user, isLoggedIn } = useAuth();
   const { skills } = useSkills();
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
   // Ensure we have valid colors even during initial render
   const themeColors = Colors[safeTheme] || Colors.light;
   
-  // Debug logging
-  console.log('🔧 Profile: Current state - isLoggedIn:', isLoggedIn, 'user:', user?.id);
-  
   const [isLoading, setIsLoading] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
   const [userName, setUserName] = useState<string>('User');
-  
-  // Monitor isLoggedIn state changes
-  React.useEffect(() => {
-    console.log('🔄 Profile: isLoggedIn state changed to:', isLoggedIn);
-  }, [isLoggedIn]);
 
   // Load profile picture URL and user name
   const loadUserData = async () => {
@@ -53,7 +48,6 @@ export default function Profile() {
       try {
         // Load profile picture URL
         const url = await SupabaseService.getProfilePictureUrl(user.id);
-        console.log('🔄 Profile: Loaded profile picture URL:', url);
         setProfilePictureUrl(url || undefined);
 
         // Load user name
@@ -87,7 +81,6 @@ export default function Profile() {
   // Reload user data when screen comes into focus (for profile picture updates)
   useFocusEffect(
     React.useCallback(() => {
-      console.log('🔄 Profile: Screen focused, reloading user data...');
       loadUserData();
     }, [user?.id])
   );
@@ -112,29 +105,26 @@ export default function Profile() {
   const handleLogout = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
-      'Sign Out',
+      t('signOut'),
       'Are you sure you want to sign out?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         { 
-          text: 'Sign Out', 
+          text: t('signOut'), 
           style: 'destructive',
           onPress: async () => {
             try {
               setIsLoading(true);
-              console.log('🔄 Profile: Starting logout...');
               await signOut();
-              console.log('✅ Profile: Logout successful');
               
               // Force navigation to login screen as backup
               setTimeout(() => {
-                console.log('🔄 Profile: Forcing navigation to login...');
                 router.replace('/(auth)');
               }, 100);
               
             } catch (error) {
-              console.error('❌ Profile: Logout error:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
+              console.error('Profile: Logout error:', error);
+              Alert.alert(t('error'), 'Failed to sign out. Please try again.');
             } finally {
               setIsLoading(false);
             }
@@ -534,7 +524,7 @@ export default function Profile() {
                  <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
                  <View style={styles.profileBadge}>
                    <Ionicons name="checkmark-circle" size={16} color={themeColors.success} />
-                   <Text style={styles.profileBadgeText}>Active Account</Text>
+                   <Text style={styles.profileBadgeText}>{t('activeAccount')}</Text>
                  </View>
                </View>
              </View>
@@ -543,28 +533,28 @@ export default function Profile() {
 
         {/* Enhanced Statistics */}
         <Animated.View style={[styles.statsSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Your Progress</Text>
+          <Text style={styles.sectionTitle}>{t('yourProgress')}</Text>
           <View style={styles.statsGrid}>
             <StatCard 
-              title="Total Skills" 
+              title={t('totalSkills')} 
               value={stats.total} 
               icon="library-outline" 
               color={themeColors.accent} 
             />
             <StatCard 
-              title="Completed" 
+              title={t('completed')} 
               value={stats.completed} 
               icon="checkmark-circle-outline" 
               color={themeColors.success} 
             />
             <StatCard 
-              title="Avg Progress" 
+              title={t('avgProgress')} 
               value={`${stats.averageProgress}%`} 
               icon="trending-up-outline" 
               color={themeColors.warning} 
             />
             <StatCard 
-              title="Total Entries" 
+              title={t('totalEntries')} 
               value={stats.totalEntries} 
               icon="document-text-outline" 
               color={themeColors.info} 
@@ -574,17 +564,21 @@ export default function Profile() {
 
         {/* Enhanced Menu Items */}
         <Animated.View style={[styles.menuSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Settings</Text>
+          <Text style={styles.sectionTitle}>{t('settings')}</Text>
           
           <View style={styles.menuCard}>
             {/* Theme Toggle UI */}
             <View style={styles.themeToggleContainer}>
-              <Text style={styles.themeToggleTitle}>Theme</Text>
+              <Text style={styles.themeToggleTitle}>{t('theme')}</Text>
               <ThemeToggle />
             </View>
+            
+            {/* Language Selector */}
+            <LanguageSelector />
+            
             <MenuItem
-              title="Account Settings"
-              subtitle="Manage your account information"
+              title={t('accountSettings')}
+              subtitle={t('manageAccountInfo')}
               icon="person-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -592,39 +586,48 @@ export default function Profile() {
               }}
             />
             <MenuItem
-              title="Notifications"
-              subtitle="Configure notification preferences"
+              title={t('notifications')}
+              subtitle={t('configureNotifications')}
               icon="notifications-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to notifications settings
+                router.push('../settings/notifications' as any);
               }}
             />
             <MenuItem
-              title="Privacy & Security"
-              subtitle="Manage your privacy settings"
+              title={t('privacySecurity')}
+              subtitle={t('managePrivacy')}
               icon="shield-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to privacy settings
+                router.push('../settings/privacy-security' as any);
               }}
             />
             <MenuItem
-              title="Help & Support"
-              subtitle="Get help and contact support"
+              title={t('helpSupport')}
+              subtitle={t('getHelp')}
               icon="help-circle-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to help section
+                router.push('../settings/help-support' as any);
               }}
             />
             <MenuItem
-              title="About SkillSync"
-              subtitle="Version 1.0.0"
+              title={t('aboutSkillSync')}
+              subtitle={t('version')}
               icon="information-circle-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Show about modal
+                router.push('../settings/about' as any);
+              }}
+            />
+            <MenuItem
+              title={t('language')}
+              subtitle="Change the app language"
+              icon="language-outline"
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                // TODO: Navigate to language settings
               }}
             />
           </View>
@@ -632,12 +635,12 @@ export default function Profile() {
 
         {/* Enhanced Danger Zone */}
         <Animated.View style={[styles.dangerSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>{t('account')}</Text>
           
           <View style={styles.menuCard}>
             <MenuItem
-              title={isLoading ? "Signing Out..." : "Sign Out"}
-              subtitle="Sign out of your account"
+              title={isLoading ? t('signingOut') : t('signOut')}
+              subtitle={t('signOutAccount')}
               icon="log-out-outline"
               onPress={handleLogout}
               destructive={true}

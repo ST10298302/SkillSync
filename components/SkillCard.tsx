@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
+import { useLanguage } from '../context/LanguageContext';
 import { useColorScheme } from '../hooks/useColorScheme';
 
 interface SkillCardProps {
@@ -10,423 +11,454 @@ interface SkillCardProps {
   progress: number;
   description?: string;
   onPress: () => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   lastUpdated?: string;
   totalEntries?: number;
   streak?: number;
 }
 
-/**
- * Enhanced skill card with modern design, animations, and rich information display
- */
-const SkillCard: React.FC<SkillCardProps> = ({ 
+export default function SkillCard({
   id,
-  name, 
-  progress, 
-  description, 
+  name,
+  progress,
+  description,
   onPress,
   onEdit,
   onDelete,
   lastUpdated,
   totalEntries = 0,
-  streak = 0
-}) => {
-  const theme = useColorScheme() ?? 'light';
+  streak = 0,
+}: SkillCardProps) {
+  const theme = useColorScheme();
   const safeTheme = theme === 'light' || theme === 'dark' ? theme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
-  
-  // Animation refs
-  const scaleAnim = React.useRef(new Animated.Value(1)).current;
-  const opacityAnim = React.useRef(new Animated.Value(1)).current;
-  const flameAnim = React.useRef(new Animated.Value(1)).current;
-  const pulseAnim = React.useRef(new Animated.Value(1)).current;
-  const deleteAnim = React.useRef(new Animated.Value(1)).current;
 
-  // Flame animation
-  React.useEffect(() => {
+  const { translateText, currentLanguage, t } = useLanguage();
+  const [translatedName, setTranslatedName] = useState(name);
+  const [translatedDescription, setTranslatedDescription] = useState(description || '');
+
+  // ---- Animations (Unit_Tests branch) ----
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const flameAnim = useRef(new Animated.Value(1)).current;
+  const deleteAnim = useRef(new Animated.Value(1)).current;
+
+  // subtle flame/pulse loop if there's a streak
+  useEffect(() => {
     if (streak > 0) {
-      const flameSequence = Animated.sequence([
-        Animated.timing(flameAnim, {
-          toValue: 1.2,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(flameAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]);
-      
-      const pulseSequence = Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]);
-
-      Animated.loop(Animated.parallel([
-        Animated.loop(flameSequence),
-        Animated.loop(pulseSequence, { iterations: -1, resetBeforeIteration: true }),
-      ])).start();
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.08, duration: 900, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        ])
+      );
+      const flameLoop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(flameAnim, { toValue: 1.06, duration: 700, useNativeDriver: true }),
+          Animated.timing(flameAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+        ])
+      );
+      loop.start();
+      flameLoop.start();
+      return () => {
+        loop.stop();
+        flameLoop.stop();
+      };
     }
-  }, [streak, flameAnim, pulseAnim]);
+  }, [streak, pulseAnim, flameAnim]);
 
   const handlePressIn = () => {
     Animated.parallel([
-      Animated.timing(scaleAnim, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0.8,
-        duration: 100,
-        useNativeDriver: true,
-      }),
+      Animated.timing(scaleAnim, { toValue: 0.98, duration: 120, useNativeDriver: true }),
+      Animated.timing(opacityAnim, { toValue: 0.95, duration: 120, useNativeDriver: true }),
     ]).start();
   };
 
   const handlePressOut = () => {
     Animated.parallel([
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 120, useNativeDriver: true }),
+      Animated.timing(opacityAnim, { toValue: 1, duration: 120, useNativeDriver: true }),
     ]).start();
   };
 
+  const handleEdit = () => {
+    onEdit(id);
+  };
+
   const handleEditPress = () => {
-    if (onEdit) {
-      onEdit(id);
-    }
+    Animated.sequence([
+      Animated.timing(scaleAnim, { toValue: 0.97, duration: 80, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 120, useNativeDriver: true }),
+    ]).start(() => handleEdit());
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      t('delete'),
+      `${t('delete')} "${translatedName}"?`,
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('delete'),
+          style: 'destructive',
+          onPress: () => onDelete(id),
+        },
+      ]
+    );
   };
 
   const handleDeletePress = () => {
     Animated.sequence([
-      Animated.timing(deleteAnim, {
-        toValue: 0.8,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(deleteAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    Alert.alert(
-      'Delete Skill',
-      `Are you sure you want to delete "${name}"? This action cannot be undone.`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            if (onDelete) {
-              onDelete(id);
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+      Animated.timing(deleteAnim, { toValue: 0.9, duration: 80, useNativeDriver: true }),
+      Animated.spring(deleteAnim, { toValue: 1, useNativeDriver: true }),
+    ]).start(() => handleDelete());
   };
 
-  const formatLastUpdated = (dateString?: string) => {
-    if (!dateString) {
-      return 'Never';
-    }
-    
+  // Translate content when language changes - FOR DISPLAY ONLY
+  useEffect(() => {
+    const translateContent = async () => {
+      if (currentLanguage !== 'en') {
+        try {
+          const nameToTranslate = name && name.trim() ? name.trim() : 'Skill';
+          const descToTranslate = description && description.trim() ? description.trim() : '';
+
+          const translatedNameResult = await translateText(nameToTranslate);
+          const translatedDescResult = descToTranslate ? await translateText(descToTranslate) : '';
+
+          setTranslatedName(translatedNameResult || nameToTranslate);
+          setTranslatedDescription(translatedDescResult || descToTranslate);
+        } catch (error) {
+          console.error('Translation failed:', error);
+          setTranslatedName(name || 'Skill');
+          setTranslatedDescription(description || '');
+        }
+      } else {
+        setTranslatedName(name || 'Skill');
+        setTranslatedDescription(description || '');
+      }
+    };
+
+    translateContent();
+  }, [name, description, currentLanguage, translateText]);
+
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    
-    if (isNaN(date.getTime())) {
-      return 'Unknown';
-    }
-    
     const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInDays < 7) return `${diffInDays}d ago`;
-    return date.toLocaleDateString();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) return `1 ${t('daysAgo')}`;
+    if (diffDays < 7) return `${diffDays} ${t('daysAgo')}`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return `${Math.floor(diffDays / 30)} months ago`;
   };
 
+  // ---- Progress helpers (main branch logic, with clamp) ----
+  const progressPercentage = Math.min(Math.max(typeof progress === 'number' ? progress : 0, 0), 100);
+  const progressColor = progressPercentage >= 100 ? themeColors.success : themeColors.accent;
+  const accentGold = (themeColors as any)?.accentGold ?? themeColors.accent;
+
+  // ---- Styles (main + Unit_Tests union) ----
+  const styles = StyleSheet.create({
+    // Unit_Tests wrappers
+    container: {
+      width: '100%',
+    },
+    touchable: {
+      borderRadius: BorderRadius.xl,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+
+    // Card
+    card: {
+      backgroundColor: themeColors.background,
+      borderRadius: BorderRadius.xl,
+      padding: Spacing.lg,
+      marginBottom: Spacing.md,
+      shadowColor: (themeColors as any)?.shadow?.medium ?? '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+    },
+
+    // Header / Title row
+    header: {
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'stretch',
+      marginBottom: Spacing.md,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: Spacing.sm,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+    },
+    titleContainer: {
+      flex: 1,
+      marginRight: Spacing.sm,
+    },
+
+    // Text
+    name: {
+      ...Typography.h3,
+      color: themeColors.text,
+      marginBottom: Spacing.xs,
+      fontWeight: '600',
+      maxWidth: '80%',
+    },
+    description: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      lineHeight: 18,
+    },
+
+    // Actions
+    actions: {
+      flexDirection: 'row',
+      gap: Spacing.xs,
+    },
+    actionButton: {
+      width: 32,
+      height: 32,
+      borderRadius: BorderRadius.round,
+      backgroundColor: themeColors.backgroundSecondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: themeColors.border,
+    },
+    editButton: {
+      width: 28,
+      height: 28,
+      borderRadius: BorderRadius.round,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: themeColors.accent + '40',
+    },
+    deleteButton: {
+      width: 28,
+      height: 28,
+      borderRadius: BorderRadius.round,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: themeColors.error + '40',
+    },
+
+    // Progress
+    progressContainer: {
+      marginBottom: Spacing.md,
+    },
+    progressSection: {
+      marginTop: Spacing.xs,
+    },
+    progressHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.xs,
+    },
+    progressText: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      fontWeight: '500',
+    },
+    progressBarContainer: {
+      width: 140,
+      height: 8,
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.round,
+      overflow: 'hidden',
+      marginLeft: Spacing.sm,
+    },
+    // Unit_Tests used "progressBar" as the inner fill
+    progressBar: {
+      height: '100%',
+      borderRadius: BorderRadius.round,
+    },
+    // main kept for compatibility
+    progressFill: {
+      height: '100%',
+      borderRadius: BorderRadius.round,
+    },
+
+    // Streak pill
+    streakContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+      height: 24,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: accentGold + '40',
+      marginRight: Spacing.xs,
+      gap: 4,
+    },
+    streakText: {
+      ...Typography.caption,
+      fontWeight: '700',
+    },
+
+    // Stats & footer (from main)
+    stats: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: Spacing.sm,
+    },
+    stat: { alignItems: 'center' },
+    statValue: {
+      ...Typography.h4,
+      color: themeColors.text,
+      fontWeight: '700',
+    },
+    statLabel: {
+      ...Typography.caption,
+      color: themeColors.textSecondary,
+      marginTop: 2,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: Spacing.md,
+      paddingTop: Spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: themeColors.borderSecondary,
+    },
+    lastUpdated: {
+      ...Typography.caption,
+      color: themeColors.textTertiary,
+    },
+  });
+
+  // ---- Final merged return (animated Unit_Tests UI + main sections) ----
   return (
-    <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}> 
+    <Animated.View
+      style={[styles.container, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}
+    >
       <TouchableOpacity
-        style={[styles.touchable, { shadowColor: themeColors.shadow.medium }]}
+        style={[styles.touchable, { shadowColor: (themeColors as any)?.shadow?.medium ?? '#000' }]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.9}
       >
         <View
-          style={[styles.card, { borderColor: themeColors.border, backgroundColor: themeColors.background }]}
+          style={[
+            styles.card,
+            { borderColor: themeColors.border, backgroundColor: themeColors.background },
+          ]}
         >
           {/* Header Section */}
           <View style={styles.header}>
             <View style={styles.titleRow}>
-              <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
-                {name}
-              </Text>
-              <View style={styles.headerActions}>
-                {streak > 0 && (
-                  <Animated.View 
-                    style={[
-                      styles.streakContainer, 
-                      { 
-                        backgroundColor: themeColors.accentGold + '20',
-                        transform: [{ scale: flameAnim }]
-                      }
-                    ]}
-                  > 
-                    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                      <Ionicons name="flame" size={16} color={themeColors.accentGold} />
-                    </Animated.View>
-                    <Text style={[styles.streakText, { color: themeColors.accentGold }]}>
-                      {streak}
-                    </Text>
-                  </Animated.View>
-                )}
-                {onEdit && (
-                  <TouchableOpacity
-                    testID="edit-button"
-                    style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
-                    onPress={handleEditPress}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="create-outline" size={16} color={themeColors.accent} />
-                  </TouchableOpacity>
-                )}
-                {onDelete && (
-                  <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
-                    <TouchableOpacity
-                      testID="delete-button"
-                      style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
-                      onPress={handleDeletePress}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name="trash-outline" size={16} color={themeColors.error} />
-                    </TouchableOpacity>
-                  </Animated.View>
+              <View style={styles.titleContainer}>
+                <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
+                  {translatedName || ' '}
+                </Text>
+                {!!translatedDescription && (
+                  <Text style={styles.description} numberOfLines={2}>
+                    {translatedDescription}
+                  </Text>
                 )}
               </View>
+
+              <View style={styles.headerActions}>
+                {streak > 0 && (
+                  <Animated.View
+                    style={[
+                      styles.streakContainer,
+                      {
+                        backgroundColor: accentGold + '20',
+                        transform: [{ scale: flameAnim }],
+                      },
+                    ]}
+                  >
+                    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                      <Ionicons name="flame" size={16} color={accentGold} />
+                    </Animated.View>
+                    <Text style={[styles.streakText, { color: accentGold }]}>{streak}</Text>
+                  </Animated.View>
+                )}
+
+                <TouchableOpacity
+                  testID="edit-button"
+                  style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
+                  onPress={handleEditPress}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="create-outline" size={16} color={themeColors.accent} />
+                </TouchableOpacity>
+
+                <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
+                  <TouchableOpacity
+                    testID="delete-button"
+                    style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
+                    onPress={handleDeletePress}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="trash-outline" size={16} color={themeColors.error} />
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
             </View>
-            
+
             {/* Progress Section */}
             <View style={styles.progressSection}>
               <View style={styles.progressHeader}>
                 <Text style={[styles.progressText, { color: themeColors.textSecondary }]}>
-                  {progress}% Complete
+                  {progressPercentage >= 100 ? t('complete') : `${progressPercentage}%`} {t('progress')}
                 </Text>
                 <View style={styles.progressBarContainer}>
-                  <View style={[styles.progressBar, { width: `${progress}%`, backgroundColor: themeColors.accent }]}> 
-                  </View>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      { width: `${progressPercentage}%`, backgroundColor: progressColor },
+                    ]}
+                  />
                 </View>
               </View>
             </View>
           </View>
 
-          {/* Description Section */}
-          {description && (
-            <View style={styles.descriptionSection}>
-              <Text style={[styles.description, { color: themeColors.textSecondary }]} numberOfLines={2}>
-                {description}
+          {/* Stats */}
+          <View style={styles.stats}>
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{totalEntries}</Text>
+              <Text style={styles.statLabel}>{t('entries')}</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{streak}</Text>
+              <Text style={styles.statLabel}>{t('streak')}</Text>
+            </View>
+          </View>
+
+          {/* Footer */}
+          {!!lastUpdated && (
+            <View style={styles.footer}>
+              <Text style={styles.lastUpdated}>
+                {t('lastUpdated')}: {formatDate(lastUpdated)}
               </Text>
             </View>
           )}
-
-          {/* Footer Section */}
-          <View style={styles.footer}>
-            <View style={styles.metaRow}>
-              <View style={styles.metaContainer}>
-                <Ionicons name="time-outline" size={14} color={themeColors.textSecondary} />
-                <Text style={[styles.metaText, { color: themeColors.textSecondary }]}>
-                  {formatLastUpdated(lastUpdated)}
-                </Text>
-              </View>
-              <View style={styles.metaContainer}>
-                <Ionicons name="document-text-outline" size={14} color={themeColors.textSecondary} />
-                <Text style={[styles.metaText, { color: themeColors.textSecondary }]}>
-                  {totalEntries} entries
-                </Text>
-              </View>
-            </View>
-            
-            {/* Arrow Indicator */}
-            <View style={styles.arrowContainer}>
-              <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
-            </View>
-          </View>
         </View>
       </TouchableOpacity>
     </Animated.View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    marginVertical: Spacing.sm,
-  },
-  touchable: {
-    borderRadius: BorderRadius.lg,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  card: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    minHeight: 140,
-  },
-  header: {
-    marginBottom: Spacing.md,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
-  name: {
-    ...Typography.h4,
-    flex: 1,
-    marginRight: Spacing.sm,
-    fontWeight: '700',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  streakContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.round,
-    shadowColor: 'rgba(245, 158, 66, 0.3)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  streakText: {
-    ...Typography.caption,
-    marginLeft: Spacing.xs,
-    fontWeight: '700',
-  },
-  editButton: {
-    width: 32,
-    height: 32,
-    borderRadius: BorderRadius.round,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: 'rgba(59, 130, 246, 0.3)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  deleteButton: {
-    width: 32,
-    height: 32,
-    borderRadius: BorderRadius.round,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: 'rgba(239, 68, 68, 0.3)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  progressSection: {
-    marginTop: Spacing.sm,
-  },
-  progressHeader: {
-    alignItems: 'flex-start',
-  },
-  progressText: {
-    ...Typography.bodySmall,
-    marginBottom: Spacing.xs,
-    fontWeight: '600',
-  },
-  progressBarContainer: {
-    width: '100%',
-    height: 8,
-    borderRadius: BorderRadius.round,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: BorderRadius.round,
-  },
-  progressGradient: {
-    flex: 1,
-    borderRadius: BorderRadius.round,
-  },
-  descriptionSection: {
-    marginBottom: Spacing.md,
-  },
-  description: {
-    ...Typography.bodySmall,
-    lineHeight: 20,
-    fontWeight: '500',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: Spacing.sm,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  metaContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: Spacing.lg,
-  },
-  metaText: {
-    ...Typography.caption,
-    marginLeft: Spacing.xs,
-    fontWeight: '500',
-  },
-  arrowContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 24,
-    height: 24,
-  },
-});
-
-export default SkillCard;
+}

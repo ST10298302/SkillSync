@@ -22,8 +22,6 @@ export class SupabaseService {
 
   // Auth methods
   static async signUp(email: string, password: string, name?: string) {
-    console.log('🔧 Starting sign up process...', { email, name });
-    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -33,16 +31,13 @@ export class SupabaseService {
     });
 
     if (error) {
-      console.error('❌ Sign up auth error:', error);
+      console.error('Sign up auth error:', error);
       throw error;
     }
-
-    console.log('✅ Auth sign up successful, user ID:', data.user?.id);
 
     // Create user profile
     if (data.user) {
       try {
-        console.log('🔄 Creating user profile...');
         const { error: profileError } = await supabase
           .from('users')
           .insert({
@@ -52,13 +47,11 @@ export class SupabaseService {
           });
 
         if (profileError) {
-          console.error('❌ Profile creation error:', profileError);
+          console.error('Profile creation error:', profileError);
           throw profileError;
         }
-        
-        console.log('✅ User profile created successfully');
       } catch (profileError) {
-        console.error('❌ Failed to create user profile:', profileError);
+        console.error('Failed to create user profile:', profileError);
         // Don't throw here, as the auth user was created successfully
         // The profile can be created later during first sign in
       }
@@ -68,24 +61,19 @@ export class SupabaseService {
   }
 
   static async signIn(email: string, password: string) {
-    console.log('🔧 Starting sign in process...', { email });
-    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
 
     if (error) {
-      console.error('❌ Sign in auth error:', error);
+      console.error('Sign in auth error:', error);
       throw error;
     }
-
-    console.log('✅ Auth sign in successful, user ID:', data.user?.id);
 
     // Ensure user profile exists
     if (data.user) {
       try {
-        console.log('🔄 Checking user profile...');
         const { data: profile, error: profileError } = await supabase
           .from('users')
           .select('*')
@@ -94,7 +82,6 @@ export class SupabaseService {
 
         if (profileError && profileError.code === 'PGRST116') {
           // Profile doesn't exist, create it
-          console.log('🔄 User profile not found, creating...');
           const { error: createError } = await supabase
             .from('users')
             .insert({
@@ -104,18 +91,14 @@ export class SupabaseService {
             });
 
           if (createError) {
-            console.error('❌ Failed to create user profile:', createError);
+            console.error('Failed to create user profile:', createError);
             // Don't throw, as the user is still authenticated
-          } else {
-            console.log('✅ User profile created successfully');
           }
         } else if (profileError) {
-          console.error('❌ Profile check error:', profileError);
-        } else {
-          console.log('✅ User profile exists');
+          console.error('Profile check error:', profileError);
         }
       } catch (profileError) {
-        console.error('❌ Profile check/create error:', profileError);
+        console.error('Profile check/create error:', profileError);
         // Don't throw, as the user is still authenticated
       }
     }
@@ -124,27 +107,21 @@ export class SupabaseService {
   }
 
   static async signOut() {
-    console.log('🔧 SupabaseService: Starting sign out...');
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('❌ SupabaseService: Sign out error:', error);
+      console.error('SupabaseService: Sign out error:', error);
       throw error;
     }
-    console.log('✅ SupabaseService: Sign out successful');
   }
 
   static async getCurrentUser() {
     try {
-      console.log('🔧 Getting current user...');
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) {
-        console.log('Auth session error:', error.message);
         return null;
       }
 
       if (user) {
-        console.log('✅ Current user found:', user.id);
-        
         // Ensure user profile exists
         try {
           const { data: profile, error: profileError } = await supabase
@@ -155,7 +132,6 @@ export class SupabaseService {
 
           if (profileError && profileError.code === 'PGRST116') {
             // Profile doesn't exist, create it
-            console.log('🔄 Creating missing user profile...');
             const { error: createError } = await supabase
               .from('users')
               .insert({
@@ -165,19 +141,16 @@ export class SupabaseService {
               });
 
             if (createError) {
-              console.error('❌ Failed to create user profile:', createError);
-            } else {
-              console.log('✅ User profile created successfully');
+              console.error('Failed to create user profile:', createError);
             }
           }
         } catch (profileError) {
-          console.error('❌ Profile check/create error:', profileError);
+          console.error('Profile check/create error:', profileError);
         }
       }
 
       return user;
     } catch (error) {
-      console.log('Failed to get current user:', error);
       return null;
     }
   }
@@ -208,15 +181,11 @@ export class SupabaseService {
 
   // Profile picture methods
   static async uploadProfilePicture(userId: string, imageUri: string): Promise<string> {
-    console.log('🔧 Starting profile picture upload...', { userId });
-    
     try {
       // Convert image to base64
       const base64 = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
       });
-
-      console.log('🔧 Base64 length:', base64.length);
 
       // Generate unique filename
       const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
@@ -230,8 +199,6 @@ export class SupabaseService {
         bytes[i] = binaryString.charCodeAt(i);
       }
 
-      console.log('🔧 Binary data length:', bytes.length);
-
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('avatars')
@@ -241,7 +208,7 @@ export class SupabaseService {
         });
 
       if (error) {
-        console.error('❌ Storage upload error:', error);
+        console.error('Storage upload error:', error);
         throw error;
       }
 
@@ -251,22 +218,18 @@ export class SupabaseService {
         .getPublicUrl(filePath);
 
       const publicUrl = urlData.publicUrl;
-      console.log('✅ Profile picture uploaded successfully:', publicUrl);
-      console.log('🔧 Profile picture file path:', filePath);
 
       // Update user profile with new image URL
       await this.updateUserProfile(userId, { profile_picture_url: publicUrl });
 
       return publicUrl;
     } catch (error) {
-      console.error('❌ Profile picture upload failed:', error);
+      console.error('Profile picture upload failed:', error);
       throw error;
     }
   }
 
   static async removeProfilePicture(userId: string): Promise<void> {
-    console.log('🔧 Removing profile picture...', { userId });
-    
     try {
       // Get current user to find existing image
       const { data: user, error: userError } = await supabase
@@ -276,7 +239,7 @@ export class SupabaseService {
         .single();
 
       if (userError) {
-        console.error('❌ Error fetching user:', userError);
+        console.error('Error fetching user:', userError);
         throw userError;
       }
 
@@ -291,17 +254,15 @@ export class SupabaseService {
           .remove([filePath]);
 
         if (deleteError) {
-          console.error('❌ Storage delete error:', deleteError);
+          console.error('Storage delete error:', deleteError);
           // Don't throw here, continue to update user profile
         }
       }
 
       // Update user profile to remove image URL
       await this.updateUserProfile(userId, { profile_picture_url: undefined });
-
-      console.log('✅ Profile picture removed successfully');
     } catch (error) {
-      console.error('❌ Profile picture removal failed:', error);
+      console.error('Profile picture removal failed:', error);
       throw error;
     }
   }
@@ -315,10 +276,9 @@ export class SupabaseService {
         .single();
 
       if (error) throw error;
-      console.log('🔧 Retrieved profile picture URL from database:', data?.profile_picture_url);
       return data?.profile_picture_url || null;
     } catch (error) {
-      console.error('❌ Error fetching profile picture URL:', error);
+      console.error('Error fetching profile picture URL:', error);
       return null;
     }
   }

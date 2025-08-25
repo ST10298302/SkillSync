@@ -26,6 +26,7 @@ import SkillCard from '../../components/SkillCard';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSkills } from '../../context/SkillsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { SupabaseService } from '../../services/supabaseService';
@@ -38,6 +39,7 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
   // Ensure we have valid colors even during initial render
@@ -55,7 +57,6 @@ export default function Home() {
       try {
         // Load profile picture URL
         const url = await SupabaseService.getProfilePictureUrl(user.id);
-        console.log('🔄 Index: Loaded profile picture URL:', url);
         setProfilePictureUrl(url || undefined);
 
         // Load user name
@@ -89,7 +90,6 @@ export default function Home() {
   // Reload user data when screen comes into focus (for profile picture updates)
   useFocusEffect(
     useCallback(() => {
-      console.log('🔄 Index: Screen focused, reloading user data...');
       loadUserData();
     }, [user?.id])
   );
@@ -485,9 +485,9 @@ export default function Home() {
         <View style={styles.emptyIconContainer}>
           <Ionicons name="add-circle-outline" size={48} color={themeColors.accent} />
         </View>
-        <Text style={styles.emptyTitle}>Start Your Learning Journey</Text>
+        <Text style={styles.emptyTitle}>{t('startYourLearningJourney')}</Text>
         <Text style={styles.emptySubtitle}>
-          Track your skills, monitor progress, and achieve your goals with SkillSync
+          {t('trackSkillsMonitorProgress')}
         </Text>
         <TouchableOpacity style={styles.emptyButton} onPress={handleAddSkill}>
           <LinearGradient
@@ -497,7 +497,7 @@ export default function Home() {
             end={{ x: 1, y: 1 }}
           >
             <Ionicons name="add" size={16} color={themeColors.text} />
-            <Text style={styles.emptyButtonText}>Add Your First Skill</Text>
+            <Text style={styles.emptyButtonText}>{t('addYourFirstSkill')}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -531,7 +531,7 @@ export default function Home() {
           <View style={styles.headerTop}>
             <View style={styles.greetingContainer}>
               <Text style={styles.greeting}>Hello, {userName}!</Text>
-              <Text style={styles.subtitle}>Track your learning progress</Text>
+              <Text style={styles.subtitle}>{t('trackYourLearningProgress')}</Text>
             </View>
             <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/profile')}>
               <View style={styles.profileContainer}>
@@ -616,7 +616,7 @@ export default function Home() {
               <Ionicons name="search" size={20} color={themeColors.textSecondary} />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Search skills..."
+                placeholder={t('searchSkills')}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholderTextColor={themeColors.textSecondary}
@@ -637,9 +637,9 @@ export default function Home() {
 
         {/* Enhanced Filter Buttons */}
         <View style={styles.filterContainer}>
-          <FilterButton title="All" value="all" count={stats.total} />
-          <FilterButton title="In Progress" value="in-progress" count={stats.inProgress} />
-          <FilterButton title="Completed" value="completed" count={stats.completed} />
+          <FilterButton title={t('all')} value="all" count={stats.total} />
+          <FilterButton title={t('inProgress')} value="in-progress" count={stats.inProgress} />
+          <FilterButton title={t('completed')} value="completed" count={stats.completed} />
         </View>
       </View>
 

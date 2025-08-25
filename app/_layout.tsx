@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { LanguageProvider } from '../context/LanguageContext';
 import { SkillsProvider } from '../context/SkillsContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
@@ -12,7 +13,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <AuthProvider>
         <SkillsProvider>
-          <AppLayout />
+          <LanguageProvider>
+            <AppLayout />
+          </LanguageProvider>
         </SkillsProvider>
       </AuthProvider>
     </ThemeProvider>
@@ -23,14 +26,9 @@ function AppLayout() {
   const { isLoggedIn, loading } = useAuth();
   const { resolvedTheme } = useTheme();
 
-  console.log('🔧 AppLayout: isLoggedIn =', isLoggedIn, 'loading =', loading);
-
   if (loading) {
-    console.log('⏳ AppLayout: Still loading, showing nothing');
     return null;
   }
-
-  console.log('🎯 AppLayout: Rendering layout, isLoggedIn =', isLoggedIn);
 
   return (
     <NavigationThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>

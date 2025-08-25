@@ -56,31 +56,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadAuthState = async () => {
       try {
-        console.log('🔧 AuthContext: Loading auth state...');
-        // Read env safely to avoid reference errors in non-Expo test environments
-        const env: any = (globalThis as any)?.process?.env || {};
-        const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
-        const supabaseKey = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+console.log('AuthContext: Loading auth state...');
 
-        const inBrowser = typeof window !== 'undefined';
-        const hasSupabaseConfig = Boolean(inBrowser && supabaseUrl && supabaseKey);
+try {
+  // Are we in a browser?
+  const inBrowser = typeof window !== 'undefined';
 
-        if (hasSupabaseConfig) {
-          const currentUser = await SupabaseService.getCurrentUser();
-          if (currentUser) {
-            console.log('✅ AuthContext: Found existing user, setting state');
-            setUser(currentUser);
-            setIsLoggedIn(true);
-          } else {
-            console.log('ℹ️ AuthContext: No existing user found');
-          }
-        } else {
-          console.log('ℹ️ AuthContext: Not in browser or Supabase env not set, skipping auth load');
-        }
-      } catch (e) {
-        console.error('❌ AuthContext: Failed to load auth state', e);
-      } finally {
-        console.log('✅ AuthContext: Auth state loading complete');
+  // Read env safely so Jest/Node/Native don’t blow up if process/env is missing
+  const env = ((globalThis as any)?.process?.env ?? {}) as Record<string, string | undefined>;
+  const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
+  const supabaseKey = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Only try to load auth state in browser and if Supabase is configured
+  if (inBrowser && supabaseUrl && supabaseKey) {
+    const currentUser = await SupabaseService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+      setIsLoggedIn(true);
+    }
+  } else {
+    console.log('AuthContext: Not in browser or Supabase env not set, skipping auth load');
+  }
+} catch (e) {
+  console.error('AuthContext: Failed to load auth state', e);
+  // Don't throw error, just continue without user
+}
+ finally {
         setLoading(false);
       }
     };
@@ -92,17 +93,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const signUp = async (email: string, password: string, name?: string) => {
     try {
-      console.log('🔧 AuthContext: Starting sign up...', { email, name });
       const { user } = await SupabaseService.signUp(email, password, name);
       if (user) {
-        console.log('✅ AuthContext: Sign up successful, setting user state');
         setUser(user);
         setIsLoggedIn(true);
-      } else {
-        console.log('⚠️ AuthContext: Sign up successful but no user returned');
       }
     } catch (e) {
-      console.error('❌ AuthContext: Failed to sign up', e);
+      console.error('AuthContext: Failed to sign up', e);
       throw e;
     }
   };
@@ -112,20 +109,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('🔧 AuthContext: Starting sign in...', { email });
       const { user } = await SupabaseService.signIn(email, password);
       if (user) {
-        console.log('✅ AuthContext: Sign in successful, setting user state');
-        console.log('🔄 AuthContext: Setting user:', user.id);
-        console.log('🔄 AuthContext: Setting isLoggedIn to true');
         setUser(user);
         setIsLoggedIn(true);
-        console.log('✅ AuthContext: State updated, should trigger navigation');
-      } else {
-        console.log('⚠️ AuthContext: Sign in successful but no user returned');
       }
     } catch (e) {
-      console.error('❌ AuthContext: Failed to sign in', e);
+      console.error('AuthContext: Failed to sign in', e);
       throw e;
     }
   };
@@ -135,15 +125,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const signOut = async () => {
     try {
-      console.log('🔧 AuthContext: Starting sign out...');
       await SupabaseService.signOut();
-      console.log('🔄 AuthContext: Setting user to null');
       setUser(null);
-      console.log('🔄 AuthContext: Setting isLoggedIn to false');
       setIsLoggedIn(false);
-      console.log('✅ AuthContext: Sign out successful, state updated');
     } catch (e) {
-      console.error('❌ AuthContext: Failed to sign out', e);
+      console.error('AuthContext: Failed to sign out', e);
       throw e;
     }
   };

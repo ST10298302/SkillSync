@@ -24,7 +24,9 @@ const DiaryItem: React.FC<DiaryItemProps> = ({ text, date, hours }) => {
           <Text style={[styles.hours, { color: Colors[theme].accent }]}>{hours}h</Text>
         )}
       </View>
-      <Text style={[styles.text, { color: Colors[theme].text }]}>{text}</Text>
+      <Text style={[styles.text, { color: Colors[theme].text }]} numberOfLines={10} ellipsizeMode="tail">
+        {text || ' '}
+      </Text>
     </View>
   );
 };
