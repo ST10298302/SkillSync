@@ -9,6 +9,7 @@ module.exports = {
     ],
     moduleNameMapper: {
       '\\.(png|jpg|jpeg|gif|svg)$': '<rootDir>/__mocks__/fileMock.js',
+      '^expo/virtual/.*$': '<rootDir>/__mocks__/empty.js',
     },
     setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
     collectCoverageFrom: [

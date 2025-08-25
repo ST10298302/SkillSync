@@ -57,8 +57,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const loadAuthState = async () => {
       try {
         console.log('🔧 AuthContext: Loading auth state...');
-        // Only try to load auth state in browser environment and if Supabase is properly configured
-        if (typeof window !== 'undefined' && process.env.EXPO_PUBLIC_SUPABASE_URL && process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
+        // Read env safely to avoid reference errors in non-Expo test environments
+        const env: any = (globalThis as any)?.process?.env || {};
+        const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
+        const supabaseKey = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+        const inBrowser = typeof window !== 'undefined';
+        const hasSupabaseConfig = Boolean(inBrowser && supabaseUrl && supabaseKey);
+
+        if (hasSupabaseConfig) {
           const currentUser = await SupabaseService.getCurrentUser();
           if (currentUser) {
             console.log('✅ AuthContext: Found existing user, setting state');
@@ -68,11 +75,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.log('ℹ️ AuthContext: No existing user found');
           }
         } else {
-          console.log('ℹ️ AuthContext: Not in browser environment or Supabase not configured, skipping auth load');
+          console.log('ℹ️ AuthContext: Not in browser or Supabase env not set, skipping auth load');
         }
       } catch (e) {
         console.error('❌ AuthContext: Failed to load auth state', e);
-        // Don't throw error, just continue without user
       } finally {
         console.log('✅ AuthContext: Auth state loading complete');
         setLoading(false);
