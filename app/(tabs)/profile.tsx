@@ -584,7 +584,7 @@ export default function Profile() {
               icon="notifications-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to notifications settings
+                router.push('../settings/notifications' as any);
               }}
             />
             <MenuItem
@@ -593,7 +593,7 @@ export default function Profile() {
               icon="shield-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to privacy settings
+                router.push('../settings/privacy-security' as any);
               }}
             />
             <MenuItem
@@ -602,7 +602,7 @@ export default function Profile() {
               icon="help-circle-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to help section
+                router.push('../settings/help-support' as any);
               }}
             />
             <MenuItem
@@ -611,7 +611,7 @@ export default function Profile() {
               icon="information-circle-outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Show about modal
+                router.push('../settings/about' as any);
               }}
             />
           </View>
