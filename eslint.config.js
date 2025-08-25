@@ -6,5 +6,10 @@ module.exports = defineConfig([
   expoConfig,
   {
     ignores: ['dist/*'],
+    languageOptions: {
+      globals: {
+        jest: true,
+      },
+    },
   },
 ]);

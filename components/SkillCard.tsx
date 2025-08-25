@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useLanguage } from '../context/LanguageContext';
@@ -38,38 +38,60 @@ export default function SkillCard({
   const [translatedName, setTranslatedName] = useState(name);
   const [translatedDescription, setTranslatedDescription] = useState(description || '');
 
-  // Translate content when language changes - FOR DISPLAY ONLY
-  useEffect(() => {
-    const translateContent = async () => {
-      if (currentLanguage !== 'en') {
-        try {
-          // Ensure we have valid content to translate
-          const nameToTranslate = name && name.trim() ? name.trim() : 'Skill';
-          const descToTranslate = description && description.trim() ? description.trim() : '';
-          
-          const translatedNameResult = await translateText(nameToTranslate);
-          const translatedDescResult = descToTranslate ? await translateText(descToTranslate) : '';
-          
-          setTranslatedName(translatedNameResult || nameToTranslate);
-          setTranslatedDescription(translatedDescResult || descToTranslate);
-        } catch (error) {
-          console.error('Translation failed:', error);
-          // Fallback to original text
-          setTranslatedName(name || 'Skill');
-          setTranslatedDescription(description || '');
-        }
-      } else {
-        // Reset to original text for English
-        setTranslatedName(name || 'Skill');
-        setTranslatedDescription(description || '');
-      }
-    };
+  // ---- Animations (Unit_Tests branch) ----
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const flameAnim = useRef(new Animated.Value(1)).current;
+  const deleteAnim = useRef(new Animated.Value(1)).current;
 
-    translateContent();
-  }, [name, description, currentLanguage, translateText]);
+  // subtle flame/pulse loop if there's a streak
+  useEffect(() => {
+    if (streak > 0) {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.08, duration: 900, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        ])
+      );
+      const flameLoop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(flameAnim, { toValue: 1.06, duration: 700, useNativeDriver: true }),
+          Animated.timing(flameAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+        ])
+      );
+      loop.start();
+      flameLoop.start();
+      return () => {
+        loop.stop();
+        flameLoop.stop();
+      };
+    }
+  }, [streak, pulseAnim, flameAnim]);
+
+  const handlePressIn = () => {
+    Animated.parallel([
+      Animated.timing(scaleAnim, { toValue: 0.98, duration: 120, useNativeDriver: true }),
+      Animated.timing(opacityAnim, { toValue: 0.95, duration: 120, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.parallel([
+      Animated.timing(scaleAnim, { toValue: 1, duration: 120, useNativeDriver: true }),
+      Animated.timing(opacityAnim, { toValue: 1, duration: 120, useNativeDriver: true }),
+    ]).start();
+  };
 
   const handleEdit = () => {
     onEdit(id);
+  };
+
+  const handleEditPress = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, { toValue: 0.97, duration: 80, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 120, useNativeDriver: true }),
+    ]).start(() => handleEdit());
   };
 
   const handleDelete = () => {
@@ -78,34 +100,87 @@ export default function SkillCard({
       `${t('delete')} "${translatedName}"?`,
       [
         { text: t('cancel'), style: 'cancel' },
-        { 
-          text: t('delete'), 
+        {
+          text: t('delete'),
           style: 'destructive',
-          onPress: () => onDelete(id)
+          onPress: () => onDelete(id),
         },
       ]
     );
   };
+
+  const handleDeletePress = () => {
+    Animated.sequence([
+      Animated.timing(deleteAnim, { toValue: 0.9, duration: 80, useNativeDriver: true }),
+      Animated.spring(deleteAnim, { toValue: 1, useNativeDriver: true }),
+    ]).start(() => handleDelete());
+  };
+
+  // Translate content when language changes - FOR DISPLAY ONLY
+  useEffect(() => {
+    const translateContent = async () => {
+      if (currentLanguage !== 'en') {
+        try {
+          const nameToTranslate = name && name.trim() ? name.trim() : 'Skill';
+          const descToTranslate = description && description.trim() ? description.trim() : '';
+
+          const translatedNameResult = await translateText(nameToTranslate);
+          const translatedDescResult = descToTranslate ? await translateText(descToTranslate) : '';
+
+          setTranslatedName(translatedNameResult || nameToTranslate);
+          setTranslatedDescription(translatedDescResult || descToTranslate);
+        } catch (error) {
+          console.error('Translation failed:', error);
+          setTranslatedName(name || 'Skill');
+          setTranslatedDescription(description || '');
+        }
+      } else {
+        setTranslatedName(name || 'Skill');
+        setTranslatedDescription(description || '');
+      }
+    };
+
+    translateContent();
+  }, [name, description, currentLanguage, translateText]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) return `1 ${t('daysAgo')}`;
     if (diffDays < 7) return `${diffDays} ${t('daysAgo')}`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     return `${Math.floor(diffDays / 30)} months ago`;
   };
 
+  // ---- Progress helpers (main branch logic, with clamp) ----
+  const progressPercentage = Math.min(Math.max(typeof progress === 'number' ? progress : 0, 0), 100);
+  const progressColor = progressPercentage >= 100 ? themeColors.success : themeColors.accent;
+  const accentGold = (themeColors as any)?.accentGold ?? themeColors.accent;
+
+  // ---- Styles (main + Unit_Tests union) ----
   const styles = StyleSheet.create({
+    // Unit_Tests wrappers
+    container: {
+      width: '100%',
+    },
+    touchable: {
+      borderRadius: BorderRadius.xl,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+
+    // Card
     card: {
       backgroundColor: themeColors.background,
       borderRadius: BorderRadius.xl,
       padding: Spacing.lg,
       marginBottom: Spacing.md,
-      shadowColor: themeColors.shadow.medium,
+      shadowColor: (themeColors as any)?.shadow?.medium ?? '#000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
@@ -113,27 +188,45 @@ export default function SkillCard({
       borderWidth: 1,
       borderColor: themeColors.border,
     },
+
+    // Header / Title row
     header: {
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'stretch',
+      marginBottom: Spacing.md,
+    },
+    titleRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: Spacing.md,
+      gap: Spacing.sm,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
     },
     titleContainer: {
       flex: 1,
       marginRight: Spacing.sm,
     },
+
+    // Text
     name: {
       ...Typography.h3,
       color: themeColors.text,
       marginBottom: Spacing.xs,
       fontWeight: '600',
+      maxWidth: '80%',
     },
     description: {
       ...Typography.bodySmall,
       color: themeColors.textSecondary,
       lineHeight: 18,
     },
+
+    // Actions
     actions: {
       flexDirection: 'row',
       gap: Spacing.xs,
@@ -148,8 +241,31 @@ export default function SkillCard({
       borderWidth: 1,
       borderColor: themeColors.border,
     },
+    editButton: {
+      width: 28,
+      height: 28,
+      borderRadius: BorderRadius.round,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: themeColors.accent + '40',
+    },
+    deleteButton: {
+      width: 28,
+      height: 28,
+      borderRadius: BorderRadius.round,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: themeColors.error + '40',
+    },
+
+    // Progress
     progressContainer: {
       marginBottom: Spacing.md,
+    },
+    progressSection: {
+      marginTop: Spacing.xs,
     },
     progressHeader: {
       flexDirection: 'row',
@@ -162,24 +278,50 @@ export default function SkillCard({
       color: themeColors.textSecondary,
       fontWeight: '500',
     },
-    progressBar: {
+    progressBarContainer: {
+      width: 140,
       height: 8,
       backgroundColor: themeColors.backgroundSecondary,
       borderRadius: BorderRadius.round,
       overflow: 'hidden',
+      marginLeft: Spacing.sm,
     },
+    // Unit_Tests used "progressBar" as the inner fill
+    progressBar: {
+      height: '100%',
+      borderRadius: BorderRadius.round,
+    },
+    // main kept for compatibility
     progressFill: {
       height: '100%',
       borderRadius: BorderRadius.round,
     },
+
+    // Streak pill
+    streakContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+      height: 24,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: accentGold + '40',
+      marginRight: Spacing.xs,
+      gap: 4,
+    },
+    streakText: {
+      ...Typography.caption,
+      fontWeight: '700',
+    },
+
+    // Stats & footer (from main)
     stats: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      marginTop: Spacing.sm,
     },
-    stat: {
-      alignItems: 'center',
-    },
+    stat: { alignItems: 'center' },
     statValue: {
       ...Typography.h4,
       color: themeColors.text,
@@ -205,70 +347,118 @@ export default function SkillCard({
     },
   });
 
-  const progressPercentage = Math.min(progress, 100);
-  const progressColor = progressPercentage >= 100 ? themeColors.success : themeColors.accent;
-
+  // ---- Final merged return (animated Unit_Tests UI + main sections) ----
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.header}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
-            {translatedName || ' '}
-          </Text>
-          {translatedDescription && (
-            <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
-              {translatedDescription || ' '}
-            </Text>
+    <Animated.View
+      style={[styles.container, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}
+    >
+      <TouchableOpacity
+        style={[styles.touchable, { shadowColor: (themeColors as any)?.shadow?.medium ?? '#000' }]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+      >
+        <View
+          style={[
+            styles.card,
+            { borderColor: themeColors.border, backgroundColor: themeColors.background },
+          ]}
+        >
+          {/* Header Section */}
+          <View style={styles.header}>
+            <View style={styles.titleRow}>
+              <View style={styles.titleContainer}>
+                <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
+                  {translatedName || ' '}
+                </Text>
+                {!!translatedDescription && (
+                  <Text style={styles.description} numberOfLines={2}>
+                    {translatedDescription}
+                  </Text>
+                )}
+              </View>
+
+              <View style={styles.headerActions}>
+                {streak > 0 && (
+                  <Animated.View
+                    style={[
+                      styles.streakContainer,
+                      {
+                        backgroundColor: accentGold + '20',
+                        transform: [{ scale: flameAnim }],
+                      },
+                    ]}
+                  >
+                    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                      <Ionicons name="flame" size={16} color={accentGold} />
+                    </Animated.View>
+                    <Text style={[styles.streakText, { color: accentGold }]}>{streak}</Text>
+                  </Animated.View>
+                )}
+
+                <TouchableOpacity
+                  testID="edit-button"
+                  style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
+                  onPress={handleEditPress}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="create-outline" size={16} color={themeColors.accent} />
+                </TouchableOpacity>
+
+                <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
+                  <TouchableOpacity
+                    testID="delete-button"
+                    style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
+                    onPress={handleDeletePress}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="trash-outline" size={16} color={themeColors.error} />
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            </View>
+
+            {/* Progress Section */}
+            <View style={styles.progressSection}>
+              <View style={styles.progressHeader}>
+                <Text style={[styles.progressText, { color: themeColors.textSecondary }]}>
+                  {progressPercentage >= 100 ? t('complete') : `${progressPercentage}%`} {t('progress')}
+                </Text>
+                <View style={styles.progressBarContainer}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      { width: `${progressPercentage}%`, backgroundColor: progressColor },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Stats */}
+          <View style={styles.stats}>
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{totalEntries}</Text>
+              <Text style={styles.statLabel}>{t('entries')}</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{streak}</Text>
+              <Text style={styles.statLabel}>{t('streak')}</Text>
+            </View>
+          </View>
+
+          {/* Footer */}
+          {!!lastUpdated && (
+            <View style={styles.footer}>
+              <Text style={styles.lastUpdated}>
+                {t('lastUpdated')}: {formatDate(lastUpdated)}
+              </Text>
+            </View>
           )}
         </View>
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleEdit}>
-            <Ionicons name="create-outline" size={16} color={themeColors.textSecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
-            <Ionicons name="trash-outline" size={16} color={themeColors.error} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.progressContainer}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressText}>
-            {progressPercentage >= 100 ? t('complete') : `${progressPercentage}%`}
-          </Text>
-          <Text style={styles.progressText}>{t('progress')}</Text>
-        </View>
-        <View style={styles.progressBar}>
-          <Animated.View
-            style={[
-              styles.progressFill,
-              {
-                backgroundColor: progressColor,
-                width: `${progressPercentage}%`,
-              },
-            ]}
-          />
-        </View>
-      </View>
-
-      <View style={styles.stats}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{totalEntries}</Text>
-          <Text style={styles.statLabel}>{t('entries')}</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{streak}</Text>
-          <Text style={styles.statLabel}>{t('streak')}</Text>
-        </View>
-      </View>
-
-      {lastUpdated && (
-        <View style={styles.footer}>
-          <Text style={styles.lastUpdated}>
-            {t('lastUpdated')}: {formatDate(lastUpdated)}
-          </Text>
-        </View>
-      )}
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
