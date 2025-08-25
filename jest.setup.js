@@ -16,6 +16,12 @@ g.process = g.process || {};
 g.process.env = g.process.env || {};
 g.process.env.EXPO_PUBLIC_SUPABASE_URL = g.process.env.EXPO_PUBLIC_SUPABASE_URL || 'dummy';
 g.process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = g.process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'dummy';
+g.process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0';
+
+// Also set it on the global process object
+if (typeof process !== 'undefined') {
+  process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0';
+}
 
 // Silence React Native warnings in test output (RN 0.79 may not expose this helper path)
 try {
@@ -61,10 +67,51 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'Success', Error: 'Error' },
 }));
 
+// Mock expo-file-system
+jest.mock('expo-file-system', () => ({
+  documentDirectory: '/mock/document/directory/',
+  cacheDirectory: '/mock/cache/directory/',
+  bundleDirectory: '/mock/bundle/directory/',
+  getInfoAsync: jest.fn(),
+  readAsStringAsync: jest.fn(),
+  writeAsStringAsync: jest.fn(),
+  deleteAsync: jest.fn(),
+  moveAsync: jest.fn(),
+  copyAsync: jest.fn(),
+  makeDirectoryAsync: jest.fn(),
+  readDirectoryAsync: jest.fn(),
+}));
+
 // Mock expo-router
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
   useLocalSearchParams: () => ({}),
+}));
+
+// Mock SupabaseService with a simple mock
+jest.mock('./services/supabaseService', () => ({
+  SupabaseService: {
+    signUp: jest.fn(() => Promise.resolve({ user: { id: 'test-user', email: 'test@example.com' } })),
+    signIn: jest.fn(() => Promise.resolve({ user: { id: 'test-user', email: 'test@example.com' } })),
+    signOut: jest.fn(() => Promise.resolve()),
+    getCurrentUser: jest.fn(() => Promise.resolve({ id: 'test-user', email: 'test@example.com' })),
+    getSkills: jest.fn(() => Promise.resolve([])),
+    createSkill: jest.fn((skill) => Promise.resolve({ id: 'test-skill', ...skill })),
+    updateSkill: jest.fn(() => Promise.resolve({ id: 'test-skill', name: 'Updated Skill' })),
+    deleteSkill: jest.fn(() => Promise.resolve()),
+    createSkillEntry: jest.fn(() => Promise.resolve({ id: 'test-entry' })),
+    getProgressUpdates: jest.fn(() => Promise.resolve([])),
+    createProgressUpdate: jest.fn(() => Promise.resolve({ id: 'test-progress' })),
+  },
+}));
+
+// Mock GoogleTranslateAPI
+jest.mock('./services/googleTranslateAPI', () => ({
+  GoogleTranslateAPI: {
+    initialize: jest.fn(),
+    translateText: jest.fn(async (text: string) => text),
+    translateBatch: jest.fn(async (texts: string[]) => texts),
+  },
 }));
 
 
