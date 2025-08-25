@@ -214,6 +214,7 @@ const SkillCard: React.FC<SkillCardProps> = ({
                 )}
                 {onEdit && (
                   <TouchableOpacity
+                    testID="edit-button"
                     style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
                     onPress={handleEditPress}
                     activeOpacity={0.7}
@@ -224,6 +225,7 @@ const SkillCard: React.FC<SkillCardProps> = ({
                 {onDelete && (
                   <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
                     <TouchableOpacity
+                      testID="delete-button"
                       style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
                       onPress={handleDeletePress}
                       activeOpacity={0.7}

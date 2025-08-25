@@ -5,22 +5,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    Keyboard,
-    Platform,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Animated,
+  Dimensions,
+  FlatList,
+  Keyboard,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 
 import ProfilePicture from '../../components/ProfilePicture';
+import RecentActivity from '../../components/RecentActivity';
 import SkillCard from '../../components/SkillCard';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
@@ -33,7 +34,7 @@ import { SupabaseService } from '../../services/supabaseService';
  * Home screen with professional Material Design look and feel
  */
 export default function Home() {
-  const { skills, deleteSkill } = useSkills();
+  const { skills, deleteSkill, refreshSkills } = useSkills();
   const { user } = useAuth();
   const router = useRouter();
   const { resolvedTheme } = useTheme();
@@ -118,9 +119,16 @@ export default function Home() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // TODO: Implement refresh functionality
-    setTimeout(() => setRefreshing(false), 1000);
-  }, []);
+    try {
+      await refreshSkills();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      console.error('Failed to refresh skills:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshSkills]);
 
   const filteredSkills = skills.filter(skill => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -148,12 +156,17 @@ export default function Home() {
   const isVerySmallScreen = height < 750; // Very small screen threshold
   
   const styles = StyleSheet.create({
+    headerListContainer: {
+      paddingBottom: Spacing.lg,
+      backgroundColor: 'transparent',
+      width: '100%',
+    },
     header: {
       paddingTop: Platform.OS === 'ios' ? 50 : Spacing.xxl,
       paddingBottom: isVerySmallScreen ? Spacing.xs : isSmallScreen ? Spacing.sm : Spacing.md,
-      paddingHorizontal: Spacing.lg,
+      paddingHorizontal: 0,
       minHeight: isVerySmallScreen ? 80 : isSmallScreen ? 100 : 120,
-      marginBottom: Spacing.xl,
+      marginBottom: Spacing.md,
     },
     headerContent: {
       flex: 1,
@@ -255,7 +268,7 @@ export default function Home() {
       fontSize: isVerySmallScreen ? 8 : isSmallScreen ? 10 : Typography.caption.fontSize,
     },
     searchContainer: {
-      paddingHorizontal: Spacing.lg,
+      paddingHorizontal: 0,
       paddingBottom: Spacing.lg,
     },
     searchRow: {
@@ -346,9 +359,10 @@ export default function Home() {
       color: themeColors.text,
     },
     listContainer: {
-      paddingHorizontal: Spacing.md,
-      paddingBottom: Platform.OS === 'ios' ? 120 : Spacing.xl,
-      paddingTop: Spacing.sm,
+      // Use uniform page padding consistent with other tabs
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Platform.OS === 'ios' ? 120 : Spacing.xxl,
+      paddingTop: Spacing.lg,
     },
     emptyContainer: {
       flex: 1,
@@ -413,6 +427,55 @@ export default function Home() {
       marginLeft: Spacing.sm,
       fontWeight: '600',
     },
+    quickActionsContainer: {
+      paddingHorizontal: 0,
+      paddingBottom: Spacing.md,
+      marginBottom: Spacing.lg,
+    },
+    quickActionsRow: {
+      flexDirection: 'row',
+      gap: Spacing.md,
+    },
+    quickActionButton: {
+      flex: 1,
+      borderRadius: BorderRadius.lg,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    quickActionGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.lg,
+      borderRadius: BorderRadius.lg,
+    },
+    quickActionSecondary: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.lg,
+      borderRadius: BorderRadius.lg,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+    },
+    quickActionText: {
+      ...Typography.bodySmall,
+      color: themeColors.text,
+      marginLeft: Spacing.sm,
+      fontWeight: '600',
+    },
+    // Ensure stats row has spacing from neighbors
+    statsContainerSpaced: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: Spacing.sm,
+      marginBottom: Spacing.lg,
+    },
 
   });
 
@@ -460,10 +523,10 @@ export default function Home() {
     </TouchableOpacity>
   );
 
-  return (
-    <UniformLayout>
+  const renderListHeader = () => (
+    <View style={styles.headerListContainer}>
       {/* Enhanced Header */}
-      <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+      <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <View style={styles.greetingContainer}>
@@ -486,10 +549,67 @@ export default function Home() {
             </TouchableOpacity>
           </View>
         </View>
-      </Animated.View>
+      </View>
+
+      {/* Stats Cards */}
+      <View>
+        <View style={[styles.statsContainerSpaced, { paddingHorizontal: Spacing.lg }]}> 
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="book-outline" size={16} color={themeColors.text} />
+            </View>
+            <Text style={styles.statNumber}>{stats.total}</Text>
+            <Text style={styles.statLabel}>Skills</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="trending-up-outline" size={16} color={themeColors.text} />
+            </View>
+            <Text style={styles.statNumber}>{stats.averageProgress}%</Text>
+            <Text style={styles.statLabel}>Avg Progress</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="time-outline" size={16} color={themeColors.text} />
+            </View>
+            <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.totalHours || 0), 0)}</Text>
+            <Text style={styles.statLabel}>Hours</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="document-text-outline" size={16} color={themeColors.text} />
+            </View>
+            <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.entries?.length || 0), 0)}</Text>
+            <Text style={styles.statLabel}>Entries</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.quickActionsContainer}>
+        <View style={styles.quickActionsRow}>
+          <TouchableOpacity style={styles.quickActionButton} onPress={handleAddSkill}>
+            <LinearGradient
+              colors={themeColors.gradient.primary}
+              style={styles.quickActionGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Ionicons name="add" size={20} color={themeColors.text} />
+              <Text style={styles.quickActionText}>Add Skill</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickActionButton} onPress={() => router.push('/analytics')}>
+            <View style={[styles.quickActionSecondary, { backgroundColor: themeColors.backgroundSecondary }]}> 
+              <Ionicons name="analytics-outline" size={20} color={themeColors.accent} />
+              <Text style={[styles.quickActionText, { color: themeColors.accent }]}>Analytics</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {/* Enhanced Search and Filters */}
-      <Animated.View style={[styles.searchContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+      <View style={styles.searchContainer}>
         <View style={styles.searchRow}>
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.searchInputContainer}>
@@ -521,8 +641,14 @@ export default function Home() {
           <FilterButton title="In Progress" value="in-progress" count={stats.inProgress} />
           <FilterButton title="Completed" value="completed" count={stats.completed} />
         </View>
-      </Animated.View>
+      </View>
 
+      {/* Recent Activity is now shown below the skills list as a footer */}
+    </View>
+  );
+
+  return (
+    <UniformLayout>
       {/* Skills List */}
       <FlatList
         data={filteredSkills}
@@ -542,6 +668,13 @@ export default function Home() {
           />
         )}
         contentContainerStyle={styles.listContainer}
+        ListHeaderComponent={renderListHeader}
+        ListFooterComponent={
+          <RecentActivity
+            skills={skills.map(s => ({ id: s.id, name: s.name, lastUpdated: s.lastUpdated, progress: s.progress, entries: s.entries }))}
+            onSkillPress={(id) => router.push(`/skill/${id}`)}
+          />
+        }
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
