@@ -1,68 +1,324 @@
-# SkillSync App Documentation
+# SkillSync App 📚
 
-## Overview
+A modern React Native learning tracker app built with Expo, featuring skill management, progress tracking, analytics, and beautiful UI/UX.
 
-SkillSync is a React Native/Expo application designed to help users track and manage their skill development journey. The app provides a comprehensive platform for logging practice sessions, tracking progress, and visualizing skill development over time.
+## 🚀 Quick Start Guide
 
-## Table of Contents
+### Prerequisites
 
-1. [Architecture Overview](./architecture.md)
-2. [App Structure](./app-structure.md)
-3. [Authentication System](./authentication.md)
-4. [Database Schema](./database-schema.md)
-5. [API Documentation](./api-documentation.md)
-6. [Component Library](./components.md)
-7. [State Management](./state-management.md)
-8. [Styling & Theming](./styling.md)
-9. [Development Setup](./development-setup.md)
-10. [Deployment Guide](./deployment.md)
+Before you begin, make sure you have the following installed:
 
-## Key Features
+#### **Required Software:**
+- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
+- **Git** - [Download here](https://git-scm.com/)
+- **VS Code** - [Download here](https://code.visualstudio.com/)
 
-- **Skill Tracking**: Create and manage multiple skills with progress tracking
-- **Practice Logging**: Log practice sessions with detailed notes and time tracking
-- **Progress Visualization**: View progress charts and analytics
-- **User Authentication**: Secure login/signup with Supabase
-- **Profile Management**: User profiles with customizable avatars
-- **Cross-Platform**: Works on iOS, Android, and Web
-- **Dark/Light Theme**: Adaptive theming system
+#### **For Mobile Development:**
+- **Expo CLI** (will be installed automatically)
+- **Expo Go app** on your phone (for testing)
 
-## Tech Stack
+---
 
-- **Frontend**: React Native with Expo
-- **Navigation**: Expo Router
-- **Backend**: Supabase (PostgreSQL + Auth + Storage)
-- **State Management**: React Context API
-- **Styling**: React Native StyleSheet with custom design system
-- **Icons**: Expo Vector Icons (Ionicons)
-- **Animations**: React Native Animated API
-- **Storage**: AsyncStorage (Web) + SecureStore (Native)
+## 📋 Step-by-Step Setup Instructions
 
-## Quick Start
+### **Step 1: Clone the Repository**
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables (see `.env.example`)
-4. Start development server: `npm start`
+1. **Open VS Code**
+2. **Open Terminal in VS Code:**
+   - Press `Ctrl + Shift + `` (backtick) or
+   - Go to `Terminal` → `New Terminal`
 
-For detailed setup instructions, see [Development Setup](./development-setup.md).
+3. **Navigate to your desired folder:**
+   ```bash
+   cd C:\Users\YourUsername\Desktop
+   ```
 
-## Project Structure
+4. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/SkillSyncApp.git
+   ```
+
+5. **Navigate to the project folder:**
+   ```bash
+   cd SkillSyncApp
+   ```
+
+### **Step 2: Install Dependencies**
+
+1. **In the VS Code terminal, run:**
+   ```bash
+   npm install
+   ```
+
+2. **Wait for installation to complete** (this may take a few minutes)
+
+3. **Verify installation:**
+   ```bash
+   npm --version
+   npx expo --version
+   ```
+
+### **Step 3: Set Up Your Development Environment**
+
+#### **Option A: Web Development (Easiest for Beginners)**
+
+1. **Start the development server:**
+   ```bash
+   npx expo start
+   ```
+
+2. **Press `w`** in the terminal to open in web browser
+
+3. **Your app will open in your default browser** at `http://localhost:8081`
+
+#### **Option B: Mobile Development (Recommended)**
+
+1. **Install Expo Go on your phone:**
+   - **Android:** Search "Expo Go" in Google Play Store
+   - **iOS:** Search "Expo Go" in App Store
+
+2. **Start the development server:**
+   ```bash
+   npx expo start
+   ```
+
+3. **Connect your phone:**
+   - **Same WiFi:** Scan the QR code with Expo Go app
+   - **Different WiFi:** Use tunnel mode (press `t` in terminal)
+
+---
+
+## Advanced Setup
+
+### **Database Setup (Supabase)**
+
+The app uses Supabase for data storage. To set up your own database:
+
+1. **Create a Supabase account** at [supabase.com](https://supabase.com)
+
+2. **Create a new project**
+
+3. **Run the database schema:**
+   - Copy the contents of `database-schema.sql`
+   - Paste into Supabase SQL editor
+   - Click "Run"
+
+4. **Get your credentials:**
+   - Go to Settings → API
+   - Copy your `URL` and `anon key`
+
+5. **Update environment variables:**
+   - Create a `.env` file in the root directory
+   - Add your Supabase credentials
+
+### **VS Code Extensions (Recommended)**
+
+Install these VS Code extensions for better development experience:
+
+1. **ES7+ React/Redux/React-Native snippets**
+2. **Prettier - Code formatter**
+3. **ESLint**
+4. **Auto Rename Tag**
+5. **Bracket Pair Colorizer**
+
+**To install extensions:**
+1. Press `Ctrl + Shift + X`
+2. Search for each extension
+3. Click "Install"
+
+---
+
+## Running the App
+
+### **Development Mode**
+
+1. **Start the development server:**
+   ```bash
+   npx expo start
+   ```
+
+2. **Choose your platform:**
+   - Press `w` for web
+   - Press `a` for Android (requires Android Studio)
+   - Press `i` for iOS (requires Xcode, Mac only)
+   - Scan QR code with Expo Go app
+
+### **Common Commands**
+
+```bash
+# Start development server
+npx expo start
+
+# Start with tunnel (for different WiFi networks)
+npx expo start --tunnel
+
+# Clear cache and restart
+npx expo start --clear
+
+# Build for production
+npx expo build
+
+# Run linting
+npx eslint .
+
+# Run TypeScript check
+npx tsc --noEmit
+```
+
+---
+
+## 📱 App Features
+
+### **Core Functionality:**
+- **Skill Management** - Add, edit, and track learning skills
+- **Progress Tracking** - Log hours and track progress
+- **Analytics Dashboard** - Beautiful charts and insights
+- **Streak System** - Maintain learning momentum
+- **Modern UI/UX** - Material Design with animations
+- **Cross-Platform** - Works on iOS, Android, and Web
+
+### **Technical Stack:**
+- **React Native** with Expo
+- **TypeScript** for type safety
+- **Supabase** for backend
+- **Expo Router** for navigation
+- **React Native Animated** for smooth animations
+
+---
+
+## Troubleshooting
+
+### **Common Issues & Solutions:**
+
+#### **"Command not found" errors:**
+```bash
+# Reinstall Node.js and npm
+# Clear npm cache
+npm cache clean --force
+```
+
+#### **"Metro bundler" errors:**
+```bash
+# Clear Expo cache
+npx expo start --clear
+```
+
+#### **"Cannot resolve module" errors:**
+```bash
+# Delete node_modules and reinstall
+rm -rf node_modules
+npm install
+```
+
+#### **"Expo Go connection" issues:**
+- Ensure phone and computer are on same WiFi
+- Try tunnel mode: `npx expo start --tunnel`
+- Check firewall settings
+
+#### **"TypeScript errors":**
+```bash
+# Check TypeScript
+npx tsc --noEmit
+
+# Fix linting issues
+npx eslint . --fix
+```
+
+### **Getting Help:**
+
+1. **Check the terminal output** for error messages
+2. **Google the error message** - most issues have solutions online
+3. **Check Expo documentation** at [docs.expo.dev](https://docs.expo.dev)
+4. **Ask in the community** - Discord, Stack Overflow, or GitHub Issues
+
+---
+
+## 📁 Project Structure
 
 ```
 SkillSyncApp/
-├── app/                    # Expo Router app directory
+├── app/                    # Main app screens
 │   ├── (auth)/            # Authentication screens
-│   ├── (tabs)/            # Main tab navigation
-│   └── skill/             # Skill management screens
-├── components/             # Reusable UI components
+│   ├── (tabs)/            # Main tab screens
+│   └── skill/             # Skill detail screens
+├── components/             # Reusable components
 ├── context/               # React Context providers
-├── services/              # API and external services
-├── utils/                 # Utility functions and configurations
-├── constants/             # Design system constants
-└── docs/                  # Documentation (this folder)
+├── constants/             # App constants and colors
+├── hooks/                 # Custom React hooks
+├── services/              # API services
+├── utils/                 # Utility functions
+└── assets/                # Images and fonts
 ```
 
-## Contributing
+---
 
-Please read the [Development Setup](./development-setup.md) guide before contributing to the project.
+## 🎨 Customization
+
+### **Theming:**
+- Edit `constants/Colors.ts` to change app colors
+- Modify `components/UniformLayout.tsx` for layout changes
+
+### **Adding Features:**
+- New screens go in `app/` directory
+- Components go in `components/` directory
+- API calls go in `services/` directory
+
+---
+
+## 🚀 Deployment
+
+### **For Production:**
+
+1. **Build the app:**
+   ```bash
+   npx expo build
+   ```
+
+2. **Deploy to app stores:**
+   - Follow Expo's deployment guide
+   - Submit to Apple App Store and Google Play Store
+
+---
+
+## 📚 Learning Resources
+
+### **For Beginners:**
+- [React Native Documentation](https://reactnative.dev/)
+- [Expo Documentation](https://docs.expo.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+
+### **For Advanced Users:**
+- [React Native Performance](https://reactnative.dev/docs/performance)
+- [Expo SDK Reference](https://docs.expo.dev/versions/latest/)
+- [Supabase Documentation](https://supabase.com/docs)
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 🆘 Need Help?
+
+- **Documentation:** Check the links above
+- **Community:** Join our Discord server
+- **Issues:** Report bugs on GitHub
+- **Questions:** Ask in the community forums
+
+---
+
+**Happy coding!**
+
+*Made with React Native and Expo*
