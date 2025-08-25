@@ -56,32 +56,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadAuthState = async () => {
       try {
-console.log('AuthContext: Loading auth state...');
+        console.log('AuthContext: Loading auth state...');
 
-try {
-  // Are we in a browser?
-  const inBrowser = typeof window !== 'undefined';
+        // Are we in a browser?
+        const inBrowser = typeof window !== 'undefined';
 
-  // Read env safely so Jest/Node/Native don’t blow up if process/env is missing
-  const env = ((globalThis as any)?.process?.env ?? {}) as Record<string, string | undefined>;
-  const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
-  const supabaseKey = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+        // Read env safely so Jest/Node/Native don't blow up if process/env is missing
+        const env = ((globalThis as any)?.process?.env ?? {}) as Record<string, string | undefined>;
+        const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
+        const supabaseKey = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Only try to load auth state in browser and if Supabase is configured
-  if (inBrowser && supabaseUrl && supabaseKey) {
-    const currentUser = await SupabaseService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-      setIsLoggedIn(true);
-    }
-  } else {
-    console.log('AuthContext: Not in browser or Supabase env not set, skipping auth load');
-  }
-} catch (e) {
-  console.error('AuthContext: Failed to load auth state', e);
-  // Don't throw error, just continue without user
-}
- finally {
+        // Only try to load auth state in browser and if Supabase is configured
+        if (inBrowser && supabaseUrl && supabaseKey) {
+          const currentUser = await SupabaseService.getCurrentUser();
+          if (currentUser) {
+            setUser(currentUser);
+            setIsLoggedIn(true);
+          }
+        } else {
+          console.log('AuthContext: Not in browser or Supabase env not set, skipping auth load');
+        }
+      } catch (e) {
+        console.error('AuthContext: Failed to load auth state', e);
+        // Don't throw error, just continue without user
+      } finally {
         setLoading(false);
       }
     };
