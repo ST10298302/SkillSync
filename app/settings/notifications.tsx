@@ -142,7 +142,7 @@ export default function NotificationsSettings() {
       borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
       marginBottom: Spacing.md,
-      shadowColor: themeColors.shadow,
+      shadowColor: themeColors.shadow.medium,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
