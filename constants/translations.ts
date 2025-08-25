@@ -54,6 +54,7 @@ export const TRANSLATIONS = {
     streak: 'Streak',
     entries: 'Entries',
     hours: 'Hours',
+    addSkill: 'Add Skill',
     
     // Common
     loading: 'Loading...',
@@ -74,6 +75,7 @@ export const TRANSLATIONS = {
     createYourFirstSkill: 'Create your first skill to get started',
     
     // Home page
+    greeting: 'Hello',
     trackYourLearningProgress: 'Track your learning progress',
     all: 'All',
     inProgress: 'In Progress',
@@ -179,6 +181,7 @@ export const TRANSLATIONS = {
     streak: 'Racha',
     entries: 'Entradas',
     hours: 'Horas',
+    addSkill: 'Agregar Habilidad',
     
     // Common
     loading: 'Cargando...',
@@ -199,6 +202,7 @@ export const TRANSLATIONS = {
     createYourFirstSkill: 'Crea tu primera habilidad para comenzar',
     
     // Home page
+    greeting: 'Hola',
     trackYourLearningProgress: 'Rastrea tu progreso de aprendizaje',
     all: 'Todos',
     inProgress: 'En Progreso',
@@ -304,6 +308,7 @@ export const TRANSLATIONS = {
     streak: 'Série',
     entries: 'Entrées',
     hours: 'Heures',
+    addSkill: 'Ajouter une Compétence',
     
     // Common
     loading: 'Chargement...',
@@ -324,6 +329,7 @@ export const TRANSLATIONS = {
     createYourFirstSkill: 'Créez votre première compétence pour commencer',
     
     // Home page
+    greeting: 'Bonjour',
     trackYourLearningProgress: 'Suivez votre progression d\'apprentissage',
     all: 'Tous',
     inProgress: 'En cours',
@@ -429,6 +435,7 @@ export const TRANSLATIONS = {
     streak: 'Serie',
     entries: 'Einträge',
     hours: 'Stunden',
+    addSkill: 'Fähigkeit hinzufügen',
     
     // Common
     loading: 'Laden...',
@@ -449,6 +456,7 @@ export const TRANSLATIONS = {
     createYourFirstSkill: 'Erstellen Sie Ihre erste Fähigkeit, um zu beginnen',
     
     // Home page
+    greeting: 'Hallo',
     trackYourLearningProgress: 'Verfolgen Sie Ihren Lernfortschritt',
     all: 'Alle',
     inProgress: 'In Bearbeitung',
@@ -554,6 +562,7 @@ export const TRANSLATIONS = {
     streak: '连续',
     entries: '条目',
     hours: '小时',
+    addSkill: '添加技能',
     
     // Common
     loading: '加载中...',
@@ -574,6 +583,7 @@ export const TRANSLATIONS = {
     createYourFirstSkill: '创建您的第一个技能开始',
     
     // Home page
+    greeting: '你好',
     trackYourLearningProgress: '跟踪您的学习进度',
     all: '全部',
     inProgress: '进行中',
