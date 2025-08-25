@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { LanguageProvider } from '../context/LanguageContext';
 import { SkillsProvider } from '../context/SkillsContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
@@ -12,7 +13,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <AuthProvider>
         <SkillsProvider>
-          <AppLayout />
+          <LanguageProvider>
+            <AppLayout />
+          </LanguageProvider>
         </SkillsProvider>
       </AuthProvider>
     </ThemeProvider>

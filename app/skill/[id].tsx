@@ -20,6 +20,7 @@ import DiaryItem from '../../components/DiaryItem';
 import ProgressBar from '../../components/ProgressBar';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useLanguage } from '../../context/LanguageContext';
 import { useSkills } from '../../context/SkillsContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -31,6 +32,7 @@ export default function SkillDetail() {
   const { skills, addEntry, addProgressUpdate } = useSkills();
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const { t, currentLanguage, translateText } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const skill = skills.find(s => s.id === id);
   const [entryText, setEntryText] = useState('');
@@ -38,6 +40,8 @@ export default function SkillDetail() {
   const [error, setError] = useState<string | null>(null);
   const [progressInput, setProgressInput] = useState('');
   const [isAddingEntry, setIsAddingEntry] = useState(false);
+  const [translatedName, setTranslatedName] = useState('');
+  const [translatedDescription, setTranslatedDescription] = useState('');
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -57,6 +61,33 @@ export default function SkillDetail() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
+  // Translate skill name and description when language changes
+  React.useEffect(() => {
+    const translateContent = async () => {
+      if (skill && currentLanguage !== 'en') {
+        try {
+          const nameToTranslate = skill.name && skill.name.trim() ? skill.name.trim() : 'Skill';
+          const descToTranslate = skill.description && skill.description.trim() ? skill.description.trim() : '';
+          
+          const translatedNameResult = await translateText(nameToTranslate);
+          const translatedDescResult = descToTranslate ? await translateText(descToTranslate) : '';
+          
+          setTranslatedName(translatedNameResult || nameToTranslate);
+          setTranslatedDescription(translatedDescResult || descToTranslate);
+        } catch (error) {
+          console.error('Translation failed:', error);
+          setTranslatedName(skill.name || 'Skill');
+          setTranslatedDescription(skill.description || '');
+        }
+      } else if (skill) {
+        setTranslatedName(skill.name || 'Skill');
+        setTranslatedDescription(skill.description || '');
+      }
+    };
+
+    translateContent();
+  }, [skill, currentLanguage, translateText]);
+
   // Show loading state while skills are being loaded
   if (skills.length === 0) {
     return (
@@ -73,8 +104,8 @@ export default function SkillDetail() {
       <UniformLayout>
         <View style={styles.center}>
           <Ionicons name="alert-circle" size={64} color={Colors[safeTheme].error} />
-          <Text style={styles.errorTitle}>Skill not found</Text>
-          <Text style={styles.errorSubtitle}>The skill you are looking for does not exist</Text>
+          <Text style={styles.errorTitle}>{t('skillNotFound')}</Text>
+          <Text style={styles.errorSubtitle}>{t('skillNotFoundSubtitle')}</Text>
         </View>
       </UniformLayout>
     );
@@ -154,9 +185,9 @@ export default function SkillDetail() {
       const now = new Date();
       const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (diffDays === 0) return 'Today';
-      if (diffDays === 1) return 'Yesterday';
-      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays === 0) return t('today');
+      if (diffDays === 1) return t('yesterday');
+      if (diffDays < 7) return `${diffDays} ${t('daysAgo')}`;
       return date.toLocaleDateString();
     } catch {
       return 'Unknown date';
@@ -200,10 +231,14 @@ export default function SkillDetail() {
                   <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
                 </TouchableOpacity>
                 <View style={styles.skillInfo}>
-                  <Text style={styles.skillName}>{skill?.name || 'Unnamed Skill'}</Text>
-                  <Text style={styles.skillDate}>Started {formatDate(skill?.startDate || new Date().toISOString())}</Text>
-                  {skill?.description && skill.description.trim() && (
-                    <Text style={styles.skillDescription}>{skill.description}</Text>
+                  <Text style={styles.skillName} numberOfLines={1} ellipsizeMode="tail">
+                    {translatedName || t('unnamedSkill')}
+                  </Text>
+                  <Text style={styles.skillDate}>{t('started')} {formatDate(skill?.startDate || new Date().toISOString())}</Text>
+                  {translatedDescription && translatedDescription.trim() && (
+                    <Text style={styles.skillDescription} numberOfLines={3} ellipsizeMode="tail">
+                      {translatedDescription}
+                    </Text>
                   )}
                 </View>
               </View>
@@ -219,7 +254,7 @@ export default function SkillDetail() {
                end={{ x: 1, y: 1 }}
              >
               <View style={styles.progressHeader}>
-                <Text style={styles.progressTitle}>Current Progress</Text>
+                <Text style={styles.progressTitle}>{t('currentProgress')}</Text>
                 <Text style={[styles.progressValue, { color: getProgressColor(skill.progress) }]}>
                   {skill.progress}%
                 </Text>
@@ -246,7 +281,7 @@ export default function SkillDetail() {
                 <View style={styles.progressInputContainer}>
                   <TextInput
                     style={styles.progressInput}
-                    placeholder="Enter progress (0-100%)"
+                    placeholder={t('enterProgress')}
                     value={progressInput}
                     onChangeText={setProgressInput}
                     keyboardType="numeric"
@@ -256,7 +291,7 @@ export default function SkillDetail() {
                     style={styles.progressSetButton}
                     onPress={handleAddProgress}
                   >
-                    <Text style={styles.progressSetText}>Set</Text>
+                    <Text style={styles.progressSetText}>{t('set')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -265,7 +300,7 @@ export default function SkillDetail() {
 
           {/* Progress Updates */}
           <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <Text style={styles.sectionTitle}>Progress Updates</Text>
+            <Text style={styles.sectionTitle}>{t('progressUpdates')}</Text>
             {skill.progressUpdates.length === 0 ? (
               <LinearGradient
                 colors={Colors.light.gradient.background}
@@ -274,8 +309,8 @@ export default function SkillDetail() {
                 end={{ x: 1, y: 1 }}
               >
                 <Ionicons name="trending-up-outline" size={48} color={Colors.light.textSecondary} />
-                <Text style={styles.emptyTitle}>No progress updates yet</Text>
-                <Text style={styles.emptySubtitle}>Use the buttons above to track your progress</Text>
+                <Text style={styles.emptyTitle}>{t('noProgressUpdates')}</Text>
+                <Text style={styles.emptySubtitle}>{t('useButtonsAbove')}</Text>
               </LinearGradient>
             ) : (
               <LinearGradient
@@ -303,7 +338,7 @@ export default function SkillDetail() {
 
           {/* Diary Section */}
           <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <Text style={styles.sectionTitle}>Diary Entries</Text>
+            <Text style={styles.sectionTitle}>{t('diaryEntries')}</Text>
             {skill.entries.length === 0 ? (
               <LinearGradient
                 colors={Colors.light.gradient.background}
@@ -312,8 +347,8 @@ export default function SkillDetail() {
                 end={{ x: 1, y: 1 }}
               >
                 <Ionicons name="document-text-outline" size={48} color={Colors.light.textSecondary} />
-                <Text style={styles.emptyTitle}>No diary entries yet</Text>
-                <Text style={styles.emptySubtitle}>Start documenting your learning journey below</Text>
+                <Text style={styles.emptyTitle}>{t('noDiaryEntries')}</Text>
+                <Text style={styles.emptySubtitle}>{t('startDocumenting')}</Text>
               </LinearGradient>
             ) : (
               <LinearGradient
@@ -350,7 +385,7 @@ export default function SkillDetail() {
               <View style={styles.inputRow}>
                 <TextInput
                   style={[styles.entryInput, { flex: 1, marginRight: Spacing.sm }]}
-                  placeholder="Write about your progress..."
+                  placeholder={t('writeAboutProgress')}
                   value={entryText}
                   onChangeText={setEntryText}
                   multiline
@@ -359,7 +394,7 @@ export default function SkillDetail() {
                 />
                 <TextInput
                   style={styles.hoursInput}
-                  placeholder="Hours"
+                  placeholder={t('hours')}
                   value={hoursInput}
                   onChangeText={setHoursInput}
                   keyboardType="numeric"
@@ -381,12 +416,12 @@ export default function SkillDetail() {
                   {isAddingEntry ? (
                     <View style={styles.loadingContainer}>
                       <Animated.View style={[styles.loadingSpinner, { transform: [{ rotate: '360deg' }] }]} />
-                      <Text style={styles.loadingText}>Adding...</Text>
+                      <Text style={styles.loadingText}>{t('addingEntry')}</Text>
                     </View>
                   ) : (
                     <>
                       <Ionicons name="add" size={20} color={Colors.light.text} />
-                      <Text style={styles.addEntryButtonText}>Add Entry</Text>
+                      <Text style={styles.addEntryButtonText}>{t('addEntry')}</Text>
                     </>
                   )}
                 </LinearGradient>

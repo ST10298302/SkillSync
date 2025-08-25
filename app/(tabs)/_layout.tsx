@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { Dimensions, Platform } from 'react-native';
 import { HapticTab } from '../../components/HapticTab';
 import { Colors } from '../../constants/Colors';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function TabLayout() {
   const { resolvedTheme } = useTheme();
+  const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
   // State for responsive designs
@@ -101,7 +103,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Skills',
+          title: t('skills'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="library-outline" size={size} color={color} />
           ),
@@ -111,7 +113,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add"
         options={{
-          title: 'Add',
+          title: t('add'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="add-circle" size={size + 4} color={Colors[safeTheme].accent} />
           ),
@@ -127,7 +129,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="analytics"
         options={{
-          title: 'Analytics',
+          title: t('analytics'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="analytics-outline" size={size} color={color} />
           ),
@@ -137,7 +139,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('profile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
