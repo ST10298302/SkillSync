@@ -298,7 +298,7 @@ describe('Performance Tests', () => {
         expect(result.current.skills.skills).toBeDefined();
       });
 
-      const operations = [];
+      const operations: Promise<any>[] = [];
       const startTime = performance.now();
       
       // Perform 200 rapid operations (add, update, delete)
