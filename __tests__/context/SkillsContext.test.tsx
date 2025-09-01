@@ -16,8 +16,10 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
 
 beforeAll(() => {
   // Simulate browser environment checks inside context code
-  // @ts-ignore
-  global.window = global.window || {};
+  Object.defineProperty(global, 'window', {
+    value: {},
+    writable: true,
+  });
   const g: any = globalThis as any;
   g.process = g.process || {};
   g.process.env = g.process.env || {};
@@ -44,49 +46,80 @@ const useBoth = () => {
 describe('SkillsContext', () => {
   it('adds a skill', async () => {
     const { result } = renderHook(() => useBoth(), { wrapper: Providers });
+    
+    // Wait for both contexts to initialize
+    await waitFor(() => {
+      expect(result.current.auth.loading).toBe(false);
+    });
+    
     await act(async () => {
       await result.current.auth.signIn('a@b.com', 'pw');
     });
+    
     await waitFor(() => expect(result.current.auth.isLoggedIn).toBe(true));
+    
     await act(async () => {
       await result.current.skills.addSkill({ id: '', name: 'New Skill', description: '', startDate: new Date().toISOString() });
     });
+    
     await waitFor(() => expect(result.current.skills.skills.length).toBe(1));
     expect(result.current.skills.skills[0].name).toBe('New Skill');
   });
 
   it('updates a skill name', async () => {
     const { result } = renderHook(() => useBoth(), { wrapper: Providers });
+    
+    // Wait for both contexts to initialize
+    await waitFor(() => {
+      expect(result.current.auth.loading).toBe(false);
+    });
+    
     await act(async () => {
       await result.current.auth.signIn('a@b.com', 'pw');
     });
+    
     await waitFor(() => expect(result.current.auth.isLoggedIn).toBe(true));
+    
     await act(async () => {
       await result.current.skills.addSkill({ id: '', name: 'Old', description: '', startDate: new Date().toISOString() });
     });
+    
     // Only assert that we have at least one skill; mock may preload
     await waitFor(() => expect(result.current.skills.skills.length).toBeGreaterThanOrEqual(1));
     const id = result.current.skills.skills[0].id;
+    
     await act(async () => {
       await result.current.skills.updateSkill(id, { name: 'Updated' });
     });
+    
     expect(result.current.skills.skills[0].name).toBe('Updated');
   });
 
   it('deletes a skill', async () => {
     const { result } = renderHook(() => useBoth(), { wrapper: Providers });
+    
+    // Wait for both contexts to initialize
+    await waitFor(() => {
+      expect(result.current.auth.loading).toBe(false);
+    });
+    
     await act(async () => {
       await result.current.auth.signIn('a@b.com', 'pw');
     });
+    
     await waitFor(() => expect(result.current.auth.isLoggedIn).toBe(true));
+    
     await act(async () => {
       await result.current.skills.addSkill({ id: '', name: 'Temp', description: '', startDate: new Date().toISOString() });
     });
+    
     await waitFor(() => expect(result.current.skills.skills.length).toBeGreaterThanOrEqual(1));
     const id = result.current.skills.skills[result.current.skills.skills.length - 1].id;
+    
     await act(async () => {
       await result.current.skills.deleteSkill(id);
     });
+    
     // Ensure the deleted id is no longer present
     await waitFor(() => expect(result.current.skills.skills.find((s) => s.id === id)).toBeUndefined());
   });

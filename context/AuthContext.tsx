@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadAuthState = async () => {
       try {
-        console.log('AuthContext: Loading auth state...');
+        // console.log('AuthContext: Loading auth state...');
 
         // Are we in a browser?
         const inBrowser = typeof window !== 'undefined';
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsLoggedIn(true);
           }
         } else {
-          console.log('AuthContext: Not in browser or Supabase env not set, skipping auth load');
+          // console.log('AuthContext: Not in browser or Supabase env not set, skipping auth load');
         }
       } catch (e) {
         console.error('AuthContext: Failed to load auth state', e);
