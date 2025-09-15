@@ -1,3 +1,7 @@
+import { act, renderHook, waitFor } from '@testing-library/react-native';
+import React from 'react';
+import { AuthProvider, useAuth } from '../../context/AuthContext';
+
 jest.mock('../../services/supabaseService', () => ({
   SupabaseService: {
     signUp: jest.fn(async (email: string) => ({ user: { id: 'u1', email } })),
@@ -6,10 +10,6 @@ jest.mock('../../services/supabaseService', () => ({
     getCurrentUser: jest.fn(async () => null),
   },
 }));
-
-import { act, renderHook, waitFor } from '@testing-library/react-native';
-import React from 'react';
-import { AuthProvider, useAuth } from '../../context/AuthContext';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>

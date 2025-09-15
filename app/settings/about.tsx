@@ -425,7 +425,7 @@ export default function About() {
         <Animated.View style={[styles.footer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <Text style={styles.footerText}>
             Made with ❤️ by the SkillSync team{'\n'}
-            © 2024 SkillSync. All rights reserved.
+            © 2025 SkillSync. All rights reserved.
           </Text>
         </Animated.View>
       </ScrollView>

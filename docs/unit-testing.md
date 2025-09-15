@@ -346,11 +346,11 @@ import { calculateStreak } from '../../utils/streakCalculator';
 describe('streakCalculator', () => {
   it('should calculate streak correctly', () => {
     const dates = [
-      '2024-01-15',
-      '2024-01-16',
-      '2024-01-17',
-      '2024-01-19', // Gap here
-      '2024-01-20',
+      '2025-01-15',
+      '2025-01-16',
+      '2025-01-17',
+      '2025-01-19', // Gap here
+      '2025-01-20',
     ];
     
     const streak = calculateStreak(dates);
@@ -363,7 +363,7 @@ describe('streakCalculator', () => {
   });
 
   it('should handle single date', () => {
-    const streak = calculateStreak(['2024-01-15']);
+    const streak = calculateStreak(['2025-01-15']);
     expect(streak).toBe(1);
   });
 });

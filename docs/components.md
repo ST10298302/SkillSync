@@ -279,7 +279,7 @@ import DiaryItem from '../components/DiaryItem';
 
 <DiaryItem
   text="Studied React Native components today"
-  date="2024-01-15T10:00:00Z"
+  date="2025-01-15T10:00:00Z"
   hours={2.5}
 />
 ```
