@@ -1,3 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.19.4
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: 'npm'
+
+      - name: Show Node and npm versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Install dependencies (CI)
+        run: npm ci
+
+      - name: Run unit and integration tests
+        run: npm run test:ci
+
+      - name: Run performance tests (basic)
+        run: npm run test:performance
+
+      - name: Run performance tests (advanced)
+        run: npm run test:performance:advanced
 name: Expo CI (Modern)
 
 on:
