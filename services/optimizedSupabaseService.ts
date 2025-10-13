@@ -412,16 +412,11 @@ export class OptimizedSupabaseService {
       const shouldCompress = fileInfo.size && fileInfo.size > 1024 * 1024; // 1MB threshold
       
       let base64: string;
-      if (shouldCompress) {
-        // Implement compression logic here if needed
-        base64 = await FileSystem.readAsStringAsync(imageUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-      } else {
-        base64 = await FileSystem.readAsStringAsync(imageUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-      }
+      // Read file as base64 (Expo SDK 54 exports constants separately)
+      const encoding: any = (FileSystem as any).EncodingType
+        ? (FileSystem as any).EncodingType.Base64
+        : 'base64';
+      base64 = await FileSystem.readAsStringAsync(imageUri, { encoding });
 
       // Generate unique filename
       const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';

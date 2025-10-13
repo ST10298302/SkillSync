@@ -183,9 +183,10 @@ export class SupabaseService {
   static async uploadProfilePicture(userId: string, imageUri: string): Promise<string> {
     try {
       // Convert image to base64
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      const encoding: any = (FileSystem as any).EncodingType
+        ? (FileSystem as any).EncodingType.Base64
+        : 'base64';
+      const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding });
 
       // Generate unique filename
       const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';

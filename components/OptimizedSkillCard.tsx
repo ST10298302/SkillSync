@@ -365,10 +365,10 @@ const OptimizedSkillCard = React.memo<OptimizedSkillCardProps>(({
   }), [themeColors]);
 
   // Memoized accent gold color
-  const accentGold = useMemo(() => 
-    (themeColors as any)?.accentGold ?? themeColors.accent, 
-    [themeColors]
-  );
+  const accentGold = useMemo(() => {
+    const maybe = (themeColors as any)?.accentGold;
+    return typeof maybe === 'string' ? maybe : themeColors.accent;
+  }, [themeColors]);
 
   // Render the skill card with animations and interactive elements
   return (

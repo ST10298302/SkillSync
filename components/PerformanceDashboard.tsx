@@ -169,7 +169,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
       marginTop: Spacing.md,
     },
     queryHeader: {
-      ...Typography.h5,
+      ...Typography.h4,
       color: themeColors.text,
       marginBottom: Spacing.sm,
     },

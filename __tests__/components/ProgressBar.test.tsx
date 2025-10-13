@@ -9,7 +9,7 @@ jest.mock('../../context/ThemeContext', () => ({
 
 // Mock LinearGradient with a simple passthrough component
 jest.mock('expo-linear-gradient', () => ({
-  LinearGradient: ({ children }: any) => children ?? null,
+  LinearGradient: ({ children }: any) => (children ? <>{children}</> : null),
 }));
 
 describe('ProgressBar', () => {

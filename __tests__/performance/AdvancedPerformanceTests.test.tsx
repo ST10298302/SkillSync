@@ -437,7 +437,7 @@ describe('Advanced Performance Tests', () => {
       const startTime = performance.now();
       
       // Mix successful and failed operations
-      const operations = [];
+      const operations: Promise<any>[] = [];
       for (let i = 0; i < 10; i++) {
         if (i % 3 === 0) {
           // This should succeed
