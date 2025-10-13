@@ -114,4 +114,26 @@ jest.mock('./services/googleTranslateAPI', () => ({
   },
 }));
 
+// Reduce noisy warnings/errors in CI output that don't affect assertions
+const originalWarn = console.warn;
+const originalError = console.error;
+
+const suppressPatterns = [
+  /react-native-reanimated\/plugin.*react-native-worklets\/plugin/i,
+  /not wrapped in act\(\)/i,
+  /"useNativeDriver" was not specified/i,
+];
+
+console.warn = (...args) => {
+  const message = args?.[0]?.toString?.() || '';
+  if (suppressPatterns.some((p) => p.test(message))) return;
+  originalWarn.apply(console, args);
+};
+
+console.error = (...args) => {
+  const message = args?.[0]?.toString?.() || '';
+  if (suppressPatterns.some((p) => p.test(message))) return;
+  originalError.apply(console, args);
+};
+
 
