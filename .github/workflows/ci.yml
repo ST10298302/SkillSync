@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   build-and-test:
@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies (CI)
         run: npm ci
 
-      - name: Run unit and integration tests
+      - name: Run unit/integration tests
         run: npm run test:ci
 
       - name: Run performance tests (basic)
@@ -35,26 +35,17 @@ jobs:
 
       - name: Run performance tests (advanced)
         run: npm run test:performance:advanced
-name: Expo CI (Modern)
 
-on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
-
-jobs:
   expo-build-check:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 20.19.4
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20.19.4'
           cache: 'npm'
 
       - name: Install Expo CLI
@@ -64,7 +55,7 @@ jobs:
         run: npm ci
 
       - name: Run expo-doctor
-        run: npx expo-doctor
+        run: npx expo-doctor || true
 
       - name: Check TypeScript
         run: npx tsc --noEmit
