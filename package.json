@@ -16,6 +16,9 @@
     "test:integration": "jest __tests__/integration",
     "test:regression": "jest __tests__/regression",
     "test:performance": "jest __tests__/performance",
+    "test:performance:advanced": "jest __tests__/performance/AdvancedPerformanceTests.test.tsx",
+    "test:performance:full": "node scripts/performance-test-runner.js",
+    "test:performance:monitor": "jest __tests__/performance --verbose --detectOpenHandles",
     "test:all": "jest",
     "test:ci": "jest --ci --coverage --watchAll=false"
   },
