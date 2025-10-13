@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
+import { View } from 'react-native';
 import ProgressBar from '../../components/ProgressBar';
 
 // Mock theme hook to provide stable colors and theme
@@ -15,7 +16,7 @@ jest.mock('expo-linear-gradient', () => ({
 describe('ProgressBar', () => {
   it('renders width matching progress percentage', () => {
     const { UNSAFE_getByType } = render(<ProgressBar progress={50} />);
-    const style = UNSAFE_getByType('View').props.children.props.style;
+    const style = UNSAFE_getByType(View).props.children.props.style;
     const width = Array.isArray(style)
       ? (style.find((s: any) => s && typeof s === 'object' && 'width' in s) || {}).width
       : style.width;
@@ -33,7 +34,7 @@ describe('ProgressBar', () => {
 
   it('allows values beyond 100 without clamping (current behavior)', () => {
     const { UNSAFE_getByType } = render(<ProgressBar progress={120} />);
-    const style = UNSAFE_getByType('View').props.children.props.style;
+    const style = UNSAFE_getByType(View).props.children.props.style;
     const width = Array.isArray(style)
       ? (style.find((s: any) => s && typeof s === 'object' && 'width' in s) || {}).width
       : style.width;

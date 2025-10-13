@@ -122,7 +122,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
       fontWeight: '600',
     },
     toggleButton: {
-      padding: Spacing.xs,
+      padding: Spacing.sm,
     },
     scoreContainer: {
       flexDirection: 'row',

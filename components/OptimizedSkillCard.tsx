@@ -322,7 +322,7 @@ const OptimizedSkillCard = React.memo<OptimizedSkillCardProps>(({
       height: 24,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: (themeColors as any)?.accentGold + '40' ?? themeColors.accent + '40',
+      borderColor: ((themeColors as any)?.accentGold ? (themeColors as any).accentGold : themeColors.accent) + '40',
       marginRight: Spacing.xs,
       gap: 4,
     },
