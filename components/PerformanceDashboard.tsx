@@ -231,7 +231,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
       color: themeColors.textSecondary,
       backgroundColor: themeColors.backgroundSecondary,
       padding: Spacing.xs,
-      borderRadius: BorderRadius.xs,
+      borderRadius: BorderRadius.sm,
       marginBottom: Spacing.xs,
     },
   });
