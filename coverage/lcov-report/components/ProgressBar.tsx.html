@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/9</span>
+                <span class='fraction'>6/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -134,16 +134,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -155,7 +153,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -188,14 +188,14 @@ interface ProgressBarProps {
  * provided percentage.  Accepts optional height and color props.
  * Uses metallic palette and theme system.
  */
-const ProgressBar: React.FC&lt;ProgressBarProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> progress, height = <span class="branch-0 cbranch-no" title="branch not covered" >10,</span> color }) =&gt; {</span>
-  const { resolvedTheme } = <span class="cstat-no" title="statement not covered" >useTheme();</span>
-  const safeTheme = <span class="cstat-no" title="statement not covered" >resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';</span>
-  const themeColors = <span class="cstat-no" title="statement not covered" >Colors[safeTheme] || Colors.light;</span>
-  const fillGradient = <span class="cstat-no" title="statement not covered" >color ? [color, color] : ['#60a5fa', '#f59e42'];</span>
-  const bgColor = <span class="cstat-no" title="statement not covered" >themeColors.backgroundTertiary;</span>
+const ProgressBar: React.FC&lt;ProgressBarProps&gt; = ({ progress, height = 10, color }) =&gt; {
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || <span class="branch-1 cbranch-no" title="branch not covered" >resolvedTheme === 'dark' </span>? resolvedTheme : <span class="branch-1 cbranch-no" title="branch not covered" >'light';</span>
+  const themeColors = Colors[safeTheme] || <span class="branch-1 cbranch-no" title="branch not covered" >Colors.light;</span>
+  const fillGradient = color ? [color, color] : ['#60a5fa', '#f59e42'];
+  const bgColor = themeColors.backgroundTertiary;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
+  return (
     &lt;View style={[styles.container, { height, backgroundColor: bgColor }] }&gt;
       &lt;View style={[styles.fill, { width: `${progress}%` }]}&gt; 
         &lt;LinearGradient
@@ -209,7 +209,7 @@ const ProgressBar: React.FC&lt;ProgressBarProps&gt; = <span class="cstat-no" tit
   );
 };
 &nbsp;
-const styles = <span class="cstat-no" title="statement not covered" >StyleSheet.create({</span>
+const styles = StyleSheet.create({
   container: {
     width: '100%',
     borderRadius: 4,
@@ -232,7 +232,7 @@ export default ProgressBar;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-01T11:46:34.722Z
+                at 2025-10-13T11:06:56.396Z
             </div>
         <script src="../prettify.js"></script>
         <script>
