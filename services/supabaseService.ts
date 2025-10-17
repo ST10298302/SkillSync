@@ -428,23 +428,42 @@ export class SupabaseService {
 
   static async deleteUserAccount(userId: string) {
     try {
+      // First, get all skill IDs for this user
+      const { data: userSkills, error: skillsError } = await supabase
+        .from('skills')
+        .select('id')
+        .eq('user_id', userId);
+
+      if (skillsError) {
+        console.error('Error fetching user skills:', skillsError);
+        throw skillsError;
+      }
+
+      const skillIds = userSkills?.map(skill => skill.id) || [];
+
       // Delete all user data in order (due to foreign key constraints)
-      const deleteOperations = [
-        // Delete progress updates
-        supabase.from('progress_updates').delete().eq('skill_id', 
-          supabase.from('skills').select('id').eq('user_id', userId)
-        ),
-        // Delete skill entries
-        supabase.from('skill_entries').delete().eq('skill_id',
-          supabase.from('skills').select('id').eq('user_id', userId)
-        ),
-        // Delete skills
-        supabase.from('skills').delete().eq('user_id', userId),
-        // Delete user profile
-        supabase.from('users').delete().eq('id', userId),
-        // Delete auth user (this will cascade delete related data)
-        supabase.auth.admin.deleteUser(userId)
-      ];
+      const deleteOperations = [];
+
+      // Delete progress updates for user's skills
+      if (skillIds.length > 0) {
+        deleteOperations.push(
+          supabase.from('progress_updates').delete().in('skill_id', skillIds)
+        );
+        // Delete skill entries for user's skills
+        deleteOperations.push(
+          supabase.from('skill_entries').delete().in('skill_id', skillIds)
+        );
+      }
+
+      // Delete skills
+      deleteOperations.push(
+        supabase.from('skills').delete().eq('user_id', userId)
+      );
+
+      // Delete user profile
+      deleteOperations.push(
+        supabase.from('users').delete().eq('id', userId)
+      );
 
       // Execute deletions
       for (const operation of deleteOperations) {
@@ -455,6 +474,9 @@ export class SupabaseService {
         }
       }
 
+      // Note: Auth user deletion should be handled by the client-side auth
+      // supabase.auth.admin.deleteUser() requires admin privileges
+      
       return { success: true };
     } catch (error) {
       console.error('Error deleting user account:', error);
