@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { ProgressUpdate, Skill, SkillEntry, supabase, User } from '../utils/supabase';
 
 // Cache interface for storing query results
@@ -412,11 +412,10 @@ export class OptimizedSupabaseService {
       const shouldCompress = fileInfo.size && fileInfo.size > 1024 * 1024; // 1MB threshold
       
       let base64: string;
-      // Read file as base64 (Expo SDK 54 exports constants separately)
-      const encoding: any = (FileSystem as any).EncodingType
-        ? (FileSystem as any).EncodingType.Base64
-        : 'base64';
-      base64 = await FileSystem.readAsStringAsync(imageUri, { encoding });
+      // Read file as base64 using legacy API
+      base64 = await FileSystem.readAsStringAsync(imageUri, { 
+        encoding: FileSystem.EncodingType.Base64
+      });
 
       // Generate unique filename
       const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';

@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { ProgressUpdate, Skill, SkillEntry, supabase, User } from '../utils/supabase';
 
 export class SupabaseService {
@@ -182,11 +182,10 @@ export class SupabaseService {
   // Profile picture methods
   static async uploadProfilePicture(userId: string, imageUri: string): Promise<string> {
     try {
-      // Convert image to base64
-      const encoding: any = (FileSystem as any).EncodingType
-        ? (FileSystem as any).EncodingType.Base64
-        : 'base64';
-      const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding });
+      // Convert image to base64 using legacy API
+      const base64 = await FileSystem.readAsStringAsync(imageUri, { 
+        encoding: FileSystem.EncodingType.Base64
+      });
 
       // Generate unique filename
       const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
@@ -232,36 +231,43 @@ export class SupabaseService {
 
   static async removeProfilePicture(userId: string): Promise<void> {
     try {
-      // Get current user to find existing image
-      const { data: user, error: userError } = await supabase
+      // Get current user to find existing image (don't use .single() to avoid error if no rows)
+      const { data: users, error: userError } = await supabase
         .from('users')
         .select('profile_picture_url')
-        .eq('id', userId)
-        .single();
+        .eq('id', userId);
 
       if (userError) {
         console.error('Error fetching user:', userError);
         throw userError;
       }
 
+      // Check if user exists and has a profile picture
+      const user = users && users.length > 0 ? users[0] : null;
+      
       if (user?.profile_picture_url) {
-        // Extract file path from URL
-        const url = new URL(user.profile_picture_url);
-        const filePath = url.pathname.split('/').slice(-2).join('/'); // Get last two parts of path
+        try {
+          // Extract file path from URL
+          const url = new URL(user.profile_picture_url);
+          const filePath = url.pathname.split('/').slice(-2).join('/'); // Get last two parts of path
 
-        // Delete from storage
-        const { error: deleteError } = await supabase.storage
-          .from('avatars')
-          .remove([filePath]);
+          // Delete from storage
+          const { error: deleteError } = await supabase.storage
+            .from('avatars')
+            .remove([filePath]);
 
-        if (deleteError) {
-          console.error('Storage delete error:', deleteError);
-          // Don't throw here, continue to update user profile
+          if (deleteError) {
+            console.error('Storage delete error:', deleteError);
+            // Don't throw here, continue to update user profile
+          }
+        } catch (urlError) {
+          console.error('Error parsing profile picture URL:', urlError);
+          // Continue to update user profile even if URL parsing fails
         }
       }
 
-      // Update user profile to remove image URL
-      await this.updateUserProfile(userId, { profile_picture_url: undefined });
+      // Update user profile to remove image URL (set to null instead of undefined)
+      await this.updateUserProfile(userId, { profile_picture_url: null });
     } catch (error) {
       console.error('Profile picture removal failed:', error);
       throw error;
