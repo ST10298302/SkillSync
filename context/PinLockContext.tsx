@@ -47,6 +47,7 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
     }
   };
 
+
   const lockApp = () => {
     if (isPinEnabled) {
       setIsLocked(true);
@@ -63,7 +64,7 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
       hasCheckedPinRef.current = false; // Reset the ref when user changes
       checkPinStatus();
     } else {
-      // Reset PIN state when user logs out
+      // Reset state when user logs out
       setIsPinEnabled(false);
       setIsLocked(false);
       hasCheckedPinRef.current = false;

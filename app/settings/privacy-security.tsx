@@ -18,6 +18,7 @@ import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { BiometricService } from '../../services/biometricService';
 import { PinService } from '../../services/pinService';
 import { SupabaseService } from '../../services/supabaseService';
 
@@ -44,6 +45,10 @@ export default function PrivacySecuritySettings() {
 
   const [loading, setLoading] = useState(false);
   const [pinStatus, setPinStatus] = useState({ enabled: false, hasPin: false });
+  const [biometricStatus, setBiometricStatus] = useState({
+    available: false,
+    enabled: false,
+  });
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -73,15 +78,20 @@ export default function PrivacySecuritySettings() {
   const loadSettings = async () => {
     try {
       setLoading(true);
-      const [privacyData, securityData, pinData] = await Promise.all([
+      const [privacyData, securityData, pinData, biometricData] = await Promise.all([
         SupabaseService.getPrivacySettings(user!.id),
         SupabaseService.getSecuritySettings(user!.id),
-        PinService.getPinStatus()
+        PinService.getPinStatus(),
+        BiometricService.getBiometricStatus()
       ]);
       
       setPrivacySettings(privacyData);
       setSecuritySettings(securityData);
       setPinStatus(pinData);
+      setBiometricStatus({
+        available: biometricData.available,
+        enabled: biometricData.enabled,
+      });
     } catch (error) {
       console.error('Error loading settings:', error);
     } finally {
@@ -164,6 +174,82 @@ export default function PrivacySecuritySettings() {
                 } catch (error) {
                   console.error('Error disabling PIN:', error);
                   Alert.alert('Error', 'Failed to disable PIN protection. Please try again.');
+                }
+              }
+            }
+          ]
+        );
+        return;
+      }
+    }
+
+    // Special handling for biometric authentication
+    if (key === 'biometricAuth') {
+      if (!securitySettings.biometricAuth) {
+        // Enabling biometric - check if biometric is available
+        if (!biometricStatus.available) {
+          Alert.alert(
+            'Biometric Not Available',
+            'Biometric authentication is not available on this device or not set up.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+
+        // Test biometric authentication
+        try {
+          const success = await BiometricService.authenticate(
+            'Enable biometric authentication for SkillSync'
+          );
+          
+          if (success) {
+            await BiometricService.enableBiometric();
+            setSecuritySettings(prev => ({
+              ...prev,
+              biometricAuth: true,
+            }));
+            setBiometricStatus(prev => ({ ...prev, enabled: true }));
+            
+            await SupabaseService.updateSecuritySettings(user.id, {
+              biometricAuth: true,
+            });
+          } else {
+            Alert.alert(
+              'Authentication Failed',
+              'Biometric authentication failed. Please try again.',
+              [{ text: 'OK' }]
+            );
+          }
+        } catch (error) {
+          console.error('Error enabling biometric:', error);
+          Alert.alert('Error', 'Failed to enable biometric authentication. Please try again.');
+        }
+        return;
+      } else {
+        // Disabling biometric - confirm action
+        Alert.alert(
+          'Disable Biometric Authentication',
+          'Are you sure you want to disable biometric authentication?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Disable', 
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await BiometricService.disableBiometric();
+                  setSecuritySettings(prev => ({
+                    ...prev,
+                    biometricAuth: false,
+                  }));
+                  setBiometricStatus(prev => ({ ...prev, enabled: false }));
+                  
+                  await SupabaseService.updateSecuritySettings(user.id, {
+                    biometricAuth: false,
+                  });
+                } catch (error) {
+                  console.error('Error disabling biometric:', error);
+                  Alert.alert('Error', 'Failed to disable biometric authentication. Please try again.');
                 }
               }
             }
@@ -369,7 +455,7 @@ export default function PrivacySecuritySettings() {
 
   const BiometricAuthSwitch = () => (
     <CustomSwitch
-      value={securitySettings.biometricAuth}
+      value={biometricStatus.enabled}
       onValueChange={() => toggleSecuritySetting('biometricAuth')}
       testID="biometric-auth-switch"
     />
@@ -660,8 +746,11 @@ export default function PrivacySecuritySettings() {
             <SettingItem
               id="biometric-auth"
               title="Biometric Authentication"
-              subtitle="Use fingerprint or face ID to unlock"
-              value={securitySettings.biometricAuth}
+              subtitle={biometricStatus.available 
+                ? (biometricStatus.enabled ? "Biometric authentication enabled" : "Use fingerprint or face ID to unlock")
+                : "Biometric authentication not available"
+              }
+              value={biometricStatus.enabled}
               onToggle={() => toggleSecuritySetting('biometricAuth')}
               icon="finger-print-outline"
               customSwitch={<BiometricAuthSwitch />}

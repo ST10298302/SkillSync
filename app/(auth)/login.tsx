@@ -21,6 +21,7 @@ import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { BiometricService } from '../../services/biometricService';
 
 /**
  * Enhanced login screen with modern design, animations, and improved UX
@@ -36,6 +37,9 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [hasStoredCredentials, setHasStoredCredentials] = useState(false);
   
   // Refs for input focus management
   const emailInputRef = useRef<TextInput>(null);
@@ -64,7 +68,84 @@ export default function Login() {
         useNativeDriver: true,
       }),
     ]).start();
+
+    // Check biometric availability
+    checkBiometricStatus();
   }, [fadeAnim, slideAnim, logoScale]);
+
+  const checkBiometricStatus = async () => {
+    try {
+      const [status, hasCredentials] = await Promise.all([
+        BiometricService.getBiometricStatus(),
+        BiometricService.hasStoredCredentials()
+      ]);
+      console.log('Biometric status check:', status);
+      console.log('Has stored credentials:', hasCredentials);
+      setBiometricAvailable(status.available);
+      setBiometricEnabled(status.enabled);
+      setHasStoredCredentials(hasCredentials);
+    } catch (error) {
+      console.error('Error checking biometric status:', error);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    console.log('Biometric login button pressed');
+    console.log('biometricAvailable:', biometricAvailable, 'biometricEnabled:', biometricEnabled, 'hasStoredCredentials:', hasStoredCredentials);
+    
+    if (!biometricAvailable || !biometricEnabled || !hasStoredCredentials) {
+      console.log('Biometric login conditions not met');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    console.log('Starting biometric authentication...');
+
+    try {
+      // Add a small delay to ensure UI is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // First authenticate with biometric
+      const success = await BiometricService.authenticate(
+        'Use biometric to sign in to SkillSync'
+      );
+      
+      console.log('Biometric authentication result:', success);
+
+      if (success) {
+        // Get stored credentials
+        const credentials = await BiometricService.getStoredCredentials();
+        console.log('Retrieved stored credentials:', credentials ? 'Found' : 'Not found');
+        
+        if (credentials) {
+          console.log('Attempting to sign in with stored credentials...');
+          // Use stored credentials to sign in
+          await signIn(credentials.email, credentials.password);
+          console.log('Sign in successful with biometric');
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          
+          // Add a small delay to ensure state is updated, then redirect
+          setTimeout(() => {
+            console.log('Redirecting to main app after biometric login...');
+            router.replace('/(tabs)');
+          }, 100);
+        } else {
+          setError('No stored credentials found. Please login with email and password first.');
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        }
+      } else {
+        setError('Biometric authentication failed. Please try again.');
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } catch (error) {
+      console.error('Biometric login error:', error);
+      setError('Biometric authentication failed. Please use email and password.');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -79,6 +160,16 @@ export default function Login() {
     try {
       await signIn(email.trim(), password);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      // Store credentials for biometric login if biometric is available and enabled
+      if (biometricAvailable && biometricEnabled) {
+        try {
+          await BiometricService.storeCredentials(email.trim(), password);
+          console.log('Credentials stored for biometric login');
+        } catch (error) {
+          console.error('Failed to store credentials for biometric login:', error);
+        }
+      }
       
       // Add a small delay to ensure state is updated, then redirect
       setTimeout(() => {
@@ -226,6 +317,25 @@ export default function Login() {
       ...Typography.button,
       color: Colors[safeTheme].text,
     },
+    biometricButton: {
+      marginTop: Spacing.md,
+      borderRadius: BorderRadius.lg,
+      borderWidth: 1,
+      borderColor: Colors[safeTheme].accent,
+      backgroundColor: 'transparent',
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.lg,
+    },
+    biometricButtonContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    biometricButtonText: {
+      ...Typography.button,
+      color: Colors[safeTheme].accent,
+      marginLeft: Spacing.sm,
+    },
     signupContainer: {
       flexDirection: 'row',
       justifyContent: 'center',
@@ -317,6 +427,26 @@ export default function Login() {
                     )}
                   </LinearGradient>
                 </TouchableOpacity>
+
+                {/* Biometric Login Button */}
+                {biometricAvailable && biometricEnabled && hasStoredCredentials && (
+                  <TouchableOpacity 
+                    style={styles.biometricButton} 
+                    onPress={handleBiometricLogin}
+                    disabled={isLoading}
+                  >
+                    <View style={styles.biometricButtonContent}>
+                      <Ionicons 
+                        name="finger-print-outline" 
+                        size={24} 
+                        color={Colors[safeTheme].accent} 
+                      />
+                      <Text style={styles.biometricButtonText}>
+                        Use Biometric
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
 
                 <TouchableOpacity onPress={handleSignUpPress} style={styles.signupContainer}>
                   <Text style={styles.signupText}>Don&apos;t have an account? </Text>
