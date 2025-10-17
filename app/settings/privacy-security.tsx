@@ -1,35 +1,38 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  Alert,
-  Animated,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Animated,
+    ScrollView,
+    Share,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 import Logo from '../../components/Logo';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { PinService } from '../../services/pinService';
+import { SupabaseService } from '../../services/supabaseService';
 
 export default function PrivacySecuritySettings() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const { user } = useAuth();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [privacySettings, setPrivacySettings] = useState({
-    profileVisibility: 'public',
+    profileVisibility: 'public' as 'public' | 'private' | 'friends',
     showProgress: true,
     showStreaks: true,
     allowAnalytics: true,
-    allowCrashReports: true,
   });
 
   const [securitySettings, setSecuritySettings] = useState({
@@ -38,6 +41,9 @@ export default function PrivacySecuritySettings() {
     autoLock: true,
     sessionTimeout: '30min',
   });
+
+  const [loading, setLoading] = useState(false);
+  const [pinStatus, setPinStatus] = useState({ enabled: false, hasPin: false });
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -57,20 +63,200 @@ export default function PrivacySecuritySettings() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  const togglePrivacySetting = (key: keyof typeof privacySettings) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPrivacySettings(prev => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+  // Load settings from database
+  useEffect(() => {
+    if (user?.id) {
+      loadSettings();
+    }
+  }, [user?.id]);
+
+  const loadSettings = async () => {
+    try {
+      setLoading(true);
+      const [privacyData, securityData, pinData] = await Promise.all([
+        SupabaseService.getPrivacySettings(user!.id),
+        SupabaseService.getSecuritySettings(user!.id),
+        PinService.getPinStatus()
+      ]);
+      
+      setPrivacySettings(privacyData);
+      setSecuritySettings(securityData);
+      setPinStatus(pinData);
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleSecuritySetting = (key: keyof typeof securitySettings) => {
+  const togglePrivacySetting = async (key: keyof typeof privacySettings) => {
+    if (!user?.id) return;
+    
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    const newValue = !privacySettings[key];
+    setPrivacySettings(prev => ({
+      ...prev,
+      [key]: newValue,
+    }));
+
+    try {
+      await SupabaseService.updatePrivacySettings(user.id, {
+        [key]: newValue,
+      });
+    } catch (error) {
+      console.error('Error updating privacy setting:', error);
+      // Revert on error
+      setPrivacySettings(prev => ({
+        ...prev,
+        [key]: !newValue,
+      }));
+      Alert.alert('Error', 'Failed to update setting. Please try again.');
+    }
+  };
+
+  const toggleSecuritySetting = async (key: keyof typeof securitySettings) => {
+    if (!user?.id) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // Special handling for PIN requirement
+    if (key === 'requirePin') {
+      if (!securitySettings.requirePin) {
+        // Enabling PIN - check if PIN exists
+        if (!pinStatus.hasPin) {
+          Alert.alert(
+            'Set Up PIN',
+            'You need to set up a PIN first before enabling PIN protection.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { 
+                text: 'Set Up PIN', 
+                onPress: () => router.push('/settings/pin-setup')
+              }
+            ]
+          );
+          return;
+        }
+      } else {
+        // Disabling PIN - confirm action
+        Alert.alert(
+          'Disable PIN Protection',
+          'Are you sure you want to disable PIN protection? This will make your app less secure.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Disable', 
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await PinService.disablePin();
+                  await SupabaseService.updateSecuritySettings(user.id, {
+                    requirePin: false,
+                  });
+                  
+                  setSecuritySettings(prev => ({
+                    ...prev,
+                    requirePin: false,
+                  }));
+                  
+                  setPinStatus(prev => ({ ...prev, enabled: false }));
+                } catch (error) {
+                  console.error('Error disabling PIN:', error);
+                  Alert.alert('Error', 'Failed to disable PIN protection. Please try again.');
+                }
+              }
+            }
+          ]
+        );
+        return;
+      }
+    }
+    
+    const newValue = !securitySettings[key];
     setSecuritySettings(prev => ({
       ...prev,
-      [key]: !prev[key],
+      [key]: newValue,
     }));
+
+    try {
+      await SupabaseService.updateSecuritySettings(user.id, {
+        [key]: newValue,
+      });
+      
+      // Update PIN status if enabling PIN
+      if (key === 'requirePin' && newValue) {
+        setPinStatus(prev => ({ ...prev, enabled: true }));
+      }
+    } catch (error) {
+      console.error('Error updating security setting:', error);
+      // Revert on error
+      setSecuritySettings(prev => ({
+        ...prev,
+        [key]: !newValue,
+      }));
+      Alert.alert('Error', 'Failed to update setting. Please try again.');
+    }
+  };
+
+  const handleExportData = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      const data = await SupabaseService.exportUserData(user.id);
+      
+      // Create a JSON string and share it
+      const jsonString = JSON.stringify(data, null, 2);
+      
+      await Share.share({
+        message: jsonString,
+        title: 'SkillSync Data Export',
+      });
+      
+      Alert.alert('Success', 'Your data has been exported successfully.');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      Alert.alert('Error', 'Failed to export data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfileVisibility = async (visibility: 'public' | 'private' | 'friends') => {
+    if (!user?.id) return;
+    
+    try {
+      await SupabaseService.updatePrivacySettings(user.id, {
+        profileVisibility: visibility,
+      });
+      
+      setPrivacySettings(prev => ({
+        ...prev,
+        profileVisibility: visibility,
+      }));
+    } catch (error) {
+      console.error('Error updating profile visibility:', error);
+      Alert.alert('Error', 'Failed to update profile visibility. Please try again.');
+    }
+  };
+
+  const updateSessionTimeout = async (timeout: string) => {
+    if (!user?.id) return;
+    
+    try {
+      await SupabaseService.updateSecuritySettings(user.id, {
+        sessionTimeout: timeout,
+      });
+      
+      setSecuritySettings(prev => ({
+        ...prev,
+        sessionTimeout: timeout,
+      }));
+    } catch (error) {
+      console.error('Error updating session timeout:', error);
+      Alert.alert('Error', 'Failed to update session timeout. Please try again.');
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -82,55 +268,167 @@ export default function PrivacySecuritySettings() {
         { 
           text: 'Delete', 
           style: 'destructive',
-          onPress: () => {
-            // TODO: Implement account deletion
-            Alert.alert('Account Deletion', 'Account deletion feature will be implemented soon.');
+          onPress: async () => {
+            if (!user?.id) return;
+            
+            try {
+              setLoading(true);
+              await SupabaseService.deleteUserAccount(user.id);
+              
+              Alert.alert(
+                'Account Deleted',
+                'Your account has been successfully deleted.',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // Sign out and redirect to login
+                      router.replace('/(auth)');
+                    }
+                  }
+                ]
+              );
+            } catch (error) {
+              console.error('Error deleting account:', error);
+              Alert.alert('Error', 'Failed to delete account. Please try again.');
+            } finally {
+              setLoading(false);
+            }
           }
         },
       ]
     );
   };
 
+  // Custom switch component to avoid React Native Switch issues
+  const CustomSwitch = ({ value, onValueChange, testID }: { value: boolean; onValueChange: () => void; testID?: string }) => {
+    const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+    useEffect(() => {
+      Animated.timing(animatedValue, {
+        toValue: value ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }, [value, animatedValue]);
+
+    const translateX = animatedValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [2, 22],
+    });
+
+    return (
+      <TouchableOpacity
+        testID={testID}
+        onPress={onValueChange}
+        style={[
+          styles.customSwitch,
+          {
+            backgroundColor: value ? themeColors.accent + '40' : themeColors.border,
+          }
+        ]}
+        activeOpacity={0.7}
+      >
+        <Animated.View
+          style={[
+            styles.customSwitchThumb,
+            {
+              backgroundColor: value ? themeColors.accent : themeColors.textSecondary,
+              transform: [{ translateX }],
+            }
+          ]}
+        />
+      </TouchableOpacity>
+    );
+  };
+
+  // Individual switch components using custom switch
+  const ShowProgressSwitch = () => (
+    <CustomSwitch
+      value={privacySettings.showProgress}
+      onValueChange={() => togglePrivacySetting('showProgress')}
+      testID="show-progress-switch"
+    />
+  );
+
+  const ShowStreaksSwitch = () => (
+    <CustomSwitch
+      value={privacySettings.showStreaks}
+      onValueChange={() => togglePrivacySetting('showStreaks')}
+      testID="show-streaks-switch"
+    />
+  );
+
+  const AllowAnalyticsSwitch = () => (
+    <CustomSwitch
+      value={privacySettings.allowAnalytics}
+      onValueChange={() => togglePrivacySetting('allowAnalytics')}
+      testID="allow-analytics-switch"
+    />
+  );
+
+  const BiometricAuthSwitch = () => (
+    <CustomSwitch
+      value={securitySettings.biometricAuth}
+      onValueChange={() => toggleSecuritySetting('biometricAuth')}
+      testID="biometric-auth-switch"
+    />
+  );
+
+  const RequirePinSwitch = () => (
+    <CustomSwitch
+      value={securitySettings.requirePin}
+      onValueChange={() => toggleSecuritySetting('requirePin')}
+      testID="require-pin-switch"
+    />
+  );
+
+  const AutoLockSwitch = () => (
+    <CustomSwitch
+      value={securitySettings.autoLock}
+      onValueChange={() => toggleSecuritySetting('autoLock')}
+      testID="auto-lock-switch"
+    />
+  );
+
   const SettingItem = ({ 
+    id,
     title, 
     subtitle, 
     value, 
     onToggle, 
     icon,
-    type = 'switch'
+    type = 'switch',
+    customSwitch
   }: {
+    id: string;
     title: string;
     subtitle: string;
     value: boolean | string;
     onToggle: () => void;
     icon: string;
     type?: 'switch' | 'chevron';
-  }) => (
-    <TouchableOpacity 
-      style={styles.settingItem}
-      onPress={type === 'chevron' ? onToggle : undefined}
-      disabled={type === 'switch'}
-    >
-      <View style={styles.settingIcon}>
-        <Ionicons name={icon as any} size={24} color={themeColors.accent} />
+    customSwitch?: React.ReactNode;
+  }) => {
+    return (
+      <View style={styles.settingItem}>
+        <View style={styles.settingIcon}>
+          <Ionicons name={icon as any} size={24} color={themeColors.accent} />
+        </View>
+        <View style={styles.settingContent}>
+          <Text style={styles.settingTitle}>{title}</Text>
+          <Text style={styles.settingSubtitle}>{subtitle}</Text>
+        </View>
+        {type === 'switch' ? (
+          customSwitch
+        ) : (
+          <TouchableOpacity onPress={onToggle}>
+            <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
+          </TouchableOpacity>
+        )}
       </View>
-      <View style={styles.settingContent}>
-        <Text style={styles.settingTitle}>{title}</Text>
-        <Text style={styles.settingSubtitle}>{subtitle}</Text>
-      </View>
-      {type === 'switch' ? (
-        <Switch
-          value={value as boolean}
-          onValueChange={onToggle}
-          trackColor={{ false: themeColors.border, true: themeColors.accent + '40' }}
-          thumbColor={value ? themeColors.accent : themeColors.textSecondary}
-          ios_backgroundColor={themeColors.border}
-        />
-      ) : (
-        <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
-      )}
-    </TouchableOpacity>
-  );
+    );
+  };
 
   const styles = StyleSheet.create({
     scrollView: {
@@ -197,6 +495,26 @@ export default function PrivacySecuritySettings() {
       paddingVertical: Spacing.md,
       borderBottomWidth: 1,
       borderBottomColor: themeColors.border,
+    },
+    customSwitch: {
+      width: 50,
+      height: 30,
+      borderRadius: 15,
+      justifyContent: 'center',
+      paddingHorizontal: 2,
+    },
+    customSwitchThumb: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
     },
     settingIcon: {
       width: 48,
@@ -276,43 +594,61 @@ export default function PrivacySecuritySettings() {
           
           <View style={styles.card}>
             <SettingItem
+              id="profile-visibility"
               title="Profile Visibility"
-              subtitle="Control who can see your profile"
+              subtitle={`Currently: ${privacySettings.profileVisibility}`}
               value={privacySettings.profileVisibility}
               onToggle={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to profile visibility settings
+                Alert.alert(
+                  'Profile Visibility',
+                  'Choose who can see your profile',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: 'Public', 
+                      onPress: () => updateProfileVisibility('public')
+                    },
+                    { 
+                      text: 'Private', 
+                      onPress: () => updateProfileVisibility('private')
+                    },
+                    { 
+                      text: 'Friends Only', 
+                      onPress: () => updateProfileVisibility('friends')
+                    },
+                  ]
+                );
               }}
               icon="eye-outline"
               type="chevron"
             />
             <SettingItem
+              id="show-progress"
               title="Show Progress"
               subtitle="Allow others to see your skill progress"
               value={privacySettings.showProgress}
               onToggle={() => togglePrivacySetting('showProgress')}
               icon="trending-up-outline"
+              customSwitch={<ShowProgressSwitch />}
             />
             <SettingItem
+              id="show-streaks"
               title="Show Streaks"
               subtitle="Display your learning streaks publicly"
               value={privacySettings.showStreaks}
               onToggle={() => togglePrivacySetting('showStreaks')}
               icon="flame-outline"
+              customSwitch={<ShowStreaksSwitch />}
             />
             <SettingItem
+              id="allow-analytics"
               title="Analytics"
               subtitle="Help improve SkillSync with anonymous data"
               value={privacySettings.allowAnalytics}
               onToggle={() => togglePrivacySetting('allowAnalytics')}
               icon="analytics-outline"
-            />
-            <SettingItem
-              title="Crash Reports"
-              subtitle="Send crash reports to help fix issues"
-              value={privacySettings.allowCrashReports}
-              onToggle={() => togglePrivacySetting('allowCrashReports')}
-              icon="bug-outline"
+              customSwitch={<AllowAnalyticsSwitch />}
             />
           </View>
         </Animated.View>
@@ -322,33 +658,65 @@ export default function PrivacySecuritySettings() {
           
           <View style={styles.card}>
             <SettingItem
+              id="biometric-auth"
               title="Biometric Authentication"
               subtitle="Use fingerprint or face ID to unlock"
               value={securitySettings.biometricAuth}
               onToggle={() => toggleSecuritySetting('biometricAuth')}
               icon="finger-print-outline"
+              customSwitch={<BiometricAuthSwitch />}
             />
             <SettingItem
+              id="require-pin"
               title="Require PIN"
-              subtitle="Set a PIN code for app access"
+              subtitle={pinStatus.hasPin 
+                ? (securitySettings.requirePin ? "PIN protection enabled" : "PIN set up but disabled")
+                : "Set a PIN code for app access"
+              }
               value={securitySettings.requirePin}
               onToggle={() => toggleSecuritySetting('requirePin')}
               icon="lock-closed-outline"
+              customSwitch={<RequirePinSwitch />}
             />
             <SettingItem
+              id="auto-lock"
               title="Auto Lock"
               subtitle="Lock app when inactive"
               value={securitySettings.autoLock}
               onToggle={() => toggleSecuritySetting('autoLock')}
               icon="timer-outline"
+              customSwitch={<AutoLockSwitch />}
             />
             <SettingItem
+              id="session-timeout"
               title="Session Timeout"
-              subtitle="Set automatic logout time"
+              subtitle={`Currently: ${securitySettings.sessionTimeout}`}
               value={securitySettings.sessionTimeout}
               onToggle={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to session timeout settings
+                Alert.alert(
+                  'Session Timeout',
+                  'Choose when to automatically log out',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: '15 minutes', 
+                      onPress: () => updateSessionTimeout('15min')
+                    },
+                    { 
+                      text: '30 minutes', 
+                      onPress: () => updateSessionTimeout('30min')
+                    },
+                    { 
+                      text: '1 hour', 
+                      onPress: () => updateSessionTimeout('1hour')
+                    },
+                    { 
+                      text: 'Never', 
+                      onPress: () => updateSessionTimeout('never')
+                    },
+                  ]
+                );
               }}
               icon="time-outline"
               type="chevron"
@@ -361,18 +729,16 @@ export default function PrivacySecuritySettings() {
           
           <View style={[styles.card, styles.dangerCard]}>
             <SettingItem
+              id="export-data"
               title="Export Data"
               subtitle="Download all your data"
               value={false}
-              onToggle={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Implement data export
-                Alert.alert('Export Data', 'Data export feature will be implemented soon.');
-              }}
+              onToggle={handleExportData}
               icon="download-outline"
               type="chevron"
             />
             <SettingItem
+              id="delete-account"
               title="Delete Account"
               subtitle="Permanently delete your account and data"
               value={false}

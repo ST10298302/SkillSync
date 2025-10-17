@@ -26,20 +26,26 @@ export const SUPPORTED_LANGUAGES = {
 
 export type SupportedLanguage = keyof typeof SUPPORTED_LANGUAGES;
 
+// Flag to prevent multiple API initializations
+let isApiInitialized = false;
+
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('en');
   const [isTranslating, setIsTranslating] = useState(false);
   const { user } = useAuth();
   const { skills, updateSkill } = useSkills();
 
-  // Initialize Google Translate API
+  // Initialize Google Translate API (only once)
   useEffect(() => {
-    const apiKey = process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY;
-    if (apiKey) {
-      GoogleTranslateAPI.initialize(apiKey);
-      console.log(' Google Translate API initialized');
-    } else {
-      console.warn(' Google Translate API key not found in environment variables');
+    if (!isApiInitialized) {
+      const apiKey = process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY;
+      if (apiKey) {
+        GoogleTranslateAPI.initialize(apiKey);
+        console.log('Google Translate API initialized');
+        isApiInitialized = true;
+      } else {
+        console.warn('Google Translate API key not found in environment variables');
+      }
     }
   }, []);
 

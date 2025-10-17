@@ -290,6 +290,178 @@ export class SupabaseService {
     }
   }
 
+  // Privacy and Security Settings
+  static async getPrivacySettings(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('profile_visibility, show_progress, show_streaks, allow_analytics')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      return {
+        profileVisibility: data?.profile_visibility || 'public',
+        showProgress: data?.show_progress ?? true,
+        showStreaks: data?.show_streaks ?? true,
+        allowAnalytics: data?.allow_analytics ?? true,
+      };
+    } catch (error) {
+      console.error('Error fetching privacy settings:', error);
+      return {
+        profileVisibility: 'public',
+        showProgress: true,
+        showStreaks: true,
+        allowAnalytics: true,
+      };
+    }
+  }
+
+  static async updatePrivacySettings(userId: string, settings: {
+    profileVisibility?: 'public' | 'private' | 'friends';
+    showProgress?: boolean;
+    showStreaks?: boolean;
+    allowAnalytics?: boolean;
+  }) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          profile_visibility: settings.profileVisibility,
+          show_progress: settings.showProgress,
+          show_streaks: settings.showStreaks,
+          allow_analytics: settings.allowAnalytics,
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating privacy settings:', error);
+      throw error;
+    }
+  }
+
+  static async getSecuritySettings(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('biometric_auth, require_pin, auto_lock, session_timeout')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      return {
+        biometricAuth: data?.biometric_auth ?? false,
+        requirePin: data?.require_pin ?? false,
+        autoLock: data?.auto_lock ?? true,
+        sessionTimeout: data?.session_timeout || '30min',
+      };
+    } catch (error) {
+      console.error('Error fetching security settings:', error);
+      return {
+        biometricAuth: false,
+        requirePin: false,
+        autoLock: true,
+        sessionTimeout: '30min',
+      };
+    }
+  }
+
+  static async updateSecuritySettings(userId: string, settings: {
+    biometricAuth?: boolean;
+    requirePin?: boolean;
+    autoLock?: boolean;
+    sessionTimeout?: string;
+  }) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          biometric_auth: settings.biometricAuth,
+          require_pin: settings.requirePin,
+          auto_lock: settings.autoLock,
+          session_timeout: settings.sessionTimeout,
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating security settings:', error);
+      throw error;
+    }
+  }
+
+  static async exportUserData(userId: string) {
+    try {
+      // Get all user data
+      const [userData, skillsData] = await Promise.all([
+        supabase.from('users').select('*').eq('id', userId).single(),
+        supabase.from('skills').select(`
+          *,
+          skill_entries (*),
+          progress_updates (*)
+        `).eq('user_id', userId)
+      ]);
+
+      if (userData.error) throw userData.error;
+      if (skillsData.error) throw skillsData.error;
+
+      const exportData = {
+        user: userData.data,
+        skills: skillsData.data,
+        exported_at: new Date().toISOString(),
+        version: '1.0'
+      };
+
+      return exportData;
+    } catch (error) {
+      console.error('Error exporting user data:', error);
+      throw error;
+    }
+  }
+
+  static async deleteUserAccount(userId: string) {
+    try {
+      // Delete all user data in order (due to foreign key constraints)
+      const deleteOperations = [
+        // Delete progress updates
+        supabase.from('progress_updates').delete().eq('skill_id', 
+          supabase.from('skills').select('id').eq('user_id', userId)
+        ),
+        // Delete skill entries
+        supabase.from('skill_entries').delete().eq('skill_id',
+          supabase.from('skills').select('id').eq('user_id', userId)
+        ),
+        // Delete skills
+        supabase.from('skills').delete().eq('user_id', userId),
+        // Delete user profile
+        supabase.from('users').delete().eq('id', userId),
+        // Delete auth user (this will cascade delete related data)
+        supabase.auth.admin.deleteUser(userId)
+      ];
+
+      // Execute deletions
+      for (const operation of deleteOperations) {
+        const { error } = await operation;
+        if (error) {
+          console.error('Error in delete operation:', error);
+          // Continue with other deletions even if one fails
+        }
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting user account:', error);
+      throw error;
+    }
+  }
+
   // Skills methods
   static async getSkills(userId: string) {
     const { data, error } = await supabase

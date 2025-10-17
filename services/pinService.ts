@@ -1,0 +1,127 @@
+import * as Crypto from 'expo-crypto';
+import * as SecureStore from 'expo-secure-store';
+
+export class PinService {
+  private static readonly PIN_KEY = 'user_pin';
+  private static readonly PIN_ENABLED_KEY = 'pin_enabled';
+  private static readonly SALT = 'skillsync_salt';
+
+  /**
+   * Check if PIN is enabled
+   */
+  static async isPinEnabled(): Promise<boolean> {
+    try {
+      const enabled = await SecureStore.getItemAsync(this.PIN_ENABLED_KEY);
+      return enabled === 'true';
+    } catch (error) {
+      console.error('Error checking PIN status:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Enable PIN protection
+   */
+  static async enablePin(): Promise<void> {
+    try {
+      await SecureStore.setItemAsync(this.PIN_ENABLED_KEY, 'true');
+    } catch (error) {
+      console.error('Error enabling PIN:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Disable PIN protection
+   */
+  static async disablePin(): Promise<void> {
+    try {
+      await SecureStore.setItemAsync(this.PIN_ENABLED_KEY, 'false');
+      await SecureStore.deleteItemAsync(this.PIN_KEY);
+    } catch (error) {
+      console.error('Error disabling PIN:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set a new PIN
+   */
+  static async setPin(pin: string): Promise<void> {
+    try {
+      const hashedPin = await this.hashPin(pin);
+      await SecureStore.setItemAsync(this.PIN_KEY, hashedPin);
+      await SecureStore.setItemAsync(this.PIN_ENABLED_KEY, 'true');
+    } catch (error) {
+      console.error('Error setting PIN:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify PIN
+   */
+  static async verifyPin(pin: string): Promise<boolean> {
+    try {
+      const storedPin = await SecureStore.getItemAsync(this.PIN_KEY);
+      if (!storedPin) {
+        return false;
+      }
+
+      const hashedPin = await this.hashPin(pin);
+      return hashedPin === storedPin;
+    } catch (error) {
+      console.error('Error verifying PIN:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Hash PIN for secure storage
+   */
+  private static async hashPin(pin: string): Promise<string> {
+    try {
+      const dataToHash = pin + this.SALT;
+      const hash = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        dataToHash,
+        { encoding: Crypto.CryptoEncoding.HEX }
+      );
+      return hash;
+    } catch (error) {
+      console.error('Error hashing PIN:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if PIN is valid format (4 digits)
+   */
+  static isValidPin(pin: string): boolean {
+    return /^\d{4}$/.test(pin);
+  }
+
+  /**
+   * Get PIN status for display
+   */
+  static async getPinStatus(): Promise<{
+    enabled: boolean;
+    hasPin: boolean;
+  }> {
+    try {
+      const enabled = await this.isPinEnabled();
+      const hasPin = !!(await SecureStore.getItemAsync(this.PIN_KEY));
+      
+      return {
+        enabled,
+        hasPin,
+      };
+    } catch (error) {
+      console.error('Error getting PIN status:', error);
+      return {
+        enabled: false,
+        hasPin: false,
+      };
+    }
+  }
+}

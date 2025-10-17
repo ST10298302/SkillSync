@@ -5,6 +5,7 @@ import React from 'react';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { LanguageProvider } from '../context/LanguageContext';
+import { PinLockProvider } from '../context/PinLockContext';
 import { SkillsProvider } from '../context/SkillsContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
@@ -14,7 +15,9 @@ export default function RootLayout() {
       <AuthProvider>
         <SkillsProvider>
           <LanguageProvider>
-            <AppLayout />
+            <PinLockProvider>
+              <AppLayout />
+            </PinLockProvider>
           </LanguageProvider>
         </SkillsProvider>
       </AuthProvider>
@@ -40,6 +43,8 @@ function AppLayout() {
         )}
         <Stack.Screen name="skill/new" options={{ headerShown: false }} />
         <Stack.Screen name="skill/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="pin-verification" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/pin-setup" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
     </NavigationThemeProvider>

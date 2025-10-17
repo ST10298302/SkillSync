@@ -80,4 +80,14 @@ export interface User {
   profile_picture_url?: string;
   created_at: string;
   updated_at: string;
+  // Privacy settings
+  profile_visibility?: 'public' | 'private' | 'friends';
+  show_progress?: boolean;
+  show_streaks?: boolean;
+  allow_analytics?: boolean;
+  // Security settings
+  biometric_auth?: boolean;
+  require_pin?: boolean;
+  auto_lock?: boolean;
+  session_timeout?: string;
 } 
