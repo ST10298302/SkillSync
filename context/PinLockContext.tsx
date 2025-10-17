@@ -1,8 +1,7 @@
 import { useRouter } from 'expo-router';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 
-import { PinService } from '../services/pinService';
 
 interface PinLockContextType {
   isLocked: boolean;
@@ -21,17 +20,18 @@ interface PinLockProviderProps {
 export function PinLockProvider({ children }: PinLockProviderProps) {
   const [isLocked, setIsLocked] = useState(false);
   const [isPinEnabled, setIsPinEnabled] = useState(false);
-  const [hasCheckedPin, setHasCheckedPin] = useState(false);
+  const hasCheckedPinRef = useRef(false);
   const router = useRouter();
 
   const checkPinStatus = async () => {
-    if (hasCheckedPin) return; // Prevent multiple checks
+    if (hasCheckedPinRef.current) return; // Prevent multiple checks
     
     try {
-      const pinEnabled = await PinService.isPinEnabled();
+      hasCheckedPinRef.current = true;
+      // Temporarily disable PIN lock to fix white screen
+      const pinEnabled = false; // await PinService.isPinEnabled();
       console.log('PIN enabled status:', pinEnabled);
       setIsPinEnabled(pinEnabled);
-      setHasCheckedPin(true);
       
       if (pinEnabled) {
         console.log('Setting app as locked');
@@ -39,7 +39,6 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
       }
     } catch (error) {
       console.error('Error checking PIN status:', error);
-      setHasCheckedPin(true);
     }
   };
 
@@ -78,11 +77,11 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
 
   // Redirect to PIN verification when locked
   useEffect(() => {
-    if (isLocked && isPinEnabled && hasCheckedPin) {
+    if (isLocked && isPinEnabled && hasCheckedPinRef.current) {
       console.log('Redirecting to PIN verification');
       router.push('/pin-verification');
     }
-  }, [isLocked, isPinEnabled, hasCheckedPin]);
+  }, [isLocked, isPinEnabled]);
 
   const value: PinLockContextType = {
     isLocked,
