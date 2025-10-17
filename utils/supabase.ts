@@ -89,7 +89,7 @@ export interface User {
   biometric_auth?: boolean;
   require_pin?: boolean;
   auto_lock?: boolean;
-  session_timeout?: '5min' | '15min' | '30min' | '1hour' | 'never';
+  session_timeout?: '1min' | '5min' | '15min' | '30min' | '1hour' | 'never';
   // Notification settings
   daily_reminders?: boolean;
   weekly_reports?: boolean;

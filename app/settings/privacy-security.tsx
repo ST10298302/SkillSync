@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Alert,
     Animated,
@@ -17,6 +17,7 @@ import Logo from '../../components/Logo';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
+import { usePinLock } from '../../context/PinLockContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BiometricService } from '../../services/biometricService';
 import { PinService } from '../../services/pinService';
@@ -26,6 +27,7 @@ export default function PrivacySecuritySettings() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const { user } = useAuth();
+  const { refreshPinStatus, refreshSessionTimeout } = usePinLock();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
@@ -40,7 +42,7 @@ export default function PrivacySecuritySettings() {
     biometricAuth: false,
     requirePin: false,
     autoLock: true,
-    sessionTimeout: '30min' as '5min' | '15min' | '30min' | '1hour' | 'never',
+    sessionTimeout: '30min' as '1min' | '5min' | '15min' | '30min' | '1hour' | 'never',
   });
 
   const [loading, setLoading] = useState(false);
@@ -74,6 +76,15 @@ export default function PrivacySecuritySettings() {
       loadSettings();
     }
   }, [user?.id]);
+
+  // Refresh settings when screen comes into focus (e.g., returning from PIN setup)
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.id) {
+        loadSettings();
+      }
+    }, [user?.id])
+  );
 
   const loadSettings = async () => {
     try {
@@ -130,24 +141,43 @@ export default function PrivacySecuritySettings() {
     
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
+    // Special handling for auto lock - can only be enabled if PIN is enabled
+    if (key === 'autoLock') {
+      if (!securitySettings.autoLock && !pinStatus.enabled) {
+        Alert.alert(
+          'PIN Required',
+          'You must enable PIN protection before you can enable auto lock.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Enable PIN First', 
+              onPress: () => {
+                // Navigate to PIN setup
+                router.push('/settings/pin-setup');
+              }
+            }
+          ]
+        );
+        return;
+      }
+    }
+    
     // Special handling for PIN requirement
     if (key === 'requirePin') {
       if (!securitySettings.requirePin) {
-        // Enabling PIN - check if PIN exists
-        if (!pinStatus.hasPin) {
-          Alert.alert(
-            'Set Up PIN',
-            'You need to set up a PIN first before enabling PIN protection.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { 
-                text: 'Set Up PIN', 
-                onPress: () => router.push('/settings/pin-setup')
-              }
-            ]
-          );
-          return;
-        }
+        // Enabling PIN - always ask to set up a new PIN
+        Alert.alert(
+          'Set Up PIN',
+          'You need to set up a PIN to enable PIN protection.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Set Up PIN', 
+              onPress: () => router.push('/settings/pin-setup')
+            }
+          ]
+        );
+        return;
       } else {
         // Disabling PIN - confirm action
         Alert.alert(
@@ -171,6 +201,11 @@ export default function PrivacySecuritySettings() {
                   }));
                   
                   setPinStatus(prev => ({ ...prev, enabled: false }));
+                  
+                  // Force refresh PIN status in PinLockContext
+                  setTimeout(() => {
+                    refreshPinStatus();
+                  }, 100);
                 } catch (error) {
                   console.error('Error disabling PIN:', error);
                   Alert.alert('Error', 'Failed to disable PIN protection. Please try again.');
@@ -331,16 +366,31 @@ export default function PrivacySecuritySettings() {
     if (!user?.id) return;
     
     try {
+      console.log('🕐 Updating session timeout to:', timeout);
+      
+      // Update database
       await SupabaseService.updateSecuritySettings(user.id, {
         sessionTimeout: timeout,
       });
       
+      // Update local state
       setSecuritySettings(prev => ({
         ...prev,
         sessionTimeout: timeout,
       }));
+      
+      // Update SessionTimeoutService
+      const { SessionTimeoutService } = await import('../../services/sessionTimeoutService');
+      await SessionTimeoutService.setSessionTimeout(timeout as any);
+      
+      // Refresh session timeout in PinLockContext
+      setTimeout(() => {
+        refreshSessionTimeout();
+      }, 100);
+      
+      console.log('✅ Session timeout updated successfully to:', timeout);
     } catch (error) {
-      console.error('Error updating session timeout:', error);
+      console.error('❌ Error updating session timeout:', error);
       Alert.alert('Error', 'Failed to update session timeout. Please try again.');
     }
   };
@@ -471,7 +521,7 @@ export default function PrivacySecuritySettings() {
 
   const AutoLockSwitch = () => (
     <CustomSwitch
-      value={securitySettings.autoLock}
+      value={securitySettings.autoLock && pinStatus.enabled}
       onValueChange={() => toggleSecuritySetting('autoLock')}
       testID="auto-lock-switch"
     />
@@ -770,8 +820,11 @@ export default function PrivacySecuritySettings() {
             <SettingItem
               id="auto-lock"
               title="Auto Lock"
-              subtitle="Lock app when inactive"
-              value={securitySettings.autoLock}
+              subtitle={pinStatus.enabled 
+                ? (securitySettings.autoLock ? "App locks after inactivity" : "App locks when closed")
+                : "Requires PIN protection to be enabled"
+              }
+              value={securitySettings.autoLock && pinStatus.enabled}
               onToggle={() => toggleSecuritySetting('autoLock')}
               icon="timer-outline"
               customSwitch={<AutoLockSwitch />}
@@ -785,9 +838,13 @@ export default function PrivacySecuritySettings() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 Alert.alert(
                   'Session Timeout',
-                  'Choose when to automatically log out',
+                  'Choose when to automatically lock the app',
                   [
                     { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: '1 minute', 
+                      onPress: () => updateSessionTimeout('1min')
+                    },
                     { 
                       text: '5 minutes', 
                       onPress: () => updateSessionTimeout('5min')

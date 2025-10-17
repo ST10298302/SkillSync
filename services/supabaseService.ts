@@ -474,8 +474,53 @@ export class SupabaseService {
         }
       }
 
-      // Note: Auth user deletion should be handled by the client-side auth
-      // supabase.auth.admin.deleteUser() requires admin privileges
+      // Remove PIN from secure storage
+      try {
+        const { PinService } = await import('./pinService');
+        await PinService.removePin();
+        console.log('PIN removed from secure storage');
+      } catch (error) {
+        console.error('Error removing PIN:', error);
+      }
+
+      // Call the Edge Function to delete the auth user
+      try {
+        console.log('Starting Edge Function call for user deletion...');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('No active session found');
+        }
+
+        const endpoint = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/swift-endpoint`;
+        console.log('Calling Edge Function at:', endpoint);
+        console.log('User ID:', userId);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+          },
+          body: JSON.stringify({ userId }),
+        });
+
+        console.log('Edge Function response status:', response.status);
+        console.log('Edge Function response ok:', response.ok);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Edge Function error response:', errorData);
+          throw new Error(errorData.error || 'Failed to delete auth user');
+        }
+
+        const result = await response.json();
+        console.log('Auth user deleted successfully:', result);
+      } catch (edgeFunctionError) {
+        console.error('Error calling delete-user Edge Function:', edgeFunctionError);
+        // User data is still deleted, but auth user remains
+        console.warn('User data deleted but auth user could not be removed via Edge Function.');
+      }
       
       return { success: true };
     } catch (error) {

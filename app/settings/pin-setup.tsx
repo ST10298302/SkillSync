@@ -12,12 +12,17 @@ import {
 
 import PinSetup from '../../components/PinSetup';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useAuth } from '../../context/AuthContext';
+import { usePinLock } from '../../context/PinLockContext';
 import { useTheme } from '../../context/ThemeContext';
 import { PinService } from '../../services/pinService';
+import { SupabaseService } from '../../services/supabaseService';
 
 export default function PinSetupScreen() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const { user } = useAuth();
+  const { refreshPinStatus } = usePinLock();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
@@ -26,7 +31,20 @@ export default function PinSetupScreen() {
   const handlePinComplete = async (pin: string) => {
     try {
       await PinService.setPin(pin);
+      
+      // Update database to enable PIN protection
+      if (user?.id) {
+        await SupabaseService.updateSecuritySettings(user.id, {
+          requirePin: true,
+        });
+      }
+      
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      // Refresh PIN status in the context
+      setTimeout(() => {
+        refreshPinStatus();
+      }, 100);
       
       Alert.alert(
         'PIN Set Successfully',

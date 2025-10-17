@@ -8,6 +8,7 @@ import { LanguageProvider } from '../context/LanguageContext';
 import { PinLockProvider } from '../context/PinLockContext';
 import { SkillsProvider } from '../context/SkillsContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
+import { useUserActivity } from '../hooks/useUserActivity';
 
 export default function RootLayout() {
   return (
@@ -28,6 +29,9 @@ export default function RootLayout() {
 function AppLayout() {
   const { isLoggedIn, loading } = useAuth();
   const { resolvedTheme } = useTheme();
+  
+  // Track user activity to reset session timeout
+  useUserActivity();
 
   if (loading) {
     return null;

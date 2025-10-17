@@ -32,14 +32,27 @@ export class PinService {
   }
 
   /**
-   * Disable PIN protection
+   * Disable PIN protection and remove the PIN
    */
   static async disablePin(): Promise<void> {
     try {
-      await SecureStore.setItemAsync(this.PIN_ENABLED_KEY, 'false');
+      await SecureStore.deleteItemAsync(this.PIN_ENABLED_KEY);
       await SecureStore.deleteItemAsync(this.PIN_KEY);
     } catch (error) {
       console.error('Error disabling PIN:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Completely remove PIN (for account deletion)
+   */
+  static async removePin(): Promise<void> {
+    try {
+      await SecureStore.deleteItemAsync(this.PIN_ENABLED_KEY);
+      await SecureStore.deleteItemAsync(this.PIN_KEY);
+    } catch (error) {
+      console.error('Error removing PIN:', error);
       throw error;
     }
   }
@@ -102,6 +115,19 @@ export class PinService {
   }
 
   /**
+   * Check if a PIN exists (regardless of enabled status)
+   */
+  static async hasPin(): Promise<boolean> {
+    try {
+      const pin = await SecureStore.getItemAsync(this.PIN_KEY);
+      return !!pin;
+    } catch (error) {
+      console.error('Error checking if PIN exists:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get PIN status for display
    */
   static async getPinStatus(): Promise<{
@@ -110,7 +136,7 @@ export class PinService {
   }> {
     try {
       const enabled = await this.isPinEnabled();
-      const hasPin = !!(await SecureStore.getItemAsync(this.PIN_KEY));
+      const hasPin = await this.hasPin();
       
       return {
         enabled,
