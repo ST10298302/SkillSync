@@ -40,7 +40,7 @@ export default function PrivacySecuritySettings() {
     biometricAuth: false,
     requirePin: false,
     autoLock: true,
-    sessionTimeout: '30min',
+    sessionTimeout: '30min' as '5min' | '15min' | '30min' | '1hour' | 'never',
   });
 
   const [loading, setLoading] = useState(false);
@@ -788,6 +788,10 @@ export default function PrivacySecuritySettings() {
                   'Choose when to automatically log out',
                   [
                     { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: '5 minutes', 
+                      onPress: () => updateSessionTimeout('5min')
+                    },
                     { 
                       text: '15 minutes', 
                       onPress: () => updateSessionTimeout('15min')

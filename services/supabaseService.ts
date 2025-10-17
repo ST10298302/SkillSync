@@ -637,4 +637,62 @@ export class SupabaseService {
       )
       .subscribe();
   }
+
+  /**
+   * Get notification settings for a user
+   */
+  static async getNotificationSettings(userId: string): Promise<Partial<User>> {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          daily_reminders,
+          weekly_reports,
+          skill_completions,
+          streak_alerts,
+          tips_and_tricks,
+          marketing_emails
+        `)
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching notification settings:', error);
+        throw error;
+      }
+
+      return data || {};
+    } catch (error) {
+      console.error('Notification settings fetch failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update notification settings for a user
+   */
+  static async updateNotificationSettings(userId: string, settings: Partial<User>): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          daily_reminders: settings.daily_reminders,
+          weekly_reports: settings.weekly_reports,
+          skill_completions: settings.skill_completions,
+          streak_alerts: settings.streak_alerts,
+          tips_and_tricks: settings.tips_and_tricks,
+          marketing_emails: settings.marketing_emails,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error updating notification settings:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Notification settings update failed:', error);
+      throw error;
+    }
+  }
 } 

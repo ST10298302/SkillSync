@@ -1,12 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     Animated,
     ScrollView,
     StyleSheet,
-    Switch,
     Text,
     TouchableOpacity,
     View,
@@ -15,11 +14,14 @@ import {
 import Logo from '../../components/Logo';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { SupabaseService } from '../../services/supabaseService';
 
 export default function NotificationsSettings() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const { user } = useAuth();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
@@ -31,6 +33,8 @@ export default function NotificationsSettings() {
     tipsAndTricks: false,
     marketingEmails: false,
   });
+
+  const [loading, setLoading] = useState(false);
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -50,28 +54,127 @@ export default function NotificationsSettings() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  const toggleSwitch = (key: keyof typeof notifications) => {
+  // Load notification settings from database
+  React.useEffect(() => {
+    if (user?.id) {
+      loadNotificationSettings();
+    }
+  }, [user?.id]);
+
+  const loadNotificationSettings = async () => {
+    try {
+      setLoading(true);
+      const settings = await SupabaseService.getNotificationSettings(user!.id);
+      
+      setNotifications({
+        dailyReminders: settings.daily_reminders ?? true,
+        weeklyReports: settings.weekly_reports ?? true,
+        skillCompletions: settings.skill_completions ?? true,
+        streakAlerts: settings.streak_alerts ?? true,
+        tipsAndTricks: settings.tips_and_tricks ?? false,
+        marketingEmails: settings.marketing_emails ?? false,
+      });
+    } catch (error) {
+      console.error('Error loading notification settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSwitch = async (key: keyof typeof notifications) => {
+    if (!user?.id) return;
+    
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    const newValue = !notifications[key];
     setNotifications(prev => ({
       ...prev,
-      [key]: !prev[key],
+      [key]: newValue,
     }));
+
+    try {
+      // Map the local state keys to database column names
+      const dbKeyMap: Record<keyof typeof notifications, string> = {
+        dailyReminders: 'daily_reminders',
+        weeklyReports: 'weekly_reports',
+        skillCompletions: 'skill_completions',
+        streakAlerts: 'streak_alerts',
+        tipsAndTricks: 'tips_and_tricks',
+        marketingEmails: 'marketing_emails',
+      };
+
+      const dbKey = dbKeyMap[key];
+      const updateData = { [dbKey]: newValue };
+
+      await SupabaseService.updateNotificationSettings(user.id, updateData);
+    } catch (error) {
+      console.error('Error updating notification setting:', error);
+      // Revert on error
+      setNotifications(prev => ({
+        ...prev,
+        [key]: !newValue,
+      }));
+    }
+  };
+
+  // Custom switch component to avoid React Native Switch issues
+  const CustomSwitch = ({ value, onValueChange, testID }: { value: boolean; onValueChange: () => void; testID?: string }) => {
+    const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+    React.useEffect(() => {
+      Animated.timing(animatedValue, {
+        toValue: value ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }, [value, animatedValue]);
+
+    const translateX = animatedValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [2, 22],
+    });
+
+    return (
+      <TouchableOpacity
+        testID={testID}
+        onPress={onValueChange}
+        style={[
+          styles.customSwitch,
+          {
+            backgroundColor: value ? themeColors.accent + '40' : themeColors.border,
+          }
+        ]}
+        activeOpacity={0.7}
+      >
+        <Animated.View
+          style={[
+            styles.customSwitchThumb,
+            {
+              backgroundColor: value ? themeColors.accent : themeColors.textSecondary,
+              transform: [{ translateX }],
+            }
+          ]}
+        />
+      </TouchableOpacity>
+    );
   };
 
   const NotificationItem = ({ 
+    id,
     title, 
     subtitle, 
     value, 
     onToggle, 
     icon 
   }: {
+    id: string;
     title: string;
     subtitle: string;
     value: boolean;
     onToggle: () => void;
     icon: string;
   }) => (
-    <View style={styles.notificationItem}>
+    <View key={id} style={styles.notificationItem}>
       <View style={styles.notificationIcon}>
         <Ionicons name={icon as any} size={24} color={themeColors.accent} />
       </View>
@@ -79,12 +182,10 @@ export default function NotificationsSettings() {
         <Text style={styles.notificationTitle}>{title}</Text>
         <Text style={styles.notificationSubtitle}>{subtitle}</Text>
       </View>
-      <Switch
+      <CustomSwitch
         value={value}
         onValueChange={onToggle}
-        trackColor={{ false: themeColors.border, true: themeColors.accent + '40' }}
-        thumbColor={value ? themeColors.accent : themeColors.textSecondary}
-        ios_backgroundColor={themeColors.border}
+        testID={`notification-switch-${id}`}
       />
     </View>
   );
@@ -190,6 +291,26 @@ export default function NotificationsSettings() {
       textAlign: 'center',
       lineHeight: 18,
     },
+    customSwitch: {
+      width: 50,
+      height: 30,
+      borderRadius: 15,
+      justifyContent: 'center',
+      paddingHorizontal: 2,
+    },
+    customSwitchThumb: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
   });
 
   return (
@@ -222,6 +343,7 @@ export default function NotificationsSettings() {
           
           <View style={styles.card}>
             <NotificationItem
+              id="daily-reminders"
               title="Daily Reminders"
               subtitle="Get reminded to practice your skills daily"
               value={notifications.dailyReminders}
@@ -229,6 +351,7 @@ export default function NotificationsSettings() {
               icon="time-outline"
             />
             <NotificationItem
+              id="weekly-reports"
               title="Weekly Reports"
               subtitle="Receive weekly progress summaries"
               value={notifications.weeklyReports}
@@ -236,6 +359,7 @@ export default function NotificationsSettings() {
               icon="bar-chart-outline"
             />
             <NotificationItem
+              id="skill-completions"
               title="Skill Completions"
               subtitle="Celebrate when you complete a skill"
               value={notifications.skillCompletions}
@@ -243,6 +367,7 @@ export default function NotificationsSettings() {
               icon="trophy-outline"
             />
             <NotificationItem
+              id="streak-alerts"
               title="Streak Alerts"
               subtitle="Stay motivated with streak notifications"
               value={notifications.streakAlerts}
@@ -257,6 +382,7 @@ export default function NotificationsSettings() {
           
           <View style={styles.card}>
             <NotificationItem
+              id="tips-and-tricks"
               title="Tips & Tricks"
               subtitle="Receive helpful learning tips via email"
               value={notifications.tipsAndTricks}
@@ -264,6 +390,7 @@ export default function NotificationsSettings() {
               icon="bulb-outline"
             />
             <NotificationItem
+              id="marketing-emails"
               title="Marketing Emails"
               subtitle="Get updates about new features and offers"
               value={notifications.marketingEmails}

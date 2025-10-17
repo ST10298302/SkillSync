@@ -13,7 +13,7 @@ ALTER TABLE users
 ADD COLUMN IF NOT EXISTS biometric_auth BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS require_pin BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS auto_lock BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS session_timeout TEXT DEFAULT '30min' CHECK (session_timeout IN ('15min', '30min', '1hour', 'never'));
+ADD COLUMN IF NOT EXISTS session_timeout TEXT DEFAULT '30min' CHECK (session_timeout IN ('5min', '15min', '30min', '1hour', 'never'));
 
 -- Update existing users with default values
 UPDATE users 
