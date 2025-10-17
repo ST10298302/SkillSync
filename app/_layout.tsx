@@ -33,6 +33,8 @@ function AppLayout() {
     return null;
   }
 
+  console.log('AppLayout: isLoggedIn =', isLoggedIn);
+
   return (
     <NavigationThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>

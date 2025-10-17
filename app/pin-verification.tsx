@@ -25,6 +25,8 @@ export default function PinVerificationScreen() {
 
   const [isVerifying, setIsVerifying] = useState(true);
 
+  console.log('PIN verification screen: Component rendered');
+
   useEffect(() => {
     // Check if PIN is actually enabled
     const checkPinStatus = async () => {
@@ -35,10 +37,17 @@ export default function PinVerificationScreen() {
         // PIN is not enabled, go back to main app
         console.log('PIN verification screen: PIN not enabled, redirecting to tabs');
         router.replace('/(tabs)');
+      } else {
+        console.log('PIN verification screen: PIN is enabled, staying on verification screen');
       }
     };
 
     checkPinStatus();
+
+    // Cleanup function to log when component unmounts
+    return () => {
+      console.log('PIN verification screen: Component unmounting');
+    };
   }, []);
 
   const handlePinSuccess = () => {

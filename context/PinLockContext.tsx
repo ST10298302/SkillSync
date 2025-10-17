@@ -2,6 +2,9 @@ import { useRouter } from 'expo-router';
 import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 
+import { PinService } from '../services/pinService';
+import { useAuth } from './AuthContext';
+
 
 interface PinLockContextType {
   isLocked: boolean;
@@ -21,15 +24,17 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
   const [isLocked, setIsLocked] = useState(false);
   const [isPinEnabled, setIsPinEnabled] = useState(false);
   const hasCheckedPinRef = useRef(false);
+  const hasRedirectedRef = useRef(false);
   const router = useRouter();
+  const { isLoggedIn, user } = useAuth();
 
   const checkPinStatus = async () => {
-    if (hasCheckedPinRef.current) return; // Prevent multiple checks
+    if (hasCheckedPinRef.current || !isLoggedIn || !user) return; // Only check if user is logged in
     
     try {
       hasCheckedPinRef.current = true;
-      // Temporarily disable PIN lock to fix white screen
-      const pinEnabled = false; // await PinService.isPinEnabled();
+      hasRedirectedRef.current = false; // Reset redirect flag
+      const pinEnabled = await PinService.isPinEnabled();
       console.log('PIN enabled status:', pinEnabled);
       setIsPinEnabled(pinEnabled);
       
@@ -53,9 +58,18 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
   };
 
   useEffect(() => {
-    // Check PIN status on app start (only once)
-    checkPinStatus();
-  }, []); // Empty dependency array to run only once
+    // Check PIN status when user logs in
+    if (isLoggedIn && user) {
+      hasCheckedPinRef.current = false; // Reset the ref when user changes
+      checkPinStatus();
+    } else {
+      // Reset PIN state when user logs out
+      setIsPinEnabled(false);
+      setIsLocked(false);
+      hasCheckedPinRef.current = false;
+      hasRedirectedRef.current = false;
+    }
+  }, [isLoggedIn, user?.id]); // Run when login status or user changes
 
   useEffect(() => {
     // Handle app state changes
@@ -77,9 +91,14 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
 
   // Redirect to PIN verification when locked
   useEffect(() => {
-    if (isLocked && isPinEnabled && hasCheckedPinRef.current) {
+    console.log('PIN lock context: isLocked =', isLocked, 'isPinEnabled =', isPinEnabled, 'hasCheckedPin =', hasCheckedPinRef.current, 'hasRedirected =', hasRedirectedRef.current);
+    if (isLocked && isPinEnabled && hasCheckedPinRef.current && !hasRedirectedRef.current) {
       console.log('Redirecting to PIN verification');
-      router.push('/pin-verification');
+      hasRedirectedRef.current = true;
+      // Use a small delay to prevent navigation conflicts
+      setTimeout(() => {
+        router.replace('/pin-verification');
+      }, 100);
     }
   }, [isLocked, isPinEnabled]);
 
