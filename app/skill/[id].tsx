@@ -14,7 +14,9 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    TouchableWithoutFeedback,
+    View,
+    Keyboard
 } from 'react-native';
 
 import { AddArtifactModal } from '../../components/AddArtifactModal';
@@ -660,99 +662,103 @@ export default function EnhancedSkillDetail() {
     <UniformLayout>
       <KeyboardAvoidingView
         style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header */}
-          <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-            <LinearGradient
-              colors={themeColors.gradient.primary as any}
-              style={styles.headerGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.headerContent}>
-                <TouchableOpacity
-                  style={styles.backButton}
-                  onPress={() => router.back()}
-                >
-                  <Ionicons name="arrow-back" size={24} color={themeColors.text} />
-                </TouchableOpacity>
-                <View style={styles.skillInfo}>
-                  <View style={styles.skillHeader}>
-                    <Text style={[styles.skillName, { color: themeColors.text }]}>{skill.name}</Text>
-                    <LevelBadge level={skill.current_level || 'beginner'} size="small" />
-                  </View>
-                  {skill.description && (
-                    <Text style={[styles.skillDescription, { color: themeColors.textSecondary }]}>{skill.description}</Text>
-                  )}
-                  {!isOwnSkill && skill.owner && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs }}>
-                      <Ionicons name="person-circle-outline" size={14} color={themeColors.textSecondary} />
-                      <Text style={{ ...Typography.bodySmall, color: themeColors.textSecondary, marginLeft: Spacing.xs }}>
-                        Created by {skill.owner.name || skill.owner.email || 'Unknown'}
-                      </Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Header */}
+            <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
+              <LinearGradient
+                colors={themeColors.gradient.primary as any}
+                style={styles.headerGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.headerContent}>
+                  <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => router.back()}
+                  >
+                    <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+                  </TouchableOpacity>
+                                    <View style={styles.skillInfo}>
+                    <View style={styles.skillHeader}>
+                      <Text style={[styles.skillName, { color: themeColors.text }]}>{skill.name}</Text>
+                      <LevelBadge level={skill.current_level || 'beginner'} size="small" />
                     </View>
-                  )}
-                  <View style={styles.skillStats}>
-                    <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
-                    <View style={styles.statItem}>
-                      <Ionicons name="chatbubble-outline" size={16} color={themeColors.textSecondary} />
-                      <Text style={[styles.statText, { color: themeColors.textSecondary }]}>
-                        {skillComments.filter(c => !c.parent_comment_id).length}
-                      </Text>
+                    {skill.description && (
+                      <Text style={[styles.skillDescription, { color: themeColors.textSecondary }]}>{skill.description}</Text>
+                    )}
+                    {!isOwnSkill && skill.owner && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs }}>
+                        <Ionicons name="person-circle-outline" size={14} color={themeColors.textSecondary} />
+                        <Text style={{ ...Typography.bodySmall, color: themeColors.textSecondary, marginLeft: Spacing.xs }}>
+                          Created by {skill.owner.name || skill.owner.email || 'Unknown'}
+                        </Text>
+                      </View>
+                    )}
+                    <View style={styles.skillStats}>
+                      <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
+                      <View style={styles.statItem}>
+                        <Ionicons name="chatbubble-outline" size={16} color={themeColors.textSecondary} />
+                        <Text style={[styles.statText, { color: themeColors.textSecondary }]}>
+                          {skillComments.filter(c => !c.parent_comment_id).length}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            </LinearGradient>
-          </Animated.View>
+              </LinearGradient>
+            </Animated.View>
 
-          {/* Progress Section */}
-          <Animated.View style={[styles.progressSection, { opacity: fadeAnim }]}>
-            <LinearGradient
-              colors={themeColors.gradient.background as any}
-              style={[styles.progressCard, { borderColor: themeColors.border }]}
-            >
-              <View style={styles.progressHeader}>
-                <Text style={[styles.progressTitle, { color: themeColors.text }]}>{t('currentProgress')}</Text>
-                <Text style={[styles.progressValue, { color: themeColors.text }]}>{skill.progress}%</Text>
-              </View>
-              <ProgressBar progress={skill.progress} height={12} />
-            </LinearGradient>
-          </Animated.View>
+            {/* Progress Section */}
+            <Animated.View style={[styles.progressSection, { opacity: fadeAnim }]}>
+              <LinearGradient
+                colors={themeColors.gradient.background as any}
+                style={[styles.progressCard, { borderColor: themeColors.border }]}
+              >
+                <View style={styles.progressHeader}>
+                  <Text style={[styles.progressTitle, { color: themeColors.text }]}>{t('currentProgress')}</Text>
+                  <Text style={[styles.progressValue, { color: themeColors.text }]}>{skill.progress}%</Text>
+                </View>
+                <ProgressBar progress={skill.progress} height={12} />
+              </LinearGradient>
+            </Animated.View>
 
-          {/* Tabs */}
-          <View style={styles.tabsContainer}>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.tabs}
-            >
-              {(['overview', 'milestones', 'resources', 'techniques', 'challenges', 'comments'] as TabType[]).map((tab) => (
-                <TouchableOpacity
-                  key={tab}
-                  style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
-                  onPress={() => setActiveTab(tab)}
-                >
-                  <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
-                    { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
+            {/* Tabs */}
+            <View style={styles.tabsContainer}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.tabs}
+              >
+                {(['overview', 'milestones', 'resources', 'techniques', 'challenges', 'comments'] as TabType[]).map((tab) => (
+                  <TouchableOpacity
+                    key={tab}
+                    style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
+                    onPress={() => setActiveTab(tab)}
+                  >
+                    <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
+                      { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
 
-          {/* Tab Content */}
-          <View style={styles.tabContent}>
-            {renderTabContent()}
-          </View>
-        </ScrollView>
+            {/* Tab Content */}
+            <View style={styles.tabContent}>
+              {renderTabContent()}
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
       {/* Modals - Only show if user owns the skill */}
