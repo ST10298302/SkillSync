@@ -53,9 +53,9 @@ export default function TabLayout() {
   
   const getIconSize = () => {
     if (isWeb) {
-      return isSmallScreen ? 24 : 26;
+      return isSmallScreen ? 26 : 28;
     }
-    return Platform.OS === 'ios' ? 24 : 26;
+    return Platform.OS === 'ios' ? 26 : 28;
   };
 
   const themeColors = Colors[safeTheme];
@@ -103,19 +103,19 @@ export default function TabLayout() {
           }),
         },
         tabBarLabelStyle: {
-          fontSize: isTablet ? 14 : 12,
+          fontSize: isTablet ? 14 : 13,
           fontWeight: '600',
-          marginTop: 4,
+          marginTop: 2,
           // Web-specific label styles
           ...(isWeb && {
-            marginTop: isSmallScreen ? 4 : 6,
+            marginTop: isSmallScreen ? 2 : 4,
           }),
         },
         tabBarIconStyle: {
-          marginBottom: 2,
+          marginBottom: 0,
           // Web-specific icon styles
           ...(isWeb && {
-            marginBottom: isSmallScreen ? 2 : 4,
+            marginBottom: isSmallScreen ? 0 : 2,
           }),
         },
         tabBarItemStyle: {

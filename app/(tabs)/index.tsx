@@ -248,10 +248,10 @@ export default function Home() {
     statCard: {
       flex: 1,
       backgroundColor: themeColors.backgroundSecondary + '99', // Add transparency for depth
-      padding: isVerySmallScreen ? 8 : isSmallScreen ? Spacing.sm : Spacing.md,
+      padding: isVerySmallScreen ? 10 : isSmallScreen ? Spacing.md : Spacing.lg,
       borderRadius: BorderRadius.md,
       alignItems: 'center',
-      marginHorizontal: Spacing.xs,
+      marginHorizontal: isVerySmallScreen ? 2 : Spacing.xs,
       shadowColor: themeColors.shadowLight,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
@@ -259,29 +259,30 @@ export default function Home() {
       elevation: 2,
       borderWidth: 0.5,
       borderColor: themeColors.border + '40',
+      minWidth: isVerySmallScreen ? 70 : 80,
     },
     statIconContainer: {
-      width: 36,
-      height: 36,
+      width: isVerySmallScreen ? 32 : 36,
+      height: isVerySmallScreen ? 32 : 36,
       borderRadius: BorderRadius.round,
       backgroundColor: themeColors.accent + '15',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: Spacing.xs,
+      marginBottom: isVerySmallScreen ? 6 : Spacing.xs,
     },
     statNumber: {
       ...Typography.h3,
       color: themeColors.text,
       fontWeight: '700',
       marginBottom: 2,
-      fontSize: isVerySmallScreen ? 14 : isSmallScreen ? 16 : Typography.h3.fontSize,
+      fontSize: isVerySmallScreen ? 16 : isSmallScreen ? 18 : Typography.h3.fontSize,
     },
     statLabel: {
       ...Typography.caption,
       color: themeColors.textSecondary,
       textAlign: 'center',
       fontWeight: '500',
-      fontSize: isVerySmallScreen ? 8 : isSmallScreen ? 10 : Typography.caption.fontSize,
+      fontSize: isVerySmallScreen ? 9 : isSmallScreen ? 11 : Typography.caption.fontSize,
     },
     searchContainer: {
       paddingHorizontal: 0,
@@ -572,28 +573,28 @@ export default function Home() {
         <View style={[styles.statsContainerSpaced, { paddingHorizontal: Spacing.lg }]}> 
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
-              <Ionicons name="book-outline" size={16} color={themeColors.text} />
+              <Ionicons name="book-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{stats.total}</Text>
             <Text style={styles.statLabel}>{t('skills')}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
-              <Ionicons name="trending-up-outline" size={16} color={themeColors.text} />
+              <Ionicons name="trending-up-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{stats.averageProgress}%</Text>
             <Text style={styles.statLabel}>{t('avgProgress')}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
-              <Ionicons name="time-outline" size={16} color={themeColors.text} />
+              <Ionicons name="time-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.totalHours || 0), 0)}</Text>
             <Text style={styles.statLabel}>{t('hours')}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
-              <Ionicons name="document-text-outline" size={16} color={themeColors.text} />
+              <Ionicons name="document-text-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
             </View>
             <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.entries?.length || 0), 0)}</Text>
             <Text style={styles.statLabel}>{t('entries')}</Text>
