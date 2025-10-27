@@ -419,25 +419,15 @@ export default function EnhancedSkillDetail() {
         return (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-<<<<<<< HEAD
               <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Milestones</Text>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => setShowMilestoneModal(true)}
-              >
-                <Ionicons name="add-circle" size={24} color={themeColors.accent} />
-              </TouchableOpacity>
-=======
-              <Text style={styles.sectionTitle}>Milestones</Text>
               {isOwnSkill && (
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => setShowMilestoneModal(true)}
                 >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                  <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                 </TouchableOpacity>
               )}
->>>>>>> System-Enhancement
             </View>
             <MilestoneTracker 
               skillId={skill.id} 
@@ -453,25 +443,15 @@ export default function EnhancedSkillDetail() {
           <>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-<<<<<<< HEAD
                 <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Learning Resources</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => setShowResourceModal(true)}
-                >
-                  <Ionicons name="add-circle" size={24} color={themeColors.accent} />
-                </TouchableOpacity>
-=======
-                <Text style={styles.sectionTitle}>Learning Resources</Text>
                 {isOwnSkill && (
                   <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => setShowResourceModal(true)}
                   >
-                    <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                    <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                   </TouchableOpacity>
                 )}
->>>>>>> System-Enhancement
               </View>
               {skillResources.length === 0 ? (
                 <View style={[styles.emptyCard, { backgroundColor: themeColors.backgroundSecondary }]}>
@@ -487,24 +467,21 @@ export default function EnhancedSkillDetail() {
             
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-<<<<<<< HEAD
                 <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Evidence/Artifacts</Text>
-=======
-                <Text style={styles.sectionTitle}>Evidence/Artifacts</Text>
                 {isOwnSkill && (
                   <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => setShowArtifactModal(true)}
                   >
-                    <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                    <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                   </TouchableOpacity>
                 )}
               </View>
               {skillArtifacts.length === 0 ? (
-                <View style={styles.emptyCard}>
-                  <Ionicons name="image-outline" size={48} color={Colors.light.textSecondary} />
-                  <Text style={styles.emptyTitle}>No artifacts yet</Text>
-                  <Text style={styles.emptySubtitle}>Add photos to showcase your progress</Text>
+                <View style={[styles.emptyCard, { backgroundColor: themeColors.backgroundSecondary }]}>
+                  <Ionicons name="image-outline" size={48} color={themeColors.textSecondary} />
+                  <Text style={[styles.emptyTitle, { color: themeColors.text }]}>No artifacts yet</Text>
+                  <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>Add photos to showcase your progress</Text>
                 </View>
               ) : (
                 <View style={styles.artifactsGrid}>
@@ -525,7 +502,7 @@ export default function EnhancedSkillDetail() {
                         />
                       ) : (
                         <View style={styles.artifactPlaceholder}>
-                          <Ionicons name="image" size={32} color={Colors.light.textSecondary} />
+                          <Ionicons name="image" size={32} color={themeColors.textSecondary} />
                         </View>
                       )}
                       <Text style={styles.artifactTitle} numberOfLines={1}>
@@ -543,9 +520,8 @@ export default function EnhancedSkillDetail() {
         return (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Techniques</Text>
+              <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Techniques</Text>
               {isOwnSkill && (
->>>>>>> System-Enhancement
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => setShowTechniqueModal(true)}
@@ -555,9 +531,9 @@ export default function EnhancedSkillDetail() {
               )}
             </View>
             {skillTechniques.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <Ionicons name="construct-outline" size={48} color={Colors.light.textSecondary} />
-                <Text style={styles.emptyTitle}>No techniques yet</Text>
+              <View style={[styles.emptyCard, { backgroundColor: themeColors.backgroundSecondary }]}>
+                <Ionicons name="construct-outline" size={48} color={themeColors.textSecondary} />
+                <Text style={[styles.emptyTitle, { color: themeColors.text }]}>No techniques yet</Text>
               </View>
             ) : (
               skillTechniques.map(technique => (
@@ -580,20 +556,20 @@ export default function EnhancedSkillDetail() {
         return (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Challenges</Text>
+              <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Challenges</Text>
               {isOwnSkill && (
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => setShowChallengeModal(true)}
                 >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                  <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                 </TouchableOpacity>
               )}
             </View>
             {skillChallenges.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <Ionicons name="flag-outline" size={48} color={Colors.light.textSecondary} />
-                <Text style={styles.emptyTitle}>No challenges yet</Text>
+              <View style={[styles.emptyCard, { backgroundColor: themeColors.backgroundSecondary }]}>
+                <Ionicons name="flag-outline" size={48} color={themeColors.textSecondary} />
+                <Text style={[styles.emptyTitle, { color: themeColors.text }]}>No challenges yet</Text>
               </View>
             ) : (
               skillChallenges.map(challenge => (
@@ -684,21 +660,6 @@ export default function EnhancedSkillDetail() {
           </Animated.View>
 
           {/* Tabs */}
-<<<<<<< HEAD
-          <View style={styles.tabs}>
-            {(['overview', 'milestones', 'resources', 'comments'] as TabType[]).map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
-                onPress={() => setActiveTab(tab)}
-              >
-                <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
-                  { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-=======
           <View style={styles.tabsContainer}>
             <ScrollView 
               horizontal 
@@ -708,16 +669,16 @@ export default function EnhancedSkillDetail() {
               {(['overview', 'milestones', 'resources', 'techniques', 'challenges', 'comments'] as TabType[]).map((tab) => (
                 <TouchableOpacity
                   key={tab}
-                  style={[styles.tab, activeTab === tab && styles.tabActive]}
+                  style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
                   onPress={() => setActiveTab(tab)}
                 >
-                  <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                  <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
+                    { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
->>>>>>> System-Enhancement
           </View>
 
           {/* Tab Content */}
@@ -727,49 +688,6 @@ export default function EnhancedSkillDetail() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-<<<<<<< HEAD
-      {/* Modals */}
-      <AddProgressModal
-        visible={showProgressModal}
-        onClose={() => setShowProgressModal(false)}
-        skillId={skill.id}
-        currentProgress={skill.progress}
-      />
-      
-      <AddDiaryEntryModal
-        visible={showDiaryModal}
-        onClose={() => setShowDiaryModal(false)}
-        skillId={skill.id}
-      />
-      
-      <EditDiaryEntryModal
-        visible={showEditDiaryModal}
-        onClose={() => {
-          setShowEditDiaryModal(false);
-          setSelectedEntry(null);
-        }}
-        skillId={skill.id}
-        entry={selectedEntry}
-      />
-
-      <AddResourceModal
-        visible={showResourceModal}
-        onClose={() => setShowResourceModal(false)}
-        skillId={skill.id}
-      />
-      
-      <AddMilestoneModal
-        visible={showMilestoneModal}
-        onClose={() => setShowMilestoneModal(false)}
-        skillId={skill.id}
-      />
-      
-      <AddArtifactModal
-        visible={showArtifactModal}
-        onClose={() => setShowArtifactModal(false)}
-        skillId={skill.id}
-      />
-=======
       {/* Modals - Only show if user owns the skill */}
       {isOwnSkill && (
         <>
@@ -788,6 +706,16 @@ export default function EnhancedSkillDetail() {
             onSuccess={handleRefresh}
           />
           
+          <EditDiaryEntryModal
+            visible={showEditDiaryModal}
+            onClose={() => {
+              setShowEditDiaryModal(false);
+              setSelectedEntry(null);
+            }}
+            skillId={skill.id}
+            entry={selectedEntry}
+          />
+
           <AddResourceModal
             visible={showResourceModal}
             onClose={() => setShowResourceModal(false)}
@@ -850,7 +778,6 @@ export default function EnhancedSkillDetail() {
           }}
         />
       )}
->>>>>>> System-Enhancement
     </UniformLayout>
   );
 }
@@ -877,47 +804,29 @@ const styles = StyleSheet.create({
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
   progressTitle: { ...Typography.h3 },
   progressValue: { ...Typography.h2, fontWeight: 'bold' },
-<<<<<<< HEAD
-  tabs: { flexDirection: 'row', paddingHorizontal: Spacing.lg, marginBottom: Spacing.lg },
-  tab: { flex: 1, paddingVertical: Spacing.sm, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: 'transparent' },
-  tabText: { ...Typography.body },
-  tabTextActive: { fontWeight: '600' },
-=======
   tabsContainer: { marginBottom: Spacing.lg },
   tabs: { flexDirection: 'row', paddingHorizontal: Spacing.lg, gap: Spacing.sm },
   tab: { paddingVertical: Spacing.sm, paddingHorizontal: Spacing.md, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent', minWidth: 100 },
-  tabActive: { borderBottomColor: Colors.light.accent },
-  tabText: { ...Typography.body, color: Colors.light.textSecondary },
-  tabTextActive: { color: Colors.light.accent, fontWeight: '600' },
->>>>>>> System-Enhancement
+  tabActive: { borderBottomColor: 'transparent' },
+  tabText: { ...Typography.body },
+  tabTextActive: { fontWeight: '600' },
   tabContent: { paddingHorizontal: Spacing.lg },
   section: { marginVertical: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
   sectionTitle: { ...Typography.h3 },
   addButton: { padding: Spacing.xs },
-<<<<<<< HEAD
   emptyCard: { padding: Spacing.xl, borderRadius: BorderRadius.lg, alignItems: 'center' },
   emptyTitle: { ...Typography.h4, marginTop: Spacing.md },
+  emptySubtitle: { ...Typography.bodySmall, marginTop: Spacing.xs },
   updatesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg },
-  updateItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: Spacing.sm },
-  updateValue: { ...Typography.body, fontWeight: '600' },
-  updateDate: { ...Typography.bodySmall },
-  entriesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg },
-=======
-  emptyCard: { padding: Spacing.xl, borderRadius: BorderRadius.lg, alignItems: 'center', backgroundColor: Colors.light.backgroundSecondary },
-  emptyTitle: { ...Typography.h4, color: Colors.light.text, marginTop: Spacing.md },
-  emptySubtitle: { ...Typography.bodySmall, color: Colors.light.textSecondary, marginTop: Spacing.xs },
-  updatesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, backgroundColor: Colors.light.backgroundSecondary },
   updateItem: { paddingVertical: Spacing.sm },
-  updateValue: { ...Typography.body, color: Colors.light.text, fontWeight: '600' },
-  updateNotes: { ...Typography.bodySmall, color: Colors.light.textSecondary, marginTop: 4 },
-  updateDate: { ...Typography.bodySmall, color: Colors.light.textSecondary, marginTop: 4 },
-  entriesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, backgroundColor: Colors.light.backgroundSecondary },
+  updateValue: { ...Typography.body, fontWeight: '600' },
+  updateNotes: { ...Typography.bodySmall, marginTop: 4 },
+  updateDate: { ...Typography.bodySmall, marginTop: 4 },
+  entriesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg },
   artifactsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
-  artifactCard: { width: '48%', aspectRatio: 1, borderRadius: BorderRadius.md, overflow: 'hidden', backgroundColor: Colors.light.backgroundSecondary },
+  artifactCard: { width: '48%', aspectRatio: 1, borderRadius: BorderRadius.md, overflow: 'hidden' },
   artifactImage: { width: '100%', height: '80%', backgroundColor: Colors.light.backgroundTertiary },
   artifactPlaceholder: { width: '100%', height: '80%', backgroundColor: Colors.light.backgroundTertiary, justifyContent: 'center', alignItems: 'center' },
-  artifactTitle: { ...Typography.bodySmall, color: Colors.light.text, padding: Spacing.xs, textAlign: 'center' },
->>>>>>> System-Enhancement
+  artifactTitle: { ...Typography.bodySmall, padding: Spacing.xs, textAlign: 'center' },
 });
