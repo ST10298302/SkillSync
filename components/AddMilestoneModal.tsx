@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -56,16 +56,24 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
-          <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
-            <Text style={[styles.title, { color: themeColors.text }]}>Add Milestone</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={themeColors.text} />
-            </TouchableOpacity>
-          </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.modalContainer}
+      >
+        <View style={styles.overlay}>
+          <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
+            <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
+              <Text style={[styles.title, { color: themeColors.text }]}>Add Milestone</Text>
+              <TouchableOpacity onPress={onClose}>
+                <Ionicons name="close" size={24} color={themeColors.text} />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.content}>
+            <ScrollView 
+              style={styles.content}
+              contentContainerStyle={styles.contentContainer}
+              keyboardShouldPersistTaps="handled"
+            >
             <Text style={[styles.label, { color: themeColors.text }]}>Title *</Text>
             <TextInput
               style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
@@ -140,21 +148,25 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
               </>
             )}
 
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: themeColors.accent }, (!title || loading) && styles.buttonDisabled]}
-              onPress={handleSubmit}
-              disabled={!title || loading}
-            >
-              <Text style={[styles.buttonText, { color: themeColors.text }]}>Add Milestone</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: themeColors.accent }, (!title || loading) && styles.buttonDisabled]}
+                onPress={handleSubmit}
+                disabled={!title || loading}
+              >
+                <Text style={[styles.buttonText, { color: themeColors.text }]}>Add Milestone</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+  },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -179,6 +191,9 @@ const styles = StyleSheet.create({
     ...Typography.h2,
   },
   content: {
+    flexGrow: 1,
+  },
+  contentContainer: {
     padding: Spacing.lg,
   },
   label: {
