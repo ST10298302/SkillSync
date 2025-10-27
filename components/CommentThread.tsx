@@ -140,6 +140,7 @@ export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadPro
         renderItem={renderComment}
         keyExtractor={(item) => item.id}
         style={styles.commentsList}
+        scrollEnabled={false}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No comments yet. Be the first to comment!</Text>
         }
