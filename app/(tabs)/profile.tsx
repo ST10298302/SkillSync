@@ -193,10 +193,10 @@ export default function Profile() {
 
   // Theme toggle UI
   const ThemeToggle = () => {
-    const options: { label: string; value: ThemeMode; icon: any }[] = [
-      { label: 'Light', value: 'light', icon: 'sunny-outline' },
-      { label: 'Dark', value: 'dark', icon: 'moon-outline' },
-      { label: 'Auto', value: 'auto', icon: 'phone-portrait-outline' },
+    const options: { labelKey: string; value: ThemeMode; icon: any }[] = [
+      { labelKey: 'themeLight', value: 'light', icon: 'sunny-outline' },
+      { labelKey: 'themeDark', value: 'dark', icon: 'moon-outline' },
+      { labelKey: 'themeAuto', value: 'auto', icon: 'phone-portrait-outline' },
     ];
     return (
       <View style={styles.themeToggleRow}>
@@ -214,7 +214,7 @@ export default function Profile() {
               color={theme === opt.value ? Colors[resolvedTheme].accentBlue : Colors[resolvedTheme].textSecondary}
             />
             <Text style={[styles.themeToggleLabel, theme === opt.value && styles.themeToggleLabelActive]}>
-              {opt.label}
+              {t(opt.labelKey as any)}
             </Text>
           </TouchableOpacity>
         ))}

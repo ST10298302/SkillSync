@@ -1,18 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
-import { useSkills } from '../context/SkillsContext';
+import { DiaryEntry, useSkills } from '../context/SkillsContext';
 import { useTheme } from '../context/ThemeContext';
 
-interface AddDiaryEntryModalProps {
+interface EditDiaryEntryModalProps {
   visible: boolean;
   onClose: () => void;
   skillId: string;
+  entry: DiaryEntry | null;
 }
 
-export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryModalProps) => {
-  const { addEntry } = useSkills();
+export const EditDiaryEntryModal = ({ visible, onClose, skillId, entry }: EditDiaryEntryModalProps) => {
+  const { updateEntry, deleteEntry } = useSkills();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
@@ -21,17 +22,36 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
   const [hours, setHours] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (entry) {
+      setText(entry.text);
+      setHours(entry.hours?.toString() || '');
+    }
+  }, [entry]);
+
   const handleSubmit = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || !entry) return;
 
     setLoading(true);
     try {
-      await addEntry(skillId, text.trim(), parseFloat(hours) || 0);
-      setText('');
-      setHours('');
+      await updateEntry(skillId, entry.id, text.trim(), parseFloat(hours) || 0);
       onClose();
     } catch (error) {
-      console.error('Failed to add entry:', error);
+      console.error('Failed to update entry:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!entry) return;
+
+    setLoading(true);
+    try {
+      await deleteEntry(skillId, entry.id);
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete entry:', error);
     } finally {
       setLoading(false);
     }
@@ -42,7 +62,7 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
       <View style={styles.overlay}>
         <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
           <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
-            <Text style={[styles.title, { color: themeColors.text }]}>Add Diary Entry</Text>
+            <Text style={[styles.title, { color: themeColors.text }]}>Edit Diary Entry</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color={themeColors.text} />
             </TouchableOpacity>
@@ -78,17 +98,37 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
               onChangeText={setHours}
             />
 
-            <TouchableOpacity
-              style={[
-                styles.button, 
-                { backgroundColor: themeColors.accent },
-                (!text || loading) && styles.buttonDisabled
-              ]}
-              onPress={handleSubmit}
-              disabled={!text || loading}
-            >
-              <Text style={[styles.buttonText, { color: themeColors.text }]}>Add Entry</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.deleteButton, { 
+                  backgroundColor: themeColors.error,
+                  borderColor: themeColors.error
+                }]}
+                onPress={handleDelete}
+                disabled={loading}
+              >
+                <Ionicons name="trash-outline" size={20} color="#fff" />
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, { 
+                  backgroundColor: themeColors.accent,
+                  borderColor: themeColors.accent
+                }]}
+                onPress={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Text style={styles.buttonText}>Saving...</Text>
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-outline" size={20} color="#fff" />
+                    <Text style={styles.buttonText}>Save Changes</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -103,11 +143,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modal: {
-    backgroundColor: 'transparent', // Will be set dynamically
-    borderTopLeftRadius: BorderRadius.xl,
-    borderTopRightRadius: BorderRadius.xl,
-    paddingTop: Spacing.lg,
-    maxHeight: '70%',
+    borderTopLeftRadius: BorderRadius.xxl,
+    borderTopRightRadius: BorderRadius.xxl,
+    paddingTop: Spacing.xl,
+    maxHeight: '90%',
   },
   header: {
     flexDirection: 'row',
@@ -118,38 +157,61 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   title: {
-    ...Typography.h2,
+    ...Typography.h3,
   },
   content: {
     padding: Spacing.lg,
+    gap: Spacing.md,
   },
   label: {
     ...Typography.body,
-    marginBottom: Spacing.sm,
-    marginTop: Spacing.sm,
+    fontWeight: '500',
+    marginBottom: Spacing.xs,
   },
   input: {
     ...Typography.body,
+    borderWidth: 1,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
-    marginBottom: Spacing.md,
-    borderWidth: 1,
   },
   textArea: {
-    minHeight: 100,
+    minHeight: 120,
     textAlignVertical: 'top',
   },
-  button: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
     marginTop: Spacing.md,
   },
-  buttonDisabled: {
-    opacity: 0.5,
+  button: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.xs,
   },
   buttonText: {
     ...Typography.body,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  deleteButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.xs,
+  },
+  deleteButtonText: {
+    ...Typography.body,
+    color: '#fff',
     fontWeight: '600',
   },
 });
+

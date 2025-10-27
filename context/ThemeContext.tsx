@@ -32,11 +32,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // Listen to device color scheme changes
   useEffect(() => {
     const update = () => {
-      setResolvedTheme(
-        theme === 'auto'
-          ? Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
-          : theme
-      );
+      if (theme === 'auto') {
+        setResolvedTheme(Appearance.getColorScheme() === 'dark' ? 'dark' : 'light');
+      } else {
+        setResolvedTheme(theme);
+      }
     };
     update();
     const sub = Appearance.addChangeListener(update);

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
+import { useTheme } from '../context/ThemeContext';
 import { MediaService } from '../services/mediaService';
 import { ArtifactFileType } from '../utils/supabase-types';
 
@@ -15,6 +16,10 @@ interface AddArtifactModalProps {
 
 export const AddArtifactModal = ({ visible, onClose, skillId }: AddArtifactModalProps) => {
   const { getResources } = useEnhancedSkills();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -123,57 +128,57 @@ export const AddArtifactModal = ({ visible, onClose, skillId }: AddArtifactModal
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Add Evidence/Artifact</Text>
+        <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
+          <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
+            <Text style={[styles.title, { color: themeColors.text }]}>Add Evidence/Artifact</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={Colors.light.text} />
+              <Ionicons name="close" size={24} color={themeColors.text} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.content}>
-            <Text style={styles.label}>Title *</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Title *</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
               placeholder="e.g., Project screenshot, certificate, etc."
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               value={title}
               onChangeText={setTitle}
             />
 
-            <Text style={styles.label}>Description (optional)</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Description (optional)</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
               placeholder="Add details about this evidence..."
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               multiline
               value={description}
               onChangeText={setDescription}
               maxLength={500}
             />
 
-            <Text style={styles.label}>Image/Photo *</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Image/Photo *</Text>
             {selectedImage ? (
               <View style={styles.imageContainer}>
                 <Image source={{ uri: selectedImage }} style={styles.previewImage} />
-                <TouchableOpacity style={styles.changeButton} onPress={showImageOptions}>
-                  <Text style={styles.changeButtonText}>Change Image</Text>
+                <TouchableOpacity style={[styles.changeButton, { borderColor: themeColors.accent }]} onPress={showImageOptions}>
+                  <Text style={[styles.changeButtonText, { color: themeColors.accent }]}>Change Image</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              <TouchableOpacity style={styles.imagePicker} onPress={showImageOptions}>
-                <Ionicons name="image-outline" size={48} color={Colors.light.textSecondary} />
-                <Text style={styles.imagePickerText}>Add Photo</Text>
-                <Text style={styles.imagePickerHint}>Take a photo or choose from library</Text>
+              <TouchableOpacity style={[styles.imagePicker, { borderColor: themeColors.border }]} onPress={showImageOptions}>
+                <Ionicons name="image-outline" size={48} color={themeColors.textSecondary} />
+                <Text style={[styles.imagePickerText, { color: themeColors.text }]}>Add Photo</Text>
+                <Text style={[styles.imagePickerHint, { color: themeColors.textSecondary }]}>Take a photo or choose from library</Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity
-              style={[styles.button, (!title || !selectedImage || loading) && styles.buttonDisabled]}
+              style={[styles.button, { backgroundColor: themeColors.accent }, (!title || !selectedImage || loading) && styles.buttonDisabled]}
               onPress={handleSubmit}
               disabled={!title || !selectedImage || loading}
             >
-              <Text style={styles.buttonText}>
+              <Text style={[styles.buttonText, { color: themeColors.text }]}>
                 {loading ? 'Uploading...' : 'Upload Artifact'}
               </Text>
             </TouchableOpacity>
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modal: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: 'transparent', // Will be set dynamically
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
     paddingTop: Spacing.lg,
@@ -204,30 +209,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
   },
   title: {
     ...Typography.h2,
-    color: Colors.light.text,
   },
   content: {
     padding: Spacing.lg,
   },
   label: {
     ...Typography.body,
-    color: Colors.light.text,
     marginBottom: Spacing.sm,
     marginTop: Spacing.sm,
   },
   input: {
     ...Typography.body,
-    color: Colors.light.text,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   textArea: {
     minHeight: 100,
@@ -236,7 +235,6 @@ const styles = StyleSheet.create({
   imagePicker: {
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: Colors.light.border,
     borderRadius: BorderRadius.md,
     padding: Spacing.xl,
     alignItems: 'center',
@@ -245,13 +243,11 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     ...Typography.body,
-    color: Colors.light.text,
     marginTop: Spacing.sm,
     fontWeight: '600',
   },
   imagePickerHint: {
     ...Typography.caption,
-    color: Colors.light.textSecondary,
     marginTop: Spacing.xs,
   },
   imageContainer: {
@@ -267,16 +263,13 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: Colors.light.accent,
     alignItems: 'center',
   },
   changeButtonText: {
     ...Typography.body,
-    color: Colors.light.accent,
     fontWeight: '600',
   },
   button: {
-    backgroundColor: Colors.light.accent,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
@@ -287,7 +280,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.body,
-    color: Colors.light.text,
     fontWeight: '600',
   },
 });

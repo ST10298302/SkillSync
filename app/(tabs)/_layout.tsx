@@ -115,7 +115,7 @@ export default function TabLayout() {
         options={{
           title: t('add'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size + 4} color={Colors[safeTheme].accent} />
+            <Ionicons name="add-circle-outline" size={size + 4} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -129,7 +129,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: 'Community',
+          title: t('community'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),

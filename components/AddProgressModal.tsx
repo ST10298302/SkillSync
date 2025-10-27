@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useSkills } from '../context/SkillsContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface AddProgressModalProps {
   visible: boolean;
@@ -13,6 +14,10 @@ interface AddProgressModalProps {
 
 export const AddProgressModal = ({ visible, onClose, skillId, currentProgress }: AddProgressModalProps) => {
   const { addProgressUpdate } = useSkills();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
   const [progress, setProgress] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -37,21 +42,25 @@ export const AddProgressModal = ({ visible, onClose, skillId, currentProgress }:
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Update Progress</Text>
+        <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
+          <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
+            <Text style={[styles.title, { color: themeColors.text }]}>Update Progress</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={Colors.light.text} />
+              <Ionicons name="close" size={24} color={themeColors.text} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.label}>Current Progress: {currentProgress}%</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Current Progress: {currentProgress}%</Text>
             
             <TextInput
-              style={styles.input}
+              style={[styles.input, { 
+                color: themeColors.text, 
+                backgroundColor: themeColors.backgroundSecondary, 
+                borderColor: themeColors.border 
+              }]}
               placeholder="Enter new progress (0-100)"
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               keyboardType="numeric"
               value={progress}
               onChangeText={setProgress}
@@ -59,11 +68,15 @@ export const AddProgressModal = ({ visible, onClose, skillId, currentProgress }:
             />
 
             <TouchableOpacity
-              style={[styles.button, (!progress || loading) && styles.buttonDisabled]}
+              style={[
+                styles.button, 
+                { backgroundColor: themeColors.accent }, 
+                (!progress || loading) && styles.buttonDisabled
+              ]}
               onPress={handleSubmit}
               disabled={!progress || loading}
             >
-              <Text style={styles.buttonText}>Update Progress</Text>
+              <Text style={[styles.buttonText, { color: themeColors.text }]}>Update Progress</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -79,7 +92,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modal: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: 'transparent', // Will be set dynamically
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
     paddingTop: Spacing.lg,
@@ -92,32 +105,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
   },
   title: {
     ...Typography.h2,
-    color: Colors.light.text,
   },
   content: {
     padding: Spacing.lg,
   },
   label: {
     ...Typography.body,
-    color: Colors.light.text,
     marginBottom: Spacing.sm,
   },
   input: {
     ...Typography.body,
-    color: Colors.light.text,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   button: {
-    backgroundColor: Colors.light.accent,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
@@ -127,7 +133,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.body,
-    color: Colors.light.text,
     fontWeight: '600',
   },
 });

@@ -21,6 +21,7 @@ import { AddProgressModal } from '../../components/AddProgressModal';
 import { AddResourceModal } from '../../components/AddResourceModal';
 import { CommentThread } from '../../components/CommentThread';
 import DiaryItem from '../../components/DiaryItem';
+import { EditDiaryEntryModal } from '../../components/EditDiaryEntryModal';
 import { LevelBadge } from '../../components/LevelBadge';
 import { MilestoneTracker } from '../../components/MilestoneTracker';
 import ProgressBar from '../../components/ProgressBar';
@@ -30,7 +31,7 @@ import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useEnhancedSkills } from '../../context/EnhancedSkillsContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useSkills } from '../../context/SkillsContext';
+import { DiaryEntry, useSkills } from '../../context/SkillsContext';
 import { useTheme } from '../../context/ThemeContext';
 
 type TabType = 'overview' | 'milestones' | 'resources' | 'comments';
@@ -51,14 +52,18 @@ export default function EnhancedSkillDetail() {
   const { resolvedTheme } = useTheme();
   const { t } = useLanguage();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
   
   const skill = skills.find(s => s.id === id);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showDiaryModal, setShowDiaryModal] = useState(false);
+  const [showEditDiaryModal, setShowEditDiaryModal] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
   const [showResourceModal, setShowResourceModal] = useState(false);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showArtifactModal, setShowArtifactModal] = useState(false);
+  const { updateEntry, deleteEntry } = useSkills();
 
   // Load enhanced data
   useEffect(() => {
@@ -102,8 +107,8 @@ export default function EnhancedSkillDetail() {
     return (
       <UniformLayout>
         <View style={styles.center}>
-          <Ionicons name="alert-circle" size={64} color={Colors[safeTheme].error} />
-          <Text style={styles.errorTitle}>{t('skillNotFound')}</Text>
+          <Ionicons name="alert-circle" size={64} color={themeColors.error} />
+          <Text style={[styles.errorTitle, { color: themeColors.text }]}>{t('skillNotFound')}</Text>
         </View>
       </UniformLayout>
     );
@@ -120,6 +125,17 @@ export default function EnhancedSkillDetail() {
     }
   };
 
+  const handleEditEntry = (entry: DiaryEntry) => {
+    setSelectedEntry(entry);
+    setShowEditDiaryModal(true);
+  };
+
+  const handleDeleteEntry = async (entry: DiaryEntry) => {
+    if (typeof id === 'string' && confirm('Are you sure you want to delete this entry?')) {
+      await deleteEntry(id, entry.id);
+    }
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
@@ -128,28 +144,28 @@ export default function EnhancedSkillDetail() {
             {/* Progress Updates */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{t('progressUpdates')}</Text>
+                <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('progressUpdates')}</Text>
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => setShowProgressModal(true)}
                 >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                  <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                 </TouchableOpacity>
               </View>
               {skill.progressUpdates.length === 0 ? (
-                <View style={styles.emptyCard}>
-                  <Ionicons name="trending-up-outline" size={48} color={Colors.light.textSecondary} />
-                  <Text style={styles.emptyTitle}>{t('noProgressUpdates')}</Text>
+                <View style={[styles.emptyCard, { backgroundColor: themeColors.backgroundSecondary }]}>
+                  <Ionicons name="trending-up-outline" size={48} color={themeColors.textSecondary} />
+                  <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t('noProgressUpdates')}</Text>
                 </View>
               ) : (
-                <View style={styles.updatesCard}>
+                <View style={[styles.updatesCard, { backgroundColor: themeColors.backgroundSecondary }]}>
                   <FlatList
                     data={[...skill.progressUpdates].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())}
                     keyExtractor={item => item.id}
                     renderItem={({ item }) => (
                       <View style={styles.updateItem}>
-                        <Text style={styles.updateValue}>{item.progress}%</Text>
-                        <Text style={styles.updateDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
+                        <Text style={[styles.updateValue, { color: themeColors.text }]}>{item.progress}%</Text>
+                        <Text style={[styles.updateDate, { color: themeColors.textSecondary }]}>{new Date(item.created_at).toLocaleDateString()}</Text>
                       </View>
                     )}
                     scrollEnabled={false}
@@ -161,25 +177,33 @@ export default function EnhancedSkillDetail() {
             {/* Diary Section */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{t('diaryEntries')}</Text>
+                <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('diaryEntries')}</Text>
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => setShowDiaryModal(true)}
                 >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                  <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                 </TouchableOpacity>
               </View>
               {skill.entries.length === 0 ? (
-                <View style={styles.emptyCard}>
-                  <Ionicons name="document-text-outline" size={48} color={Colors.light.textSecondary} />
-                  <Text style={styles.emptyTitle}>{t('noDiaryEntries')}</Text>
+                <View style={[styles.emptyCard, { backgroundColor: themeColors.backgroundSecondary }]}>
+                  <Ionicons name="document-text-outline" size={48} color={themeColors.textSecondary} />
+                  <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t('noDiaryEntries')}</Text>
                 </View>
               ) : (
-                <View style={styles.entriesCard}>
+                <View style={[styles.entriesCard, { backgroundColor: themeColors.backgroundSecondary }]}>
                   <FlatList
                     data={[...skill.entries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
                     keyExtractor={item => item.id}
-                    renderItem={({ item }) => <DiaryItem text={item.text} date={item.date} hours={item.hours} />}
+                    renderItem={({ item }) => (
+                      <DiaryItem 
+                        text={item.text} 
+                        date={item.date} 
+                        hours={item.hours}
+                        onEdit={() => handleEditEntry(item)}
+                        onDelete={() => handleDeleteEntry(item)}
+                      />
+                    )}
                     scrollEnabled={false}
                   />
                 </View>
@@ -192,12 +216,12 @@ export default function EnhancedSkillDetail() {
         return (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Milestones</Text>
+              <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Milestones</Text>
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => setShowMilestoneModal(true)}
               >
-                <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                <Ionicons name="add-circle" size={24} color={themeColors.accent} />
               </TouchableOpacity>
             </View>
             <MilestoneTracker 
@@ -214,18 +238,18 @@ export default function EnhancedSkillDetail() {
           <>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Learning Resources</Text>
+                <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Learning Resources</Text>
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => setShowResourceModal(true)}
                 >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                  <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                 </TouchableOpacity>
               </View>
               {skillResources.length === 0 ? (
-                <View style={styles.emptyCard}>
-                  <Ionicons name="book-outline" size={48} color={Colors.light.textSecondary} />
-                  <Text style={styles.emptyTitle}>No resources yet</Text>
+                <View style={[styles.emptyCard, { backgroundColor: themeColors.backgroundSecondary }]}>
+                  <Ionicons name="book-outline" size={48} color={themeColors.textSecondary} />
+                  <Text style={[styles.emptyTitle, { color: themeColors.text }]}>No resources yet</Text>
                 </View>
               ) : (
                 skillResources.map(resource => (
@@ -236,12 +260,12 @@ export default function EnhancedSkillDetail() {
             
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Evidence/Artifacts</Text>
+                <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Evidence/Artifacts</Text>
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => setShowArtifactModal(true)}
                 >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
+                  <Ionicons name="add-circle" size={24} color={themeColors.accent} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -273,7 +297,7 @@ export default function EnhancedSkillDetail() {
           {/* Header */}
           <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
             <LinearGradient
-              colors={Colors.light.gradient.primary as any}
+              colors={themeColors.gradient.primary as any}
               style={styles.headerGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -283,21 +307,21 @@ export default function EnhancedSkillDetail() {
                   style={styles.backButton}
                   onPress={() => router.back()}
                 >
-                  <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
+                  <Ionicons name="arrow-back" size={24} color={themeColors.text} />
                 </TouchableOpacity>
                 <View style={styles.skillInfo}>
                   <View style={styles.skillHeader}>
-                    <Text style={styles.skillName}>{skill.name}</Text>
+                    <Text style={[styles.skillName, { color: themeColors.text }]}>{skill.name}</Text>
                     <LevelBadge level={skill.current_level || 'beginner'} size="small" />
                   </View>
                   {skill.description && (
-                    <Text style={styles.skillDescription}>{skill.description}</Text>
+                    <Text style={[styles.skillDescription, { color: themeColors.textSecondary }]}>{skill.description}</Text>
                   )}
                   <View style={styles.skillStats}>
                     <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
                     <View style={styles.statItem}>
-                      <Ionicons name="chatbubble-outline" size={16} color={Colors.light.textSecondary} />
-                      <Text style={styles.statText}>{skill.comments_count || 0}</Text>
+                      <Ionicons name="chatbubble-outline" size={16} color={themeColors.textSecondary} />
+                      <Text style={[styles.statText, { color: themeColors.textSecondary }]}>{skill.comments_count || 0}</Text>
                     </View>
                   </View>
                 </View>
@@ -308,12 +332,12 @@ export default function EnhancedSkillDetail() {
           {/* Progress Section */}
           <Animated.View style={[styles.progressSection, { opacity: fadeAnim }]}>
             <LinearGradient
-              colors={Colors.light.gradient.background as any}
-              style={styles.progressCard}
+              colors={themeColors.gradient.background as any}
+              style={[styles.progressCard, { borderColor: themeColors.border }]}
             >
               <View style={styles.progressHeader}>
-                <Text style={styles.progressTitle}>{t('currentProgress')}</Text>
-                <Text style={styles.progressValue}>{skill.progress}%</Text>
+                <Text style={[styles.progressTitle, { color: themeColors.text }]}>{t('currentProgress')}</Text>
+                <Text style={[styles.progressValue, { color: themeColors.text }]}>{skill.progress}%</Text>
               </View>
               <ProgressBar progress={skill.progress} height={12} />
             </LinearGradient>
@@ -324,10 +348,11 @@ export default function EnhancedSkillDetail() {
             {(['overview', 'milestones', 'resources', 'comments'] as TabType[]).map((tab) => (
               <TouchableOpacity
                 key={tab}
-                style={[styles.tab, activeTab === tab && styles.tabActive]}
+                style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
                 onPress={() => setActiveTab(tab)}
               >
-                <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
+                  { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </Text>
               </TouchableOpacity>
@@ -355,6 +380,16 @@ export default function EnhancedSkillDetail() {
         skillId={skill.id}
       />
       
+      <EditDiaryEntryModal
+        visible={showEditDiaryModal}
+        onClose={() => {
+          setShowEditDiaryModal(false);
+          setSelectedEntry(null);
+        }}
+        skillId={skill.id}
+        entry={selectedEntry}
+      />
+
       <AddResourceModal
         visible={showResourceModal}
         onClose={() => setShowResourceModal(false)}
@@ -381,38 +416,38 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: { paddingBottom: Spacing.xxl },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
-  errorTitle: { ...Typography.h2, color: Colors.light.text, marginTop: Spacing.md },
+  errorTitle: { ...Typography.h2, marginTop: Spacing.md },
   header: { marginBottom: Spacing.lg },
   headerGradient: { paddingTop: Spacing.xl, paddingBottom: Spacing.lg, paddingHorizontal: Spacing.lg },
   headerContent: { flexDirection: 'row', alignItems: 'flex-start' },
   backButton: { padding: Spacing.sm, borderRadius: BorderRadius.round, backgroundColor: 'rgba(255, 255, 255, 0.2)', marginRight: Spacing.md },
   skillInfo: { flex: 1 },
   skillHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xs },
-  skillName: { ...Typography.h1, color: Colors.light.text, marginRight: Spacing.sm },
-  skillDescription: { ...Typography.body, color: Colors.light.textSecondary, marginBottom: Spacing.sm },
+  skillName: { ...Typography.h1, marginRight: Spacing.sm },
+  skillDescription: { ...Typography.body, marginBottom: Spacing.sm },
   skillStats: { flexDirection: 'row', alignItems: 'center', marginTop: Spacing.sm },
   statItem: { flexDirection: 'row', alignItems: 'center', marginLeft: Spacing.md },
-  statText: { ...Typography.bodySmall, color: Colors.light.textSecondary, marginLeft: 4 },
+  statText: { ...Typography.bodySmall, marginLeft: 4 },
   progressSection: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.xl },
-  progressCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, borderWidth: 1, borderColor: Colors.light.border },
+  progressCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, borderWidth: 1 },
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
-  progressTitle: { ...Typography.h3, color: Colors.light.text },
+  progressTitle: { ...Typography.h3 },
   progressValue: { ...Typography.h2, fontWeight: 'bold' },
   tabs: { flexDirection: 'row', paddingHorizontal: Spacing.lg, marginBottom: Spacing.lg },
   tab: { flex: 1, paddingVertical: Spacing.sm, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: Colors.light.accent },
-  tabText: { ...Typography.body, color: Colors.light.textSecondary },
-  tabTextActive: { color: Colors.light.accent, fontWeight: '600' },
+  tabActive: { borderBottomColor: 'transparent' },
+  tabText: { ...Typography.body },
+  tabTextActive: { fontWeight: '600' },
   tabContent: { paddingHorizontal: Spacing.lg },
   section: { marginVertical: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
-  sectionTitle: { ...Typography.h3, color: Colors.light.text },
+  sectionTitle: { ...Typography.h3 },
   addButton: { padding: Spacing.xs },
-  emptyCard: { padding: Spacing.xl, borderRadius: BorderRadius.lg, alignItems: 'center', backgroundColor: Colors.light.backgroundSecondary },
-  emptyTitle: { ...Typography.h4, color: Colors.light.text, marginTop: Spacing.md },
-  updatesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, backgroundColor: Colors.light.backgroundSecondary },
+  emptyCard: { padding: Spacing.xl, borderRadius: BorderRadius.lg, alignItems: 'center' },
+  emptyTitle: { ...Typography.h4, marginTop: Spacing.md },
+  updatesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg },
   updateItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: Spacing.sm },
-  updateValue: { ...Typography.body, color: Colors.light.text, fontWeight: '600' },
-  updateDate: { ...Typography.bodySmall, color: Colors.light.textSecondary },
-  entriesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, backgroundColor: Colors.light.backgroundSecondary },
+  updateValue: { ...Typography.body, fontWeight: '600' },
+  updateDate: { ...Typography.bodySmall },
+  entriesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg },
 });

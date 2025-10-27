@@ -6,6 +6,7 @@ export const TRANSLATIONS = {
     add: 'Add',
     analytics: 'Analytics',
     profile: 'Profile',
+    community: 'Community',
     
     // Auth
     welcomeBack: 'Welcome Back',
@@ -22,6 +23,10 @@ export const TRANSLATIONS = {
     // Profile
     settings: 'Settings',
     theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeDarker: 'Darker',
+    themeAuto: 'Auto',
     language: 'Language',
     accountSettings: 'Account Settings',
     manageAccountInfo: 'Manage your account information',
@@ -133,6 +138,7 @@ export const TRANSLATIONS = {
     add: 'Agregar',
     analytics: 'Analíticas',
     profile: 'Perfil',
+    community: 'Comunidad',
     
     // Auth
     welcomeBack: 'Bienvenido de vuelta',
@@ -149,6 +155,10 @@ export const TRANSLATIONS = {
     // Profile
     settings: 'Configuración',
     theme: 'Tema',
+    themeLight: 'Claro',
+    themeDark: 'Oscuro',
+    themeDarker: 'Más Oscuro',
+    themeAuto: 'Automático',
     language: 'Idioma',
     accountSettings: 'Configuración de cuenta',
     manageAccountInfo: 'Gestiona la información de tu cuenta',
@@ -260,6 +270,7 @@ export const TRANSLATIONS = {
     add: 'Ajouter',
     analytics: 'Analyses',
     profile: 'Profil',
+    community: 'Communauté',
     
     // Auth
     welcomeBack: 'Bon retour',
@@ -276,6 +287,10 @@ export const TRANSLATIONS = {
     // Profile
     settings: 'Paramètres',
     theme: 'Thème',
+    themeLight: 'Clair',
+    themeDark: 'Sombre',
+    themeDarker: 'Plus Sombre',
+    themeAuto: 'Automatique',
     language: 'Langue',
     accountSettings: 'Paramètres du compte',
     manageAccountInfo: 'Gérez les informations de votre compte',
@@ -387,6 +402,7 @@ export const TRANSLATIONS = {
     add: 'Hinzufügen',
     analytics: 'Analysen',
     profile: 'Profil',
+    community: 'Gemeinschaft',
     
     // Auth
     welcomeBack: 'Willkommen zurück',
@@ -403,6 +419,10 @@ export const TRANSLATIONS = {
     // Profile
     settings: 'Einstellungen',
     theme: 'Thema',
+    themeLight: 'Hell',
+    themeDark: 'Dunkel',
+    themeDarker: 'Dunkler',
+    themeAuto: 'Automatisch',
     language: 'Sprache',
     accountSettings: 'Kontoeinstellungen',
     manageAccountInfo: 'Verwalten Sie Ihre Kontoinformationen',
@@ -514,6 +534,7 @@ export const TRANSLATIONS = {
     add: '添加',
     analytics: '分析',
     profile: '个人资料',
+    community: '社区',
     
     // Auth
     welcomeBack: '欢迎回来',
@@ -530,6 +551,10 @@ export const TRANSLATIONS = {
     // Profile
     settings: '设置',
     theme: '主题',
+    themeLight: '浅色',
+    themeDark: '深色',
+    themeDarker: '更深色',
+    themeAuto: '自动',
     language: '语言',
     accountSettings: '账户设置',
     manageAccountInfo: '管理您的账户信息',
