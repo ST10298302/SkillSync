@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Platform, StyleSheet, View } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 import { HapticTab } from '../../components/HapticTab';
 import { Colors } from '../../constants/Colors';
 import { useLanguage } from '../../context/LanguageContext';
@@ -32,27 +32,30 @@ export default function TabLayout() {
   // Calculate responsive tab bar dimensions
   const getTabBarHeight = () => {
     if (isWeb) {
-      return isSmallScreen ? 64 : 72; // Increased for better touch targets
+      return isSmallScreen ? 64 : 72;
     }
-    return Platform.OS === 'ios' ? 90 : 64;
+    return Platform.OS === 'ios' ? 85 : 60;
   };
   
   const getTabBarPadding = () => {
     if (isWeb) {
-      return isSmallScreen ? 10 : 14; // More padding for spacing
+      return isSmallScreen ? 8 : 14;
     }
-    return Platform.OS === 'ios' ? 36 : 10;
+    return Platform.OS === 'ios' ? 32 : 6;
   };
   
   const getTabBarTopPadding = () => {
     if (isWeb) {
-      return isSmallScreen ? 8 : 10;
+      return isSmallScreen ? 6 : 10;
     }
-    return 8;
+    return Platform.OS === 'ios' ? 6 : 4;
   };
   
   const getIconSize = () => {
-    return isTablet ? 28 : 26; // Larger icons for better visibility
+    if (isWeb) {
+      return isSmallScreen ? 24 : 26;
+    }
+    return Platform.OS === 'ios' ? 24 : 26;
   };
 
   const themeColors = Colors[safeTheme];
@@ -116,9 +119,9 @@ export default function TabLayout() {
           }),
         },
         tabBarItemStyle: {
-          paddingVertical: 4,
-          paddingHorizontal: isTablet ? 12 : 8,
-          minHeight: 48, // Minimum touch target
+          paddingVertical: Platform.OS === 'ios' ? 4 : 2,
+          paddingHorizontal: isTablet ? 12 : 4,
+          minHeight: 44, // Minimum touch target for iOS
         },
         tabBarHideOnKeyboard: true,
         tabBarShowLabel: true,
@@ -129,9 +132,7 @@ export default function TabLayout() {
         options={{
           title: t('skills'),
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={[focused && styles.activeTabIndicator, { paddingHorizontal: 12, paddingVertical: 6 }]}>
-              <Ionicons name="library" size={getIconSize()} color={color} />
-            </View>
+            <Ionicons name="library" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -141,9 +142,7 @@ export default function TabLayout() {
         options={{
           title: t('add'),
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={[focused && styles.activeTabIndicator, { paddingHorizontal: 12, paddingVertical: 6 }]}>
-              <Ionicons name="add-circle" size={getIconSize() + 2} color={color} />
-            </View>
+            <Ionicons name="add-circle" size={getIconSize() + 2} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -159,9 +158,7 @@ export default function TabLayout() {
         options={{
           title: t('community'),
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={[focused && styles.activeTabIndicator, { paddingHorizontal: 12, paddingVertical: 6 }]}>
-              <Ionicons name="people" size={getIconSize()} color={color} />
-            </View>
+            <Ionicons name="people" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -171,9 +168,7 @@ export default function TabLayout() {
         options={{
           title: t('analytics'),
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={[focused && styles.activeTabIndicator, { paddingHorizontal: 12, paddingVertical: 6 }]}>
-              <Ionicons name="analytics" size={getIconSize()} color={color} />
-            </View>
+            <Ionicons name="analytics" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -183,9 +178,7 @@ export default function TabLayout() {
         options={{
           title: t('profile'),
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={[focused && styles.activeTabIndicator, { paddingHorizontal: 12, paddingVertical: 6 }]}>
-              <Ionicons name="person" size={getIconSize()} color={color} />
-            </View>
+            <Ionicons name="person" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -194,9 +187,3 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  activeTabIndicator: {
-    backgroundColor: 'rgba(59, 130, 246, 0.15)', // Blue tint for active tab
-    borderRadius: 12,
-  },
-});
