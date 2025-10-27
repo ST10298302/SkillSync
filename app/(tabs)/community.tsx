@@ -274,6 +274,7 @@ export default function CommunityScreen() {
                 skillId={skill.id}
                 initialReaction={undefined}
                 reactionCount={skill.likes_count || 0}
+                onReactionChange={() => loadPublicSkills()}
               />
             </View>
             <View style={styles.skillActionsRow}>
