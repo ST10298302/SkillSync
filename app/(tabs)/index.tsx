@@ -248,9 +248,10 @@ export default function Home() {
     statCard: {
       flex: 1,
       backgroundColor: themeColors.backgroundSecondary + '99', // Add transparency for depth
-      padding: isVerySmallScreen ? 10 : isSmallScreen ? Spacing.md : Spacing.lg,
+      padding: isVerySmallScreen ? 8 : isSmallScreen ? Spacing.sm : Spacing.md,
       borderRadius: BorderRadius.md,
       alignItems: 'center',
+      justifyContent: 'center',
       marginHorizontal: isVerySmallScreen ? 2 : Spacing.xs,
       shadowColor: themeColors.shadowLight,
       shadowOffset: { width: 0, height: 2 },
@@ -259,7 +260,8 @@ export default function Home() {
       elevation: 2,
       borderWidth: 0.5,
       borderColor: themeColors.border + '40',
-      minWidth: isVerySmallScreen ? 70 : 80,
+      minWidth: isVerySmallScreen ? 75 : 80,
+      height: isVerySmallScreen ? 75 : isSmallScreen ? 85 : 95,
     },
     statIconContainer: {
       width: isVerySmallScreen ? 32 : 36,
@@ -493,6 +495,29 @@ export default function Home() {
       marginTop: Spacing.sm,
       marginBottom: Spacing.lg,
     },
+    contentOverlay: {
+      backgroundColor: themeColors.background,
+      opacity: safeTheme === 'dark' ? 0.03 : 0.15, // Very subtle overlay
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      borderRadius: BorderRadius.xl,
+    },
+    statsSectionWrapper: {
+      position: 'relative',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      borderRadius: BorderRadius.xl,
+      marginBottom: Spacing.md,
+      overflow: 'hidden',
+    },
+    footerWrapper: {
+      position: 'relative',
+      marginTop: Spacing.lg,
+      overflow: 'hidden',
+    },
 
   });
 
@@ -568,9 +593,10 @@ export default function Home() {
         </View>
       </View>
 
-      {/* Stats Cards */}
-      <View>
-        <View style={[styles.statsContainerSpaced, { paddingHorizontal: Spacing.lg }]}> 
+      {/* Stats Cards with Overlay */}
+      <View style={styles.statsSectionWrapper}>
+        <View style={styles.contentOverlay} />
+        <View style={styles.statsContainerSpaced}> 
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
               <Ionicons name="book-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
@@ -691,10 +717,13 @@ export default function Home() {
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={renderListHeader}
         ListFooterComponent={
-          <RecentActivity
-            skills={skills.map(s => ({ id: s.id, name: s.name, lastUpdated: s.lastUpdated, progress: s.progress, entries: s.entries }))}
-            onSkillPress={(id) => router.push(`/skill/${id}`)}
-          />
+          <View style={styles.footerWrapper}>
+            <View style={styles.contentOverlay} />
+            <RecentActivity
+              skills={skills.map(s => ({ id: s.id, name: s.name, lastUpdated: s.lastUpdated, progress: s.progress, entries: s.entries }))}
+              onSkillPress={(id) => router.push(`/skill/${id}`)}
+            />
+          </View>
         }
         showsVerticalScrollIndicator={false}
         refreshControl={
