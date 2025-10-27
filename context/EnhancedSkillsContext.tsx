@@ -183,11 +183,14 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       
       // Log each skill's owner info
       (data || []).forEach((skill: any, index: number) => {
-        console.log(`Skill ${index + 1}:`, {
+        console.log(`Skill ${index + 1} detailed:`, {
           name: skill.name,
           user_id: skill.user_id,
           visibility: skill.visibility,
-          owner: skill.users
+          users: skill.users,
+          hasUsers: !!skill.users,
+          usersType: typeof skill.users,
+          fullSkill: skill
         });
       });
       
