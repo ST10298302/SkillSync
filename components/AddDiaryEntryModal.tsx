@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useSkills } from '../context/SkillsContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface AddDiaryEntryModalProps {
   visible: boolean;
@@ -12,6 +13,10 @@ interface AddDiaryEntryModalProps {
 
 export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryModalProps) => {
   const { addEntry } = useSkills();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
   const [text, setText] = useState('');
   const [hours, setHours] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,42 +40,54 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Add Diary Entry</Text>
+        <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
+          <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
+            <Text style={[styles.title, { color: themeColors.text }]}>Add Diary Entry</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={Colors.light.text} />
+              <Ionicons name="close" size={24} color={themeColors.text} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.label}>What did you learn?</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>What did you learn?</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { 
+                color: themeColors.text,
+                backgroundColor: themeColors.backgroundSecondary,
+                borderColor: themeColors.border
+              }]}
               placeholder="Describe what you learned today..."
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               multiline
               value={text}
               onChangeText={setText}
               maxLength={1000}
             />
 
-            <Text style={styles.label}>Hours spent (optional)</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Hours spent (optional)</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { 
+                color: themeColors.text,
+                backgroundColor: themeColors.backgroundSecondary,
+                borderColor: themeColors.border
+              }]}
               placeholder="e.g., 2.5"
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               keyboardType="decimal-pad"
               value={hours}
               onChangeText={setHours}
             />
 
             <TouchableOpacity
-              style={[styles.button, (!text || loading) && styles.buttonDisabled]}
+              style={[
+                styles.button, 
+                { backgroundColor: themeColors.accent },
+                (!text || loading) && styles.buttonDisabled
+              ]}
               onPress={handleSubmit}
               disabled={!text || loading}
             >
-              <Text style={styles.buttonText}>Add Entry</Text>
+              <Text style={[styles.buttonText, { color: themeColors.text }]}>Add Entry</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -86,7 +103,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modal: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: 'transparent', // Will be set dynamically
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
     paddingTop: Spacing.lg,
@@ -99,37 +116,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
   },
   title: {
     ...Typography.h2,
-    color: Colors.light.text,
   },
   content: {
     padding: Spacing.lg,
   },
   label: {
     ...Typography.body,
-    color: Colors.light.text,
     marginBottom: Spacing.sm,
     marginTop: Spacing.sm,
   },
   input: {
     ...Typography.body,
-    color: Colors.light.text,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: Colors.light.accent,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
@@ -140,7 +150,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.body,
-    color: Colors.light.text,
     fontWeight: '600',
   },
 });

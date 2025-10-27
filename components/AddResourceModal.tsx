@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
+import { useTheme } from '../context/ThemeContext';
 import { ResourceType } from '../utils/supabase-types';
 
 interface AddResourceModalProps {
@@ -13,6 +14,10 @@ interface AddResourceModalProps {
 
 export const AddResourceModal = ({ visible, onClose, skillId }: AddResourceModalProps) => {
   const { addResource } = useEnhancedSkills();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [type, setType] = useState<ResourceType>(ResourceType.LINK);
@@ -42,63 +47,83 @@ export const AddResourceModal = ({ visible, onClose, skillId }: AddResourceModal
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Add Learning Resource</Text>
+        <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
+          <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
+            <Text style={[styles.title, { color: themeColors.text }]}>Add Learning Resource</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={Colors.light.text} />
+              <Ionicons name="close" size={24} color={themeColors.text} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.label}>Resource Type</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Resource Type</Text>
             <View style={styles.typeContainer}>
               <TouchableOpacity
-                style={[styles.typeButton, type === ResourceType.LINK && styles.typeButtonActive]}
+                style={[
+                  styles.typeButton,
+                  { borderColor: themeColors.border },
+                  type === ResourceType.LINK && [styles.typeButtonActive, 
+                    { backgroundColor: themeColors.accent + '20', borderColor: themeColors.accent }]
+                ]}
                 onPress={() => setType(ResourceType.LINK)}
               >
-                <Ionicons name="link" size={20} color={type === ResourceType.LINK ? Colors.light.accent : Colors.light.textSecondary} />
-                <Text style={[styles.typeText, type === ResourceType.LINK && styles.typeTextActive]}>Link</Text>
+                <Ionicons name="link" size={20} color={type === ResourceType.LINK ? themeColors.accent : themeColors.textSecondary} />
+                <Text style={[styles.typeText, { color: type === ResourceType.LINK ? themeColors.accent : themeColors.textSecondary }]}>Link</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.typeButton, type === ResourceType.VIDEO && styles.typeButtonActive]}
+                style={[
+                  styles.typeButton,
+                  { borderColor: themeColors.border },
+                  type === ResourceType.VIDEO && [styles.typeButtonActive,
+                    { backgroundColor: themeColors.accent + '20', borderColor: themeColors.accent }]
+                ]}
                 onPress={() => setType(ResourceType.VIDEO)}
               >
-                <Ionicons name="videocam" size={20} color={type === ResourceType.VIDEO ? Colors.light.accent : Colors.light.textSecondary} />
-                <Text style={[styles.typeText, type === ResourceType.VIDEO && styles.typeTextActive]}>Video</Text>
+                <Ionicons name="videocam" size={20} color={type === ResourceType.VIDEO ? themeColors.accent : themeColors.textSecondary} />
+                <Text style={[styles.typeText, { color: type === ResourceType.VIDEO ? themeColors.accent : themeColors.textSecondary }]}>Video</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.typeButton, type === ResourceType.DOCUMENT && styles.typeButtonActive]}
+                style={[
+                  styles.typeButton,
+                  { borderColor: themeColors.border },
+                  type === ResourceType.DOCUMENT && [styles.typeButtonActive,
+                    { backgroundColor: themeColors.accent + '20', borderColor: themeColors.accent }]
+                ]}
                 onPress={() => setType(ResourceType.DOCUMENT)}
               >
-                <Ionicons name="document-text" size={20} color={type === ResourceType.DOCUMENT ? Colors.light.accent : Colors.light.textSecondary} />
-                <Text style={[styles.typeText, type === ResourceType.DOCUMENT && styles.typeTextActive]}>Document</Text>
+                <Ionicons name="document-text" size={20} color={type === ResourceType.DOCUMENT ? themeColors.accent : themeColors.textSecondary} />
+                <Text style={[styles.typeText, { color: type === ResourceType.DOCUMENT ? themeColors.accent : themeColors.textSecondary }]}>Document</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.typeButton, type === ResourceType.ARTICLE && styles.typeButtonActive]}
+                style={[
+                  styles.typeButton,
+                  { borderColor: themeColors.border },
+                  type === ResourceType.ARTICLE && [styles.typeButtonActive,
+                    { backgroundColor: themeColors.accent + '20', borderColor: themeColors.accent }]
+                ]}
                 onPress={() => setType(ResourceType.ARTICLE)}
               >
-                <Ionicons name="newspaper" size={20} color={type === ResourceType.ARTICLE ? Colors.light.accent : Colors.light.textSecondary} />
-                <Text style={[styles.typeText, type === ResourceType.ARTICLE && styles.typeTextActive]}>Article</Text>
+                <Ionicons name="newspaper" size={20} color={type === ResourceType.ARTICLE ? themeColors.accent : themeColors.textSecondary} />
+                <Text style={[styles.typeText, { color: type === ResourceType.ARTICLE ? themeColors.accent : themeColors.textSecondary }]}>Article</Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.label}>Title</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Title</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
               placeholder="Resource title"
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               value={title}
               onChangeText={setTitle}
             />
 
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: themeColors.text }]}>
               {type === ResourceType.DOCUMENT ? 'File URL or Link' : 'URL'}
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
               placeholder="https://..."
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               value={url}
               onChangeText={setUrl}
               autoCapitalize="none"
@@ -106,11 +131,11 @@ export const AddResourceModal = ({ visible, onClose, skillId }: AddResourceModal
             />
 
             <TouchableOpacity
-              style={[styles.button, (!title || !url || loading) && styles.buttonDisabled]}
+              style={[styles.button, { backgroundColor: themeColors.accent }, (!title || !url || loading) && styles.buttonDisabled]}
               onPress={handleSubmit}
               disabled={!title || !url || loading}
             >
-              <Text style={styles.buttonText}>Add Resource</Text>
+              <Text style={[styles.buttonText, { color: themeColors.text }]}>Add Resource</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -126,7 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modal: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: 'transparent', // Will be set dynamically
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
     paddingTop: Spacing.lg,
@@ -139,30 +164,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
   },
   title: {
     ...Typography.h2,
-    color: Colors.light.text,
   },
   content: {
     padding: Spacing.lg,
   },
   label: {
     ...Typography.body,
-    color: Colors.light.text,
     marginBottom: Spacing.sm,
     marginTop: Spacing.sm,
   },
   input: {
     ...Typography.body,
-    color: Colors.light.text,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   typeContainer: {
     flexDirection: 'row',
@@ -179,23 +198,18 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
     gap: Spacing.xs,
   },
   typeButtonActive: {
-    backgroundColor: Colors.light.accent + '20',
-    borderColor: Colors.light.accent,
+    // Dynamic colors applied inline
   },
   typeText: {
     ...Typography.bodySmall,
-    color: Colors.light.textSecondary,
   },
   typeTextActive: {
-    color: Colors.light.accent,
     fontWeight: '600',
   },
   button: {
-    backgroundColor: Colors.light.accent,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
@@ -206,7 +220,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.body,
-    color: Colors.light.text,
     fontWeight: '600',
   },
 });

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface AddMilestoneModalProps {
   visible: boolean;
@@ -12,6 +13,10 @@ interface AddMilestoneModalProps {
 
 export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneModalProps) => {
   const { createMilestone } = useEnhancedSkills();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState('');
@@ -42,49 +47,49 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Add Milestone</Text>
+        <View style={[styles.modal, { backgroundColor: themeColors.background }]}>
+          <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
+            <Text style={[styles.title, { color: themeColors.text }]}>Add Milestone</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={Colors.light.text} />
+              <Ionicons name="close" size={24} color={themeColors.text} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.label}>Title *</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Title *</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
               placeholder="e.g., Complete first project"
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               value={title}
               onChangeText={setTitle}
             />
 
-            <Text style={styles.label}>Description (optional)</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Description (optional)</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
               placeholder="Add details about this milestone..."
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               multiline
               value={description}
               onChangeText={setDescription}
             />
 
-            <Text style={styles.label}>Target Date (optional)</Text>
+            <Text style={[styles.label, { color: themeColors.text }]}>Target Date (optional)</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
               placeholder="YYYY-MM-DD"
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={themeColors.textSecondary}
               value={targetDate}
               onChangeText={setTargetDate}
             />
 
             <TouchableOpacity
-              style={[styles.button, (!title || loading) && styles.buttonDisabled]}
+              style={[styles.button, { backgroundColor: themeColors.accent }, (!title || loading) && styles.buttonDisabled]}
               onPress={handleSubmit}
               disabled={!title || loading}
             >
-              <Text style={styles.buttonText}>Add Milestone</Text>
+              <Text style={[styles.buttonText, { color: themeColors.text }]}>Add Milestone</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -100,7 +105,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modal: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: 'transparent', // Will be set dynamically
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
     paddingTop: Spacing.lg,
@@ -113,37 +118,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
   },
   title: {
     ...Typography.h2,
-    color: Colors.light.text,
   },
   content: {
     padding: Spacing.lg,
   },
   label: {
     ...Typography.body,
-    color: Colors.light.text,
     marginBottom: Spacing.sm,
     marginTop: Spacing.sm,
   },
   input: {
     ...Typography.body,
-    color: Colors.light.text,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   textArea: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: Colors.light.accent,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
@@ -154,7 +152,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.body,
-    color: Colors.light.text,
     fontWeight: '600',
   },
 });
