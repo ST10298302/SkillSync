@@ -267,7 +267,7 @@ export default function CommunityScreen() {
               >
                 <Ionicons name="chatbubble-outline" size={16} color={themeColors.accent} />
                 <Text style={[styles.actionText, { color: themeColors.accent }]}>
-                  Comment
+                  {t('comment')}
                 </Text>
               </TouchableOpacity>
               <ReactionButton
@@ -291,7 +291,7 @@ export default function CommunityScreen() {
                   color={themeColors.text}
                 />
                 <Text style={[styles.actionText, { color: themeColors.text }]}>
-                  {isFollowingOwner ? 'Following' : 'Follow'}
+                  {isFollowingOwner ? t('following') : t('follow')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -301,7 +301,7 @@ export default function CommunityScreen() {
               >
                 <Ionicons name="add-circle" size={16} color={(isOwnSkill || skillAlreadyExists) ? themeColors.textSecondary : themeColors.accent} />
                 <Text style={[styles.actionText, { color: (isOwnSkill || skillAlreadyExists) ? themeColors.textSecondary : themeColors.accent }]}>
-                  Add to My Skills
+                  {t('addToMySkills')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -319,7 +319,7 @@ export default function CommunityScreen() {
         end={{ x: 1, y: 1 }}
       >
                  <Text style={[styles.title, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>
-           {activeSubTab === 'skills' ? 'Community Skills' : 'My Friends'}
+           {activeSubTab === 'skills' ? t('communitySkills') : t('myFriends')}
          </Text>
 
          {/* Sub-tabs */}
@@ -330,7 +330,7 @@ export default function CommunityScreen() {
           >
             <Ionicons name="library" size={20} color={activeSubTab === 'skills' ? themeColors.accent : themeColors.textSecondary} />
             <Text style={[styles.subTabText, { color: activeSubTab === 'skills' ? themeColors.accent : themeColors.textSecondary }]}>
-              Community Skills
+              {t('communitySkills')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -339,7 +339,7 @@ export default function CommunityScreen() {
           >
             <Ionicons name="people" size={20} color={activeSubTab === 'friends' ? themeColors.accent : themeColors.textSecondary} />
             <Text style={[styles.subTabText, { color: activeSubTab === 'friends' ? themeColors.accent : themeColors.textSecondary }]}>
-              My Friends
+              {t('myFriends')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -349,7 +349,7 @@ export default function CommunityScreen() {
           <Ionicons name="search" size={20} color={themeColors.textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: themeColors.text }]}
-            placeholder={activeSubTab === 'skills' ? 'Search skills...' : 'Search friends...'}
+            placeholder={activeSubTab === 'skills' ? t('searchSkills') : t('searchFriends')}
             placeholderTextColor={themeColors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -375,7 +375,7 @@ export default function CommunityScreen() {
                 onPress={() => setFilterType(filter)}
               >
                 <Text style={[styles.filterText, { color: safeTheme === 'dark' ? '#ffffff' : (filterType === filter ? '#ffffff' : '#000000') }]}>
-                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                  {t(filter as 'all' | 'popular' | 'recent')}
                 </Text>
               </TouchableOpacity>
             ))}

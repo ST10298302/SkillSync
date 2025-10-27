@@ -130,6 +130,29 @@ export const TRANSLATIONS = {
     unnamedSkill: 'Unnamed Skill',
     skillNotFound: 'Skill not found',
     skillNotFoundSubtitle: 'The skill you are looking for does not exist',
+    
+    // Skill Levels
+    levelBeginner: 'Beginner',
+    levelNovice: 'Novice',
+    levelIntermediate: 'Intermediate',
+    levelAdvanced: 'Advanced',
+    levelExpert: 'Expert',
+    
+    // Community
+    communitySkills: 'Community Skills',
+    myFriends: 'My Friends',
+    searchFriends: 'Search friends...',
+    popular: 'Popular',
+    recent: 'Recent',
+    follow: 'Follow',
+    unfollow: 'Unfollow',
+    following: 'Following',
+    addToMySkills: 'Add to My Skills',
+    react: 'React',
+    comment: 'Comment',
+    seeAll: 'See All',
+    noCommunitySkills: 'No community skills yet',
+    noFriends: 'No friends yet',
   },
   es: {
     // Navigation
@@ -262,6 +285,29 @@ export const TRANSLATIONS = {
     unnamedSkill: 'Habilidad Sin Nombre',
     skillNotFound: 'Habilidad no encontrada',
     skillNotFoundSubtitle: 'La habilidad que buscas no existe',
+    
+    // Skill Levels
+    levelBeginner: 'Principiante',
+    levelNovice: 'Novato',
+    levelIntermediate: 'Intermedio',
+    levelAdvanced: 'Avanzado',
+    levelExpert: 'Experto',
+    
+    // Community
+    communitySkills: 'Habilidades de la Comunidad',
+    myFriends: 'Mis Amigos',
+    searchFriends: 'Buscar amigos...',
+    popular: 'Popular',
+    recent: 'Reciente',
+    follow: 'Seguir',
+    unfollow: 'Dejar de seguir',
+    following: 'Siguiendo',
+    addToMySkills: 'Agregar a Mis Habilidades',
+    react: 'Reaccionar',
+    comment: 'Comentar',
+    seeAll: 'Ver Todo',
+    noCommunitySkills: 'Aún no hay habilidades de la comunidad',
+    noFriends: 'Aún no hay amigos',
   },
   fr: {
     // Navigation
@@ -394,6 +440,29 @@ export const TRANSLATIONS = {
     unnamedSkill: 'Compétence Sans Nom',
     skillNotFound: 'Compétence non trouvée',
     skillNotFoundSubtitle: 'La compétence que vous recherchez n\'existe pas',
+    
+    // Skill Levels
+    levelBeginner: 'Débutant',
+    levelNovice: 'Novice',
+    levelIntermediate: 'Intermédiaire',
+    levelAdvanced: 'Avancé',
+    levelExpert: 'Expert',
+    
+    // Community
+    communitySkills: 'Compétences de la Communauté',
+    myFriends: 'Mes Amis',
+    searchFriends: 'Rechercher des amis...',
+    popular: 'Populaire',
+    recent: 'Récent',
+    follow: 'Suivre',
+    unfollow: 'Ne plus suivre',
+    following: 'Suivant',
+    addToMySkills: 'Ajouter à Mes Compétences',
+    react: 'Réagir',
+    comment: 'Commenter',
+    seeAll: 'Voir tout',
+    noCommunitySkills: 'Aucune compétence communautaire pour le moment',
+    noFriends: 'Pas encore d\'amis',
   },
   de: {
     // Navigation
@@ -526,6 +595,29 @@ export const TRANSLATIONS = {
     unnamedSkill: 'Unbenannte Fähigkeit',
     skillNotFound: 'Fähigkeit nicht gefunden',
     skillNotFoundSubtitle: 'Die gesuchte Fähigkeit existiert nicht',
+    
+    // Skill Levels
+    levelBeginner: 'Anfänger',
+    levelNovice: 'Neuling',
+    levelIntermediate: 'Fortgeschritten',
+    levelAdvanced: 'Fortgeschritten',
+    levelExpert: 'Experte',
+    
+    // Community
+    communitySkills: 'Community-Fähigkeiten',
+    myFriends: 'Meine Freunde',
+    searchFriends: 'Freunde suchen...',
+    popular: 'Beliebt',
+    recent: 'Kürzlich',
+    follow: 'Folgen',
+    unfollow: 'Nicht mehr folgen',
+    following: 'Folgt',
+    addToMySkills: 'Zu Meinen Fähigkeiten Hinzufügen',
+    react: 'Reagieren',
+    comment: 'Kommentieren',
+    seeAll: 'Alle anzeigen',
+    noCommunitySkills: 'Noch keine Community-Fähigkeiten',
+    noFriends: 'Noch keine Freunde',
   },
   zh: {
     // Navigation
@@ -658,6 +750,29 @@ export const TRANSLATIONS = {
     unnamedSkill: '未命名技能',
     skillNotFound: '技能未找到',
     skillNotFoundSubtitle: '您要查找的技能不存在',
+    
+    // Skill Levels
+    levelBeginner: '初学者',
+    levelNovice: '新手',
+    levelIntermediate: '中级',
+    levelAdvanced: '高级',
+    levelExpert: '专家',
+    
+    // Community
+    communitySkills: '社区技能',
+    myFriends: '我的好友',
+    searchFriends: '搜索好友...',
+    popular: '热门',
+    recent: '最近',
+    follow: '关注',
+    unfollow: '取消关注',
+    following: '正在关注',
+    addToMySkills: '添加到我的技能',
+    react: '反应',
+    comment: '评论',
+    seeAll: '查看全部',
+    noCommunitySkills: '暂无社区技能',
+    noFriends: '暂无好友',
   },
 } as const;
 
