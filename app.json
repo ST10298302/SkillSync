@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.mavy132.SkillSyncApp",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFaceIDUsageDescription": "SkillSync uses Face ID to securely authenticate your identity and protect your skill data."
       }
     },
     "android": {

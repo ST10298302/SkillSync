@@ -9,9 +9,10 @@ interface AddDiaryEntryModalProps {
   visible: boolean;
   onClose: () => void;
   skillId: string;
+  onSuccess?: () => void;
 }
 
-export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryModalProps) => {
+export const AddDiaryEntryModal = ({ visible, onClose, skillId, onSuccess }: AddDiaryEntryModalProps) => {
   const { addEntry } = useSkills();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
@@ -29,6 +30,7 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
       await addEntry(skillId, text.trim(), parseFloat(hours) || 0);
       setText('');
       setHours('');
+      onSuccess?.();
       onClose();
     } catch (error) {
       console.error('Failed to add entry:', error);
@@ -62,6 +64,8 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
               value={text}
               onChangeText={setText}
               maxLength={1000}
+              returnKeyType="done"
+              blurOnSubmit={true}
             />
 
             <Text style={[styles.label, { color: themeColors.text }]}>Hours spent (optional)</Text>

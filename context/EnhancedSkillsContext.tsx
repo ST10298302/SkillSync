@@ -4,9 +4,11 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { AchievementService } from '../services/achievementService';
 import { AnalyticsService, LearningPattern } from '../services/analyticsService';
+import { ChallengeService } from '../services/challengeService';
 import { MediaService } from '../services/mediaService';
 import { SkillManagementService } from '../services/skillManagementService';
 import { SocialService } from '../services/socialService';
+import { TechniqueService } from '../services/techniqueService';
 import { TutorService } from '../services/tutorService';
 import {
     ArtifactFileType,
@@ -15,9 +17,11 @@ import {
     ReactionType,
     Skill,
     SkillArtifact,
+    SkillChallenge,
     SkillComment,
     SkillMilestone,
     SkillResource,
+    SkillTechnique,
     TutorStudent,
     UserAchievement,
     UserRole
@@ -49,11 +53,27 @@ interface EnhancedSkillsContextProps {
   resources: SkillResource[];
   addResource: (resourceData: any) => Promise<SkillResource>;
   getResources: (skillId: string) => Promise<void>;
+  deleteResource: (resourceId: string) => Promise<void>;
   
   // Artifacts
   artifacts: SkillArtifact[];
   uploadArtifact: (skillId: string, title: string, description: string, fileUri: string, fileType: ArtifactFileType) => Promise<SkillArtifact>;
   getArtifacts: (skillId: string) => Promise<void>;
+  deleteArtifact: (artifactId: string) => Promise<void>;
+  
+  // Techniques
+  techniques: SkillTechnique[];
+  getTechniques: (skillId: string) => Promise<void>;
+  addTechnique: (techniqueData: any) => Promise<SkillTechnique>;
+  updateTechnique: (techniqueId: string, updates: any) => Promise<void>;
+  deleteTechnique: (techniqueId: string) => Promise<void>;
+  
+  // Challenges
+  challenges: SkillChallenge[];
+  getChallenges: (skillId: string) => Promise<void>;
+  addChallenge: (challengeData: any) => Promise<SkillChallenge>;
+  updateChallenge: (challengeId: string, updates: any) => Promise<void>;
+  deleteChallenge: (challengeId: string) => Promise<void>;
   
   // Comments
   comments: SkillComment[];
@@ -104,6 +124,8 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
   const [milestones, setMilestones] = useState<SkillMilestone[]>([]);
   const [resources, setResources] = useState<SkillResource[]>([]);
   const [artifacts, setArtifacts] = useState<SkillArtifact[]>([]);
+  const [techniques, setTechniques] = useState<SkillTechnique[]>([]);
+  const [challenges, setChallenges] = useState<SkillChallenge[]>([]);
   const [comments, setComments] = useState<SkillComment[]>([]);
   const [students, setStudents] = useState<TutorStudent[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -134,17 +156,37 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
     if (!user) return [];
     
     try {
-      // Query public skills using SkillManagementService
-      // This will need to be implemented in the service
+      // Query public skills with user information
       const { supabase } = await import('../utils/supabase');
       const { data, error } = await supabase
         .from('skills')
-        .select('*')
+        .select(`
+          *,
+          users(
+            id,
+            name,
+            email,
+            profile_picture_url
+          )
+        `)
         .eq('visibility', 'public')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (error) {
+        console.error('Error fetching public skills:', error);
+        throw error;
+      }
+      
+      // Map the database results to Skill type with default values and owner info
+      return (data || []).map((skill: any) => ({
+        ...skill,
+        progress: skill.progress || 0,
+        likes_count: skill.likes_count || 0,
+        comments_count: skill.comments_count || 0,
+        current_level: skill.current_level || 'beginner',
+        visibility: skill.visibility || 'private',
+        owner: skill.users || null, // Add owner information
+      })) as any[];
     } catch (error) {
       console.error('Failed to get public skills:', error);
       return [];
@@ -172,8 +214,17 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
 
   // Milestone operations
   const getMilestones = async (skillId: string) => {
-    const data = await SkillManagementService.getMilestones(skillId);
-    setMilestones(data);
+    if (!skillId || typeof skillId !== 'string' || skillId === 'null') {
+      console.warn('getMilestones: Invalid skillId', skillId);
+      return;
+    }
+    try {
+      const data = await SkillManagementService.getMilestones(skillId);
+      setMilestones(data);
+    } catch (error) {
+      console.error('Failed to load milestones:', error);
+      setMilestones([]);
+    }
   };
 
   const createMilestone = async (milestoneData: any) => {
@@ -191,8 +242,17 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
 
   // Resource operations
   const getResources = async (skillId: string) => {
-    const data = await SkillManagementService.getResources(skillId);
-    setResources(data);
+    if (!skillId || typeof skillId !== 'string' || skillId === 'null') {
+      console.warn('getResources: Invalid skillId', skillId);
+      return;
+    }
+    try {
+      const data = await SkillManagementService.getResources(skillId);
+      setResources(data);
+    } catch (error) {
+      console.error('Failed to load resources:', error);
+      setResources([]);
+    }
   };
 
   const addResource = async (resourceData: any) => {
@@ -227,10 +287,91 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
     return artifact;
   };
 
+  const deleteArtifact = async (artifactId: string) => {
+    await MediaService.deleteArtifact(artifactId);
+    setArtifacts(prev => prev.filter(a => a.id !== artifactId));
+  };
+
+  const deleteResource = async (resourceId: string) => {
+    await SkillManagementService.deleteResource(resourceId);
+    setResources(prev => prev.filter(r => r.id !== resourceId));
+  };
+
+  // Technique operations
+  const getTechniques = async (skillId: string) => {
+    if (!skillId || typeof skillId !== 'string' || skillId === 'null') {
+      console.warn('getTechniques: Invalid skillId', skillId);
+      return;
+    }
+    try {
+      const data = await TechniqueService.getTechniques(skillId);
+      setTechniques(data);
+    } catch (error) {
+      console.error('Failed to load techniques:', error);
+      setTechniques([]);
+    }
+  };
+
+  const addTechnique = async (techniqueData: any) => {
+    const technique = await TechniqueService.createTechnique(techniqueData);
+    setTechniques(prev => [...prev, technique]);
+    return technique;
+  };
+
+  const updateTechnique = async (techniqueId: string, updates: any) => {
+    await TechniqueService.updateTechnique(techniqueId, updates);
+    setTechniques(prev => prev.map(t => t.id === techniqueId ? { ...t, ...updates } : t));
+  };
+
+  const deleteTechnique = async (techniqueId: string) => {
+    await TechniqueService.deleteTechnique(techniqueId);
+    setTechniques(prev => prev.filter(t => t.id !== techniqueId));
+  };
+
+  // Challenge operations
+  const getChallenges = async (skillId: string) => {
+    if (!skillId || typeof skillId !== 'string' || skillId === 'null') {
+      console.warn('getChallenges: Invalid skillId', skillId);
+      return;
+    }
+    try {
+      const data = await ChallengeService.getChallenges(skillId);
+      setChallenges(data);
+    } catch (error) {
+      console.error('Failed to load challenges:', error);
+      setChallenges([]);
+    }
+  };
+
+  const addChallenge = async (challengeData: any) => {
+    const challenge = await ChallengeService.createChallenge(challengeData);
+    setChallenges(prev => [...prev, challenge]);
+    return challenge;
+  };
+
+  const updateChallenge = async (challengeId: string, updates: any) => {
+    await ChallengeService.updateChallenge(challengeId, updates);
+    setChallenges(prev => prev.map(c => c.id === challengeId ? { ...c, ...updates } : c));
+  };
+
+  const deleteChallenge = async (challengeId: string) => {
+    await ChallengeService.deleteChallenge(challengeId);
+    setChallenges(prev => prev.filter(c => c.id !== challengeId));
+  };
+
   // Comment operations
   const getComments = async (skillId: string) => {
-    const data = await SocialService.getSkillComments(skillId);
-    setComments(data);
+    if (!skillId || typeof skillId !== 'string' || skillId === 'null') {
+      console.warn('getComments: Invalid skillId', skillId);
+      return;
+    }
+    try {
+      const data = await SocialService.getSkillComments(skillId);
+      setComments(data);
+    } catch (error) {
+      console.error('Failed to load comments:', error);
+      setComments([]);
+    }
   };
 
   const createComment = async (skillId: string, content: string, parentCommentId?: string) => {
@@ -367,9 +508,21 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
     resources,
     addResource,
     getResources,
+    deleteResource,
     artifacts,
     uploadArtifact,
     getArtifacts,
+    deleteArtifact,
+    techniques,
+    getTechniques,
+    addTechnique,
+    updateTechnique,
+    deleteTechnique,
+    challenges,
+    getChallenges,
+    addChallenge,
+    updateChallenge,
+    deleteChallenge,
     comments,
     createComment,
     getComments,

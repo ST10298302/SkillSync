@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { SupabaseService } from '../services/supabaseService';
+import { shouldProgressLevel } from '../utils/skillProgression';
 import { calculateSkillStreak } from '../utils/streakCalculator';
 import { SkillEntry } from '../utils/supabase';
 import { useAuth } from './AuthContext';
@@ -31,6 +32,11 @@ export interface Skill {
   lastUpdated?: string;
   streak?: number;
   totalHours?: number;
+  likes_count?: number;
+  comments_count?: number;
+  current_level?: string;
+  user_id?: string; // Add user_id to track skill ownership
+  completed_levels?: string[]; // Track which levels have been completed
 }
 
 interface SkillsContextProps {
@@ -95,6 +101,11 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
             lastUpdated: lastUpdated,
             streak: supabaseSkill.streak || 0,
             totalHours: supabaseSkill.total_hours || 0,
+            likes_count: supabaseSkill.likes_count || 0,
+            comments_count: supabaseSkill.comments_count || 0,
+            current_level: supabaseSkill.current_level || 'beginner',
+            user_id: supabaseSkill.user_id, // Include user_id for ownership checks
+            completed_levels: (supabaseSkill as any).completed_levels || [], // Track completed levels
           };
         })
       );
@@ -148,6 +159,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
         lastUpdated: supabaseSkill.last_updated,
         streak: supabaseSkill.streak || 0,
         totalHours: supabaseSkill.total_hours || 0,
+        user_id: user.id, // Include user_id for ownership checks
       };
       setSkills(prev => [...prev, newSkill]);
     } catch (e) {
@@ -342,26 +354,81 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
     if (!user || typeof window === 'undefined') return;
 
     try {
+      // Get the current skill
+      const currentSkill = skills.find(s => s.id === skillId);
+      if (!currentSkill) return;
+
+      // Check if we should progress to the next level
+      const currentLevel = (currentSkill.current_level || 'beginner') as 'beginner' | 'novice' | 'intermediate' | 'advanced' | 'expert';
+      console.log('Current level:', currentLevel, 'New progress:', value);
+      
+      const progressionResult = shouldProgressLevel(currentLevel, value);
+      console.log('Progression result:', progressionResult);
+      
+      let newLevel = currentLevel;
+      let newProgress = value;
+      let levelUpMessage = '';
+
+             // If we've reached 100% and can level up
+       if (progressionResult) {
+         newLevel = progressionResult.newLevel;
+         if (progressionResult.progressReset) {
+           newProgress = 0;
+           levelUpMessage = progressionResult.message;
+           console.log('LEVEL UP!', levelUpMessage);
+           console.log('Updating skill:', { 
+             id: skillId, 
+             level: currentLevel, 
+             newLevel, 
+             currentProgress: value, 
+             newProgress 
+           });
+           
+           // Show a notification or alert (you might want to use your notification system here)
+           // Alert is a placeholder - you should use your app's notification system
+           if (typeof window !== 'undefined' && window.alert) {
+             window.alert(levelUpMessage);
+           }
+         }
+       }
+       
+       // Track completed levels
+       const completedLevels: string[] = (currentSkill as any).completed_levels || [];
+       if (!completedLevels.includes(currentLevel) && progressionResult && progressionResult.progressReset) {
+         completedLevels.push(currentLevel);
+       }
+
+      // Create notes with level completion info
+      let notes = `Progress updated to ${value}%`;
+      if (progressionResult && progressionResult.progressReset) {
+        const capitalizedLevel = currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1);
+        notes += ` - ${capitalizedLevel} Level Completed!`;
+      }
+      if (levelUpMessage) {
+        notes += '. ' + levelUpMessage;
+      }
+
       const progressUpdate = await SupabaseService.createProgressUpdate({
         skill_id: skillId,
         progress: value,
-        notes: `Progress updated to ${value}%`,
+        notes: notes,
       });
-
-      // Get the current skill to calculate new streak
-      const currentSkill = skills.find(s => s.id === skillId);
-      if (!currentSkill) return;
 
       // Calculate new streak
       const newProgressUpdates = [...currentSkill.progressUpdates, progressUpdate];
       const newStreak = calculateSkillStreak(currentSkill.entries, newProgressUpdates);
 
-      // Update the skill's progress and streak in the database
-      await SupabaseService.updateSkill(skillId, { 
-        progress: value,
+      // Update the skill's progress, level, and streak in the database
+      const updateResult = await SupabaseService.updateSkill(skillId, { 
+        progress: newProgress,
+        current_level: newLevel,
         streak: newStreak,
         last_updated: progressUpdate.created_at,
-      });
+        completed_levels: completedLevels,
+      } as any);
+      
+      console.log('Skill update result:', updateResult);
+      console.log('Completed levels:', completedLevels);
 
       setSkills(prev =>
         prev.map(skill => {
@@ -369,11 +436,13 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
           
           return {
             ...skill,
-            progress: value,
+            progress: newProgress,
+            current_level: newLevel,
             progressUpdates: newProgressUpdates,
             streak: newStreak,
             lastUpdated: progressUpdate.created_at,
-          };
+            completed_levels: completedLevels,
+          } as any;
         })
       );
     } catch (e) {

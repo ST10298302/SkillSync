@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import {
     Alert,
     Animated,
+    FlatList,
+    Modal,
     Platform,
     ScrollView,
     StyleSheet,
@@ -20,6 +22,7 @@ import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { SupabaseService } from '../services/supabaseService';
+import { UserRole } from '../utils/supabase-types';
 
 export default function AccountSettings() {
   const router = useRouter();
@@ -31,22 +34,41 @@ export default function AccountSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
   const [name, setName] = useState(user?.user_metadata?.name || user?.email?.split('@')[0] || '');
+  const [bio, setBio] = useState('');
+  const [role, setRole] = useState<UserRole>(UserRole.LEARNER);
+  const [specializations, setSpecializations] = useState<string[]>([]);
+  const [newSpecialization, setNewSpecialization] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Load profile picture URL
+  // Load user profile data
   React.useEffect(() => {
-    const loadProfilePicture = async () => {
+    const loadUserProfile = async () => {
       if (user?.id) {
         try {
+          const { supabase } = await import('../utils/supabase');
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          if (data && !error) {
+            setBio(data.bio || '');
+            setRole(data.role || UserRole.LEARNER);
+            setSpecializations(data.tutor_specializations || []);
+          }
+
           const url = await SupabaseService.getProfilePictureUrl(user.id);
           setProfilePictureUrl(url || undefined);
         } catch (error) {
-          console.error('Error loading profile picture:', error);
+          console.error('Error loading profile:', error);
         }
       }
     };
 
-    loadProfilePicture();
+    loadUserProfile();
   }, [user?.id]);
 
   const handleSaveProfile = async () => {
@@ -56,7 +78,19 @@ export default function AccountSettings() {
       setIsLoading(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-      await SupabaseService.updateUserProfile(user.id, { name });
+      const { supabase } = await import('../utils/supabase');
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name,
+          bio,
+          role,
+          tutor_specializations: role === UserRole.TUTOR ? specializations : [],
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
       setIsEditing(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
@@ -73,6 +107,34 @@ export default function AccountSettings() {
   const handleCancelEdit = () => {
     setName(user?.user_metadata?.name || user?.email?.split('@')[0] || '');
     setIsEditing(false);
+  };
+
+  const handleAddSpecialization = () => {
+    if (newSpecialization.trim() && !specializations.includes(newSpecialization.trim())) {
+      setSpecializations([...specializations, newSpecialization.trim()]);
+      setNewSpecialization('');
+    }
+  };
+
+  const handleRemoveSpecialization = (index: number) => {
+    setSpecializations(specializations.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoading(true);
+      await SupabaseService.deleteUserAccount(user.id);
+      Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+      router.replace('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      Alert.alert('Error', 'Failed to delete account. Please try again.');
+    } finally {
+      setIsLoading(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -256,6 +318,87 @@ export default function AccountSettings() {
     disabledButton: {
       opacity: 0.5,
     },
+    specializationItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: Spacing.sm,
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.sm,
+      marginBottom: Spacing.xs,
+    },
+    specializationText: {
+      ...Typography.body,
+      color: themeColors.text,
+    },
+    addSpecializationButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: Spacing.md,
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.md,
+      marginTop: Spacing.sm,
+    },
+    addSpecializationText: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      marginLeft: Spacing.xs,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: themeColors.background,
+      borderRadius: BorderRadius.xl,
+      padding: Spacing.xl,
+      minWidth: 300,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 12,
+    },
+    modalTitle: {
+      ...Typography.h2,
+      color: themeColors.text,
+      marginBottom: Spacing.lg,
+      textAlign: 'center',
+    },
+    modalText: {
+      ...Typography.body,
+      color: themeColors.textSecondary,
+      marginBottom: Spacing.lg,
+      textAlign: 'center',
+    },
+    modalButton: {
+      padding: Spacing.md,
+      borderRadius: BorderRadius.md,
+      marginBottom: Spacing.sm,
+      backgroundColor: themeColors.backgroundSecondary,
+    },
+    modalButtonActive: {
+      backgroundColor: themeColors.accent,
+    },
+    modalButtonSecondary: {
+      backgroundColor: themeColors.backgroundSecondary,
+    },
+    modalButtonDanger: {
+      backgroundColor: themeColors.error || '#ef4444',
+    },
+    modalButtonText: {
+      ...Typography.body,
+      color: themeColors.text,
+      textAlign: 'center',
+      fontWeight: '600',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: Spacing.md,
+    },
   });
 
   return (
@@ -324,6 +467,73 @@ export default function AccountSettings() {
                   editable={isEditing}
                 />
               </View>
+              {isEditing && (
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Role</Text>
+                  <TouchableOpacity
+                    style={[styles.formInput, styles.formInputDisabled]}
+                    onPress={() => setShowRoleModal(true)}
+                  >
+                    <Text style={styles.emailValue}>{role}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {isEditing && (
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Bio</Text>
+                  <TextInput
+                    style={[
+                      styles.formInput,
+                      isEditing ? styles.formInputFocused : styles.formInputDisabled
+                    ]}
+                    value={bio}
+                    onChangeText={setBio}
+                    placeholder="Enter your bio"
+                    placeholderTextColor={themeColors.textSecondary}
+                    editable={isEditing}
+                  />
+                </View>
+              )}
+              {isEditing && (
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Tutor Specializations</Text>
+                  <FlatList
+                    data={specializations}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.specializationItem}>
+                        <Text style={styles.specializationText}>{item}</Text>
+                        <TouchableOpacity onPress={() => handleRemoveSpecialization(index)}>
+                          <Ionicons name="close" size={16} color={themeColors.textSecondary} />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    ListEmptyComponent={() => (
+                      <TouchableOpacity
+                        style={styles.addSpecializationButton}
+                        onPress={() => setNewSpecialization('')}
+                      >
+                        <Ionicons name="add-circle" size={20} color={themeColors.textSecondary} />
+                        <Text style={styles.addSpecializationText}>Add Specialization</Text>
+                      </TouchableOpacity>
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                  />
+                  {isEditing && (
+                    <View style={styles.formGroup}>
+                      <TextInput
+                        style={styles.formInput}
+                        value={newSpecialization}
+                        onChangeText={setNewSpecialization}
+                        placeholder="Add new specialization"
+                        placeholderTextColor={themeColors.textSecondary}
+                      />
+                      <TouchableOpacity onPress={handleAddSpecialization}>
+                        <Ionicons name="add-circle" size={20} color={themeColors.accent} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
 
             <View style={styles.emailSection}>
@@ -371,7 +581,106 @@ export default function AccountSettings() {
             )}
           </View>
         </Animated.View>
+
+        {/* Delete Account Section */}
+        <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          <Text style={styles.sectionTitle}>Danger Zone</Text>
+          <View style={styles.card}>
+            <View style={styles.formSection}>
+              <TouchableOpacity
+                style={[styles.button, styles.secondaryButton]}
+                onPress={() => setShowDeleteConfirm(true)}
+                disabled={isLoading}
+              >
+                <Text style={styles.secondaryButtonText}>Delete Account</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Animated.View>
       </ScrollView>
+
+      {/* Role Modal */}
+      <Modal
+        visible={showRoleModal}
+        onRequestClose={() => setShowRoleModal(false)}
+        transparent={true}
+        animationType="fade"
+      >
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          onPress={() => setShowRoleModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Role</Text>
+              <TouchableOpacity
+                style={[styles.modalButton, role === UserRole.LEARNER && styles.modalButtonActive]}
+                onPress={() => {
+                  setRole(UserRole.LEARNER);
+                  setShowRoleModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Learner</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, role === UserRole.TUTOR && styles.modalButtonActive]}
+                onPress={() => {
+                  setRole(UserRole.TUTOR);
+                  setShowRoleModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Tutor</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, role === UserRole.ADMIN && styles.modalButtonActive]}
+                onPress={() => {
+                  setRole(UserRole.ADMIN);
+                  setShowRoleModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Admin</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteConfirm}
+        onRequestClose={() => setShowDeleteConfirm(false)}
+        transparent={true}
+        animationType="fade"
+      >
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          onPress={() => setShowDeleteConfirm(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Confirm Deletion</Text>
+              <Text style={styles.modalText}>
+                Are you sure you want to delete your account? This action cannot be undone.
+              </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonSecondary]}
+                  onPress={() => setShowDeleteConfirm(false)}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonDanger]}
+                  onPress={handleDeleteAccount}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.modalButtonText}>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </UniformLayout>
   );
 }

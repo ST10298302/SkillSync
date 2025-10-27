@@ -2,7 +2,9 @@
 // Handles file uploads, image compression, and artifact management
 
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { Platform } from 'react-native';
 import { supabase } from '../utils/supabase';
 import { ArtifactFileType, SkillArtifact } from '../utils/supabase-types';
 
@@ -58,61 +60,115 @@ export class MediaService {
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) throw new Error('User not authenticated');
 
-    // Compress and resize image
-    const manipResult = await ImageManipulator.manipulateAsync(
-      imageUri,
-      [
-        {
-          resize: {
-            width: options.maxWidth || 1200,
-            height: options.maxHeight || 1200,
-          },
-        },
-      ],
-      {
-        compress: options.quality || 0.8,
-        format: ImageManipulator.SaveFormat.JPEG,
+    let blob: Blob;
+    let thumbnailBlob: Blob;
+
+    if (Platform.OS === 'web') {
+      // On web, fetch the image directly
+      try {
+        console.log('Web upload - imageUri:', imageUri);
+        const response = await fetch(imageUri);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
+        blob = await response.blob();
+        console.log('Web upload - blob size:', blob.size, 'type:', blob.type);
+        
+        // For web, we can use the same image for thumbnail (or create a smaller canvas)
+        thumbnailBlob = blob;
+      } catch (error) {
+        console.error('Error fetching image on web:', error);
+        throw new Error(`Failed to process image: ${error}`);
       }
-    );
-
-    // Generate thumbnail
-    const thumbnailResult = await ImageManipulator.manipulateAsync(
-      imageUri,
-      [
-        {
-          resize: {
-            width: 300,
-            height: 300,
+    } else {
+      // On native, use ImageManipulator for compression and resizing
+      const manipResult = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [
+          {
+            resize: {
+              width: options.maxWidth || 1200,
+              height: options.maxHeight || 1200,
+            },
           },
-        },
-      ],
-      {
-        compress: 0.7,
-        format: ImageManipulator.SaveFormat.JPEG,
+        ],
+        {
+          compress: options.quality || 0.8,
+          format: ImageManipulator.SaveFormat.JPEG,
+        }
+      );
+
+      // Generate thumbnail
+      const thumbnailResult = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [
+          {
+            resize: {
+              width: 300,
+              height: 300,
+            },
+          },
+        ],
+        {
+          compress: 0.7,
+          format: ImageManipulator.SaveFormat.JPEG,
+        }
+      );
+
+      // Read file as base64 on native
+      const base64 = await FileSystem.readAsStringAsync(manipResult.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const thumbnailBase64 = await FileSystem.readAsStringAsync(thumbnailResult.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Convert base64 to Uint8Array for Supabase
+      const binaryString = atob(base64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
-    );
 
-    // Convert to blob
-    const response = await fetch(manipResult.uri);
-    const blob = await response.blob();
+      const thumbnailBinaryString = atob(thumbnailBase64);
+      const thumbnailBytes = new Uint8Array(thumbnailBinaryString.length);
+      for (let i = 0; i < thumbnailBinaryString.length; i++) {
+        thumbnailBytes[i] = thumbnailBinaryString.charCodeAt(i);
+      }
 
-    const thumbnailResponse = await fetch(thumbnailResult.uri);
-    const thumbnailBlob = await thumbnailResponse.blob();
+      blob = new Blob([bytes], { type: 'image/jpeg' });
+      thumbnailBlob = new Blob([thumbnailBytes], { type: 'image/jpeg' });
+    }
 
     // Upload both images
     const fileName = `${user.id}/${Date.now()}.jpg`;
     const thumbnailFileName = `${user.id}/thumbnails/${Date.now()}.jpg`;
 
+    console.log('Uploading files:', { fileName, thumbnailFileName, blobSize: blob.size });
+
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(fileName, blob, { upsert: false });
+      .upload(fileName, blob, { 
+        upsert: false,
+        contentType: 'image/jpeg'
+      });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw uploadError;
+    }
 
     const { error: thumbnailUploadError } = await supabase.storage
       .from(bucket)
-      .upload(thumbnailFileName, thumbnailBlob, { upsert: false });
+      .upload(thumbnailFileName, thumbnailBlob, { 
+        upsert: false,
+        contentType: 'image/jpeg'
+      });
 
-    if (uploadError) throw uploadError;
-    if (thumbnailUploadError) throw thumbnailUploadError;
+    if (thumbnailUploadError) {
+      console.error('Thumbnail upload error:', thumbnailUploadError);
+      throw thumbnailUploadError;
+    }
 
     // Get public URLs
     const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);

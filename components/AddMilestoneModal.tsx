@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -12,15 +12,23 @@ interface AddMilestoneModalProps {
 }
 
 export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneModalProps) => {
-  const { createMilestone } = useEnhancedSkills();
+  const { createMilestone, milestones } = useEnhancedSkills();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
-  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [targetDate, setTargetDate] = useState('');
+  const [targetDate, setTargetDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Calculate order_index based on existing milestones
+  const getNextOrderIndex = () => {
+    const skillMilestones = milestones.filter(m => m.skill_id === skillId);
+    if (skillMilestones.length === 0) return 0;
+    const maxOrder = Math.max(...skillMilestones.map(m => m.order_index));
+    return maxOrder + 1;
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
@@ -31,11 +39,11 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
         skill_id: skillId,
         title: title.trim(),
         description: description.trim() || undefined,
-        target_date: targetDate || undefined,
+        order_index: getNextOrderIndex(),
       });
       setTitle('');
       setDescription('');
-      setTargetDate('');
+      setTargetDate(null);
       onClose();
     } catch (error) {
       console.error('Failed to add milestone:', error);
@@ -43,6 +51,8 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
       setLoading(false);
     }
   };
+
+
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -76,13 +86,59 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
             />
 
             <Text style={[styles.label, { color: themeColors.text }]}>Target Date (optional)</Text>
-            <TextInput
-              style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={themeColors.textSecondary}
-              value={targetDate}
-              onChangeText={setTargetDate}
-            />
+            {Platform.OS === 'web' ? (
+              <TextInput
+                style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
+                type="date"
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={themeColors.textSecondary}
+                value={targetDate && !isNaN(targetDate.getTime()) ? targetDate.toISOString().split('T')[0] : ''}
+                onChangeText={(text) => {
+                  if (text) {
+                    const date = new Date(text);
+                    if (!isNaN(date.getTime())) {
+                      setTargetDate(date);
+                    }
+                  } else {
+                    setTargetDate(null);
+                  }
+                }}
+              />
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={[styles.datePickerButton, { backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Ionicons name="calendar-outline" size={20} color={themeColors.textSecondary} />
+                  <Text style={[styles.datePickerText, { color: targetDate ? themeColors.text : themeColors.textSecondary }]}>
+                    {targetDate && !isNaN(targetDate.getTime()) ? targetDate.toLocaleDateString() : 'Select a date'}
+                  </Text>
+                  {targetDate && (
+                    <TouchableOpacity
+                      onPress={() => setTargetDate(null)}
+                      style={styles.clearDateButton}
+                    >
+                      <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
+                    </TouchableOpacity>
+                  )}
+                </TouchableOpacity>
+
+                {showDatePicker && Platform.OS === 'ios' && (
+                  <View style={[styles.datePickerContainer, { backgroundColor: themeColors.backgroundSecondary }]}>
+                    <Text style={[styles.datePickerHint, { color: themeColors.textSecondary }]}>
+                      {targetDate && !isNaN(targetDate.getTime()) ? 'Date: ' + targetDate.toLocaleDateString() : 'Select a date in MM/DD/YYYY format'}
+                    </Text>
+                    <TouchableOpacity
+                      style={[styles.closeDatePickerButton, { backgroundColor: themeColors.accent }]}
+                      onPress={() => setShowDatePicker(false)}
+                    >
+                      <Text style={[styles.closeDatePickerText, { color: themeColors.text }]}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
+            )}
 
             <TouchableOpacity
               style={[styles.button, { backgroundColor: themeColors.accent }, (!title || loading) && styles.buttonDisabled]}
@@ -153,5 +209,50 @@ const styles = StyleSheet.create({
   buttonText: {
     ...Typography.body,
     fontWeight: '600',
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    gap: Spacing.sm,
+  },
+  datePickerText: {
+    ...Typography.body,
+    color: Colors.light.textSecondary,
+    flex: 1,
+  },
+  datePickerTextSelected: {
+    color: Colors.light.text,
+  },
+  clearDateButton: {
+    padding: Spacing.xs,
+  },
+  closeDatePickerButton: {
+    backgroundColor: Colors.light.accent,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  closeDatePickerText: {
+    ...Typography.body,
+    color: Colors.light.text,
+    fontWeight: '600',
+  },
+  datePickerContainer: {
+    padding: Spacing.md,
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
+  },
+  datePickerHint: {
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
+    marginBottom: Spacing.sm,
   },
 });
