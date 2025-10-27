@@ -5,18 +5,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    Keyboard,
-    Platform,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Animated,
+  Dimensions,
+  FlatList,
+  Keyboard,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 
@@ -689,25 +689,29 @@ export default function Home() {
 
         {/* Skills List */}
         <View style={styles.skillsListWrapper}>
-          {filteredSkills.map((item) => (
-            <SkillCard
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              progress={item.progress}
-              description={item.description}
-              onPress={() => router.push(`/skill/${item.id}`)}
-              onEdit={(id) => router.push(`/skill/${id}/edit`)}
-              onDelete={deleteSkill}
-              lastUpdated={item.lastUpdated || item.createdAt}
-              totalEntries={item.entries?.length || 0}
-              streak={item.streak || 0}
-              likes_count={item.likes_count}
-              comments_count={item.comments_count}
-              current_level={item.current_level as any}
-              completed_levels={item.completed_levels}
-            />
-          ))}
+          {filteredSkills.length > 0 ? (
+            filteredSkills.map((item) => (
+              <SkillCard
+                key={item.id}
+                id={item.id}
+                name={item.name}
+                progress={item.progress}
+                description={item.description}
+                onPress={() => router.push(`/skill/${item.id}`)}
+                onEdit={(id) => router.push(`/skill/${id}/edit`)}
+                onDelete={deleteSkill}
+                lastUpdated={item.lastUpdated || item.createdAt}
+                totalEntries={item.entries?.length || 0}
+                streak={item.streak || 0}
+                likes_count={item.likes_count}
+                comments_count={item.comments_count}
+                current_level={item.current_level as any}
+                completed_levels={item.completed_levels}
+              />
+            ))
+          ) : (
+            <EmptyState />
+          )}
         </View>
 
         {/* Recent Activity */}
@@ -734,7 +738,6 @@ export default function Home() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-        ListEmptyComponent={EmptyState}
       />
     </UniformLayout>
   );
