@@ -26,17 +26,26 @@ ORDER BY tablename, policyname;
 
 -- 3. Alternative detailed view from pg_policy system catalog
 SELECT 
-    p.schemaname,
-    p.tablename,
-    p.policyname,
-    p.permissive,
-    p.cmd as command,
+    n.nspname as schemaname,
+    c.relname as tablename,
+    p.polname as policyname,
+    CASE p.polpermissive
+        WHEN 't' THEN 'PERMISSIVE'
+        ELSE 'RESTRICTIVE'
+    END as permissive,
+    CASE p.polcmd
+        WHEN 'r' THEN 'SELECT'
+        WHEN 'a' THEN 'INSERT'
+        WHEN 'w' THEN 'UPDATE'
+        WHEN 'd' THEN 'DELETE'
+        WHEN '*' THEN 'ALL'
+    END as command,
     CASE 
-        WHEN p.qual IS NOT NULL THEN pg_get_expr(p.qual, p.polrelid)
+        WHEN p.polqual IS NOT NULL THEN pg_get_expr(p.polqual, p.polrelid)
         ELSE NULL
     END as using_clause,
     CASE 
-        WHEN p.with_check IS NOT NULL THEN pg_get_expr(p.with_check, p.polrelid)
+        WHEN p.polwithcheck IS NOT NULL THEN pg_get_expr(p.polwithcheck, p.polrelid)
         ELSE NULL
     END as with_check_clause,
     pg_catalog.pg_get_userbyid(p.polroles[1]) as role
@@ -44,7 +53,7 @@ FROM pg_catalog.pg_policy p
 JOIN pg_catalog.pg_class c ON c.oid = p.polrelid
 JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
 WHERE n.nspname = 'public'
-ORDER BY p.tablename, p.policyname;
+ORDER BY c.relname, p.polname;
 
 -- 4. Summary count of policies per table
 SELECT 
