@@ -247,21 +247,21 @@ export default function Home() {
     },
     statCard: {
       flex: 1,
-      backgroundColor: themeColors.backgroundSecondary + '99', // Add transparency for depth
-      padding: isVerySmallScreen ? 6 : isSmallScreen ? 8 : Spacing.sm,
+      backgroundColor: themeColors.backgroundSecondary,
+      padding: Spacing.sm,
       borderRadius: BorderRadius.md,
       alignItems: 'center',
       justifyContent: 'center',
-      marginHorizontal: isVerySmallScreen ? 2 : Spacing.xs,
+      marginHorizontal: isVerySmallScreen ? 3 : Spacing.xs,
       shadowColor: themeColors.shadowLight,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 2,
-      borderWidth: 0.5,
-      borderColor: themeColors.border + '40',
-      minWidth: 80,
-      height: 80,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      minWidth: 70,
+      maxWidth: 100,
     },
     statIconContainer: {
       width: isVerySmallScreen ? 32 : 36,
@@ -510,7 +510,11 @@ export default function Home() {
       borderRadius: BorderRadius.xl,
       marginBottom: Spacing.lg,
       overflow: 'hidden',
-      paddingBottom: Spacing.lg,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+    },
+    skillsListWrapper: {
+      paddingTop: Spacing.lg,
     },
 
   });
@@ -592,7 +596,7 @@ export default function Home() {
         <View style={styles.contentOverlay} />
         
         {/* Stats Cards */}
-        <View style={{ paddingHorizontal: Spacing.lg, paddingTop: Spacing.md }}>
+        <View>
           <View style={styles.statsContainerSpaced}> 
             <View style={styles.statCard}>
               <View style={styles.statIconContainer}>
@@ -683,6 +687,29 @@ export default function Home() {
           </View>
         </View>
 
+        {/* Skills List */}
+        <View style={styles.skillsListWrapper}>
+          {filteredSkills.map((item) => (
+            <SkillCard
+              key={item.id}
+              id={item.id}
+              name={item.name}
+              progress={item.progress}
+              description={item.description}
+              onPress={() => router.push(`/skill/${item.id}`)}
+              onEdit={(id) => router.push(`/skill/${id}/edit`)}
+              onDelete={deleteSkill}
+              lastUpdated={item.lastUpdated || item.createdAt}
+              totalEntries={item.entries?.length || 0}
+              streak={item.streak || 0}
+              likes_count={item.likes_count}
+              comments_count={item.comments_count}
+              current_level={item.current_level as any}
+              completed_levels={item.completed_levels}
+            />
+          ))}
+        </View>
+
         {/* Recent Activity */}
         <View style={{ paddingTop: Spacing.lg }}>
           <RecentActivity
@@ -696,28 +723,10 @@ export default function Home() {
 
   return (
     <UniformLayout>
-      {/* Skills List */}
+      {/* Content with Background Overlay */}
       <FlatList
-        data={filteredSkills}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <SkillCard
-            id={item.id}
-            name={item.name}
-            progress={item.progress}
-            description={item.description}
-            onPress={() => router.push(`/skill/${item.id}`)}
-            onEdit={(id) => router.push(`/skill/${id}/edit`)}
-            onDelete={deleteSkill}
-            lastUpdated={item.lastUpdated || item.createdAt}
-            totalEntries={item.entries?.length || 0}
-            streak={item.streak || 0}
-            likes_count={item.likes_count}
-            comments_count={item.comments_count}
-            current_level={item.current_level as any}
-            completed_levels={item.completed_levels}
-          />
-        )}
+        data={[]}
+        renderItem={() => null}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={renderListHeader}
         ListFooterComponent={<View />}
