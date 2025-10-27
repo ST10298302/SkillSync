@@ -234,69 +234,71 @@ export default function CommunityScreen() {
             <Text style={[styles.ownSkillText, { color: themeColors.accent }]}>Your Skill</Text>
           </View>
         )}
-        <SkillCard
-          id={skill.id}
-          name={skill.name || 'Unnamed Skill'}
-          progress={skill.progress || 0}
-          description={skill.description || ''}
-          onPress={() => {}}
-          onEdit={() => {}}
-          onDelete={() => {}}
-          totalEntries={skill.skill_entries?.length || 0}
-          streak={skill.streak || 0}
-          current_level={skill.current_level}
-          likes_count={skill.likes_count || 0}
-          comments_count={skill.comments_count || 0}
-          owner={(skill as any).owner || null}
-        />
-        <View style={styles.skillActionsRow}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.commentButton]}
-            onPress={() => {
-              setSelectedSkillForComment(skill);
-              setCommentModalVisible(true);
-            }}
-          >
-            <Ionicons name="chatbubble-outline" size={16} color={themeColors.accent} />
-            <Text style={[styles.actionText, { color: themeColors.accent }]}>
-              Comment
-            </Text>
-          </TouchableOpacity>
-          <ReactionButton
-            skillId={skill.id}
-            initialReaction={undefined}
-            reactionCount={skill.likes_count || 0}
-          />
+                 <SkillCard
+           id={skill.id}
+           name={skill.name || 'Unnamed Skill'}
+           progress={skill.progress || 0}
+           description={skill.description || ''}
+           onPress={() => {}}
+           onEdit={() => {}}
+           onDelete={() => {}}
+           totalEntries={skill.skill_entries?.length || 0}
+           streak={skill.streak || 0}
+           current_level={skill.current_level}
+           likes_count={skill.likes_count || 0}
+           comments_count={skill.comments_count || 0}
+           owner={(skill as any).owner || null}
+         />
+                   <View style={styles.skillActionsContainer}>
+            <View style={styles.skillActionsRow}>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.commentButton]}
+                onPress={() => {
+                  setSelectedSkillForComment(skill);
+                  setCommentModalVisible(true);
+                }}
+              >
+                <Ionicons name="chatbubble-outline" size={16} color={themeColors.accent} />
+                <Text style={[styles.actionText, { color: themeColors.accent }]}>
+                  Comment
+                </Text>
+              </TouchableOpacity>
+              <ReactionButton
+                skillId={skill.id}
+                initialReaction={undefined}
+                reactionCount={skill.likes_count || 0}
+              />
+            </View>
+            <View style={styles.skillActionsRow}>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.followButton]}
+                onPress={() => isFollowingOwner 
+                  ? handleUnfollowUser(skill.user_id)
+                  : handleFollowUser(skill.user_id, skill.user_id)
+                }
+              >
+                <Ionicons
+                  name={isFollowingOwner ? 'person-check' as any : 'person-add' as any}
+                  size={16}
+                  color={themeColors.text}
+                />
+                <Text style={[styles.actionText, { color: themeColors.text }]}>
+                  {isFollowingOwner ? 'Following' : 'Follow'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.addButton, (isOwnSkill || skillAlreadyExists) && styles.addButtonDisabled]}
+                onPress={() => !isOwnSkill && !skillAlreadyExists && handleAddSkillToCollection(skill)}
+                disabled={isOwnSkill || skillAlreadyExists}
+              >
+                <Ionicons name="add-circle" size={16} color={(isOwnSkill || skillAlreadyExists) ? themeColors.textSecondary : themeColors.accent} />
+                <Text style={[styles.actionText, { color: (isOwnSkill || skillAlreadyExists) ? themeColors.textSecondary : themeColors.accent }]}>
+                  Add to My Skills
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-        <View style={styles.skillActionsRow}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.followButton]}
-            onPress={() => isFollowingOwner 
-              ? handleUnfollowUser(skill.user_id)
-              : handleFollowUser(skill.user_id, skill.user_id)
-            }
-          >
-            <Ionicons
-              name={isFollowingOwner ? 'person-check' as any : 'person-add' as any}
-              size={16}
-              color={themeColors.text}
-            />
-            <Text style={[styles.actionText, { color: themeColors.text }]}>
-              {isFollowingOwner ? 'Following' : 'Follow'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.addButton, (isOwnSkill || skillAlreadyExists) && styles.addButtonDisabled]}
-            onPress={() => !isOwnSkill && !skillAlreadyExists && handleAddSkillToCollection(skill)}
-            disabled={isOwnSkill || skillAlreadyExists}
-          >
-            <Ionicons name="add-circle" size={16} color={(isOwnSkill || skillAlreadyExists) ? themeColors.textSecondary : themeColors.accent} />
-            <Text style={[styles.actionText, { color: (isOwnSkill || skillAlreadyExists) ? themeColors.textSecondary : themeColors.accent }]}>
-              Add to My Skills
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     );
   };
 
@@ -342,7 +344,7 @@ export default function CommunityScreen() {
           <Ionicons name="search" size={20} color={themeColors.textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: themeColors.text }]}
-            placeholder="Search skills..."
+            placeholder={activeSubTab === 'skills' ? 'Search skills...' : 'Search friends...'}
             placeholderTextColor={themeColors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -545,11 +547,13 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     fontWeight: '600',
   },
+  skillActionsContainer: {
+    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
+    marginTop: Spacing.xs,
+  },
   skillActionsRow: {
     flexDirection: 'row',
     gap: isMobile ? 8 : Spacing.sm,
-    marginTop: isMobile ? Spacing.xs : Spacing.sm,
-    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
     marginBottom: isMobile ? Spacing.sm : Spacing.xs,
   },
   actionButton: {
