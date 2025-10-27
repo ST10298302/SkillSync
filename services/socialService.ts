@@ -26,14 +26,39 @@ export class SocialService {
       .from('skill_comments')
       .select('*')
       .eq('skill_id', skillId)
-      .eq('parent_comment_id', null) // Only top-level comments
+      .is('parent_comment_id', null) // Only top-level comments
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching comments:', error);
+      throw error;
+    }
+
+    // Fetch user data separately to avoid foreign key relationship issues
+    const userIds = [...new Set((data || []).map((c: any) => c.user_id))];
+    const { data: userData } = await supabase
+      .from('users')
+      .select('id, email, name')
+      .in('id', userIds);
+
+    const userMap = new Map((userData || []).map((u: any) => [u.id, u]));
+
+    // Map comments to include user data
+    const commentsWithUsers = (data || []).map((comment: any) => {
+      const user = userMap.get(comment.user_id);
+      return {
+        ...comment,
+        user: user ? {
+          id: comment.user_id,
+          email: user.email,
+          name: user.name
+        } : { id: comment.user_id, email: null, name: null }
+      };
+    });
 
     // Get replies for each comment
     const commentsWithReplies = await Promise.all(
-      (data || []).map(async (comment) => {
+      commentsWithUsers.map(async (comment: any) => {
         const replies = await this.getCommentReplies(comment.id);
         return { ...comment, replies };
       })
@@ -52,8 +77,34 @@ export class SocialService {
       .eq('parent_comment_id', commentId)
       .order('created_at', { ascending: true });
 
-    if (error) throw error;
-    return data || [];
+    if (error) {
+      console.error('Error fetching replies:', error);
+      return [];
+    }
+
+    // Fetch user data separately to avoid foreign key relationship issues
+    const userIds = [...new Set((data || []).map((r: any) => r.user_id))];
+    const { data: userData } = await supabase
+      .from('users')
+      .select('id, email, name')
+      .in('id', userIds);
+
+    const userMap = new Map((userData || []).map((u: any) => [u.id, u]));
+
+    // Map replies to include user data
+    const repliesWithUsers = (data || []).map((reply: any) => {
+      const user = userMap.get(reply.user_id);
+      return {
+        ...reply,
+        user: user ? {
+          id: reply.user_id,
+          email: user.email,
+          name: user.name
+        } : { id: reply.user_id, email: null, name: null }
+      };
+    });
+
+    return repliesWithUsers;
   }
 
   /**
@@ -77,6 +128,34 @@ export class SocialService {
 
     if (error) throw error;
 
+    // Update the skill's comments_count
+    try {
+      const { error: updateError } = await supabase.rpc('increment', {
+        table_name: 'skills',
+        column_name: 'comments_count',
+        row_id: request.skill_id,
+      });
+      
+      // If RPC doesn't work, do a direct update
+      if (updateError) {
+        const { data: skill } = await supabase
+          .from('skills')
+          .select('comments_count')
+          .eq('id', request.skill_id)
+          .single();
+        
+        if (skill) {
+          await supabase
+            .from('skills')
+            .update({ comments_count: (skill.comments_count || 0) + 1 })
+            .eq('id', request.skill_id);
+        }
+      }
+    } catch (countError) {
+      console.error('Failed to update comments_count:', countError);
+      // Don't throw - comment was created successfully
+    }
+
     // Create notifications for mentions
     if (request.mentions && request.mentions.length > 0) {
       await this.createMentionNotifications(
@@ -87,20 +166,25 @@ export class SocialService {
     }
 
     // Create notification for skill owner if comment is on their skill
-    const { data: skill } = await supabase
-      .from('skills')
-      .select('user_id')
-      .eq('id', request.skill_id)
-      .single();
+    try {
+      const { data: skill } = await supabase
+        .from('skills')
+        .select('user_id')
+        .eq('id', request.skill_id)
+        .single();
 
-    if (skill && skill.user_id !== user.id) {
-      await this.createNotification(skill.user_id, {
-        type: NotificationType.COMMENT,
-        title: 'New comment on your skill',
-        message: `${user.email} commented on your skill`,
-        related_skill_id: request.skill_id,
-        related_user_id: user.id,
-      });
+      if (skill && skill.user_id !== user.id) {
+        await this.createNotification(skill.user_id, {
+          type: NotificationType.COMMENT,
+          title: 'New comment on your skill',
+          message: `${user.email} commented on your skill`,
+          related_skill_id: request.skill_id,
+          related_user_id: user.id,
+        });
+      }
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Don't throw - comment was successfully created
     }
 
     return data;
@@ -127,6 +211,21 @@ export class SocialService {
    * Delete a comment
    */
   static async deleteComment(commentId: string): Promise<void> {
+    // Get the comment and skill_id before deleting
+    const { data: comment } = await supabase
+      .from('skill_comments')
+      .select('skill_id')
+      .eq('id', commentId)
+      .single();
+
+    // Count how many comments will be deleted (including replies)
+    const { data: allComments } = await supabase
+      .from('skill_comments')
+      .select('id')
+      .or(`id.eq.${commentId},parent_comment_id.eq.${commentId}`);
+
+    const commentCountToDelete = allComments?.length || 1;
+
     // First delete all replies
     await supabase
       .from('skill_comments')
@@ -140,6 +239,28 @@ export class SocialService {
       .eq('id', commentId);
 
     if (error) throw error;
+
+    // Update the skill's comments_count
+    if (comment?.skill_id) {
+      try {
+        const { data: skill } = await supabase
+          .from('skills')
+          .select('comments_count')
+          .eq('id', comment.skill_id)
+          .single();
+        
+        if (skill) {
+          const newCount = Math.max(0, (skill.comments_count || 0) - commentCountToDelete);
+          await supabase
+            .from('skills')
+            .update({ comments_count: newCount })
+            .eq('id', comment.skill_id);
+        }
+      } catch (countError) {
+        console.error('Failed to update comments_count:', countError);
+        // Don't throw - comment was deleted successfully
+      }
+    }
   }
 
   // ============================================
@@ -158,12 +279,18 @@ export class SocialService {
     if (!request.skill_id) throw new Error('skill_id is required');
 
     // Check if user already reacted
-    const { data: existing } = await supabase
+    const { data: existing, error: checkError } = await supabase
       .from('skill_reactions')
       .select('id')
       .eq('skill_id', request.skill_id)
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
+
+    // If error and it's NOT "no rows found", throw it
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing reaction:', checkError);
+      throw checkError;
+    }
 
     let reaction;
 
@@ -194,20 +321,25 @@ export class SocialService {
       reaction = data;
 
       // Create notification for skill owner
-      const { data: skill } = await supabase
-        .from('skills')
-        .select('user_id')
-        .eq('id', request.skill_id)
-        .single();
+      try {
+        const { data: skill } = await supabase
+          .from('skills')
+          .select('user_id')
+          .eq('id', request.skill_id)
+          .single();
 
-      if (skill && skill.user_id !== user.id) {
-        await this.createNotification(skill.user_id, {
-          type: NotificationType.LIKE,
-          title: 'Someone reacted to your skill',
-          message: `${user.email} reacted to your skill`,
-          related_skill_id: request.skill_id,
-          related_user_id: user.id,
-        });
+        if (skill && skill.user_id !== user.id) {
+          await this.createNotification(skill.user_id, {
+            type: NotificationType.LIKE,
+            title: 'Someone reacted to your skill',
+            message: `${user.email} reacted to your skill`,
+            related_skill_id: request.skill_id,
+            related_user_id: user.id,
+          });
+        }
+      } catch (notificationError) {
+        console.error('Failed to create reaction notification:', notificationError);
+        // Don't throw - reaction was successfully created
       }
     }
 
@@ -311,31 +443,43 @@ export class SocialService {
     }
 
     // Check if already following
-    const { data: existing } = await supabase
+    const { data: existing, error: checkError } = await supabase
       .from('user_follows')
       .select('id')
       .eq('follower_id', user.id)
       .eq('following_id', followingId)
-      .single();
+      .maybeSingle();
 
-    if (existing) {
-      throw new Error('Already following this user');
+    // Handle "no rows found" as not following (this is expected)
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking follow status:', checkError);
+      throw checkError;
     }
 
-    const { error } = await supabase.from('user_follows').insert({
+    if (existing) {
+      // Already following, silently return (don't throw error)
+      return;
+    }
+
+    const { error: insertError } = await supabase.from('user_follows').insert({
       follower_id: user.id,
       following_id: followingId,
     });
 
-    if (error) throw error;
+    if (insertError) throw insertError;
 
-    // Create notification for followed user
-    await this.createNotification(followingId, {
-      type: NotificationType.SYSTEM,
-      title: 'New follower',
-      message: `${user.email} started following you`,
-      related_user_id: user.id,
-    });
+    // Create notification for followed user (don't fail if this fails)
+    try {
+      await this.createNotification(followingId, {
+        type: NotificationType.SYSTEM,
+        title: 'New follower',
+        message: `${user.email} started following you`,
+        related_user_id: user.id,
+      });
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Don't throw - following was successful
+    }
   }
 
   /**
@@ -358,14 +502,29 @@ export class SocialService {
    * Check if user is following another user
    */
   static async isFollowing(followerId: string, followingId: string): Promise<boolean> {
-    const { data } = await supabase
-      .from('user_follows')
-      .select('id')
-      .eq('follower_id', followerId)
-      .eq('following_id', followingId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('user_follows')
+        .select('id')
+        .eq('follower_id', followerId)
+        .eq('following_id', followingId)
+        .maybeSingle();
 
-    return !!data;
+      // If error is PGRST116 (no rows found), return false
+      if (error && error.code === 'PGRST116') {
+        return false;
+      }
+
+      if (error) {
+        console.error('Error checking follow status:', error);
+        return false;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.error('Exception in isFollowing:', error);
+      return false;
+    }
   }
 
   /**
@@ -388,7 +547,7 @@ export class SocialService {
   static async getFollowing(userId: string): Promise<UserFollow[]> {
     const { data, error } = await supabase
       .from('user_follows')
-      .select('*, following: following_id(*)')
+      .select('*')
       .eq('follower_id', userId)
       .order('created_at', { ascending: false });
 

@@ -8,9 +8,10 @@ interface AddDiaryEntryModalProps {
   visible: boolean;
   onClose: () => void;
   skillId: string;
+  onSuccess?: () => void;
 }
 
-export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryModalProps) => {
+export const AddDiaryEntryModal = ({ visible, onClose, skillId, onSuccess }: AddDiaryEntryModalProps) => {
   const { addEntry } = useSkills();
   const [text, setText] = useState('');
   const [hours, setHours] = useState('');
@@ -24,6 +25,7 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
       await addEntry(skillId, text.trim(), parseFloat(hours) || 0);
       setText('');
       setHours('');
+      onSuccess?.();
       onClose();
     } catch (error) {
       console.error('Failed to add entry:', error);
@@ -45,15 +47,17 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryM
 
           <View style={styles.content}>
             <Text style={styles.label}>What did you learn?</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Describe what you learned today..."
-              placeholderTextColor={Colors.light.textSecondary}
-              multiline
-              value={text}
-              onChangeText={setText}
-              maxLength={1000}
-            />
+                                <TextInput
+                      style={[styles.input, styles.textArea]}
+                      placeholder="Describe what you learned today..."
+                      placeholderTextColor={Colors.light.textSecondary}
+                      multiline
+                      value={text}
+                      onChangeText={setText}
+                      maxLength={1000}
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                    />
 
             <Text style={styles.label}>Hours spent (optional)</Text>
             <TextInput

@@ -365,6 +365,23 @@ CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================
 
+-- Enable RLS on skills table (if not already enabled)
+ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
+
+-- Add policy to allow viewing public skills (if it doesn't exist)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE tablename = 'skills' 
+        AND policyname = 'Allow viewing public skills'
+    ) THEN
+        CREATE POLICY "Allow viewing public skills"
+            ON skills FOR SELECT
+            USING (visibility = 'public'::skill_visibility OR user_id = auth.uid());
+    END IF;
+END $$;
+
 -- Enable RLS on all new tables
 ALTER TABLE skill_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skill_levels ENABLE ROW LEVEL SECURITY;
@@ -466,6 +483,11 @@ CREATE POLICY "Anyone can view reactions"
 
 CREATE POLICY "Users can add reactions"
     ON skill_reactions FOR INSERT
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can update their own reactions"
+    ON skill_reactions FOR UPDATE
+    USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can remove their own reactions"

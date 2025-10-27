@@ -140,7 +140,11 @@ export default function Home() {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    if (filter === 'completed') return matchesSearch && skill.progress >= 100;
+    if (filter === 'completed') {
+      // Show skills that have completed at least one level OR currently at 100%
+      const hasCompletedLevels = (skill.completed_levels && skill.completed_levels.length > 0);
+      return matchesSearch && (skill.progress >= 100 || hasCompletedLevels);
+    }
     if (filter === 'in-progress') return matchesSearch && skill.progress < 100;
     return matchesSearch;
   });
@@ -148,7 +152,10 @@ export default function Home() {
   // Calculate dashboard statistics from skills data
   const getStats = () => {
     const total = skills.length;
-    const completed = skills.filter(s => s.progress >= 100).length;
+    // Completed = skills with at least one completed level OR at 100%
+    const completed = skills.filter(s => 
+      (s.completed_levels && s.completed_levels.length > 0) || s.progress >= 100
+    ).length;
     const inProgress = total - completed;
     const averageProgress = total > 0 ? Math.round(skills.reduce((sum, s) => sum + s.progress, 0) / total) : 0;
     
@@ -672,6 +679,10 @@ export default function Home() {
             lastUpdated={item.lastUpdated || item.createdAt}
             totalEntries={item.entries?.length || 0}
             streak={item.streak || 0}
+            likes_count={item.likes_count}
+            comments_count={item.comments_count}
+            current_level={item.current_level as any}
+            completed_levels={item.completed_levels}
           />
         )}
         contentContainerStyle={styles.listContainer}

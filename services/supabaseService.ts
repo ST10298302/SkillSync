@@ -541,7 +541,18 @@ export class SupabaseService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Include enhanced fields with defaults if they don't exist
+    const skillsWithDefaults = (data || []).map((skill: any) => ({
+      ...skill,
+      likes_count: skill.likes_count || 0,
+      comments_count: skill.comments_count || 0,
+      current_level: skill.current_level || 'beginner',
+      visibility: skill.visibility || 'private',
+      category_id: skill.category_id || null,
+    }));
+    
+    return skillsWithDefaults;
   }
 
   static async getSkill(skillId: string) {
