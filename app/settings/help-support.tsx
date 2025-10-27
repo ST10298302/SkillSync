@@ -3,16 +3,15 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Animated,
-    Linking,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-import Logo from '../../components/Logo';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useLanguage } from '../../context/LanguageContext';
@@ -26,6 +25,7 @@ export default function HelpSupport() {
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const [expandedTutorial, setExpandedTutorial] = useState<number | null>(null);
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -80,31 +80,54 @@ export default function HelpSupport() {
       action: () => Linking.openURL('mailto:support@skillsync.app'),
     },
     {
-      title: "Live Chat",
-      subtitle: "Chat with our support team",
-      icon: "chatbubbles-outline",
-      action: () => {
-        // TODO: Implement live chat
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      },
-    },
-    {
       title: "Report a Bug",
       subtitle: "Help us improve the app",
       icon: "bug-outline",
-      action: () => {
-        // TODO: Implement bug reporting
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      },
+      action: () => Linking.openURL('mailto:support@skillsync.app?subject=Bug Report'),
     },
     {
       title: "Feature Request",
       subtitle: "Suggest new features",
       icon: "bulb-outline",
-      action: () => {
-        // TODO: Implement feature request
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      },
+      action: () => Linking.openURL('mailto:support@skillsync.app?subject=Feature Request'),
+    }
+  ];
+
+  const tutorials = [
+    {
+      step: 1,
+      title: "Getting Started",
+      icon: "rocket-outline",
+      description: "Welcome to SkillSync! Start by creating your first skill. Tap the '+' button on the home screen or navigate to the 'Add' tab. Give your skill a name, description, and set your learning goals.",
+      tips: ["Choose skills you're passionate about", "Set realistic goals", "Start with one or two skills"]
+    },
+    {
+      step: 2,
+      title: "Track Your Progress",
+      icon: "trending-up-outline",
+      description: "Each time you practice, add an entry by tapping on your skill card. Record what you learned, challenges faced, and time spent. SkillSync automatically calculates your progress.",
+      tips: ["Add entries daily for best results", "Be honest about your progress", "Include specific achievements"]
+    },
+    {
+      step: 3,
+      title: "Build Streaks",
+      icon: "flame-outline",
+      description: "Consistency is key! Practice daily to build streaks. The longer your streak, the more motivated you'll stay. View your streaks in the Analytics tab.",
+      tips: ["Set daily reminders", "Even 15 minutes counts", "Don't break the chain!"]
+    },
+    {
+      step: 4,
+      title: "Use Analytics",
+      icon: "bar-chart-outline",
+      description: "Monitor your learning journey in the Analytics tab. See progress charts, total practice time, streak statistics, and skill comparisons to optimize your learning.",
+      tips: ["Review weekly progress", "Identify patterns", "Adjust goals as needed"]
+    },
+    {
+      step: 5,
+      title: "Join the Community",
+      icon: "people-outline",
+      description: "Share your skills publicly in the Community tab. Follow other learners, get inspired by their progress, and add their skills to your collection.",
+      tips: ["Share your journey", "Learn from others", "Stay motivated together"]
     }
   ];
 
@@ -112,14 +135,16 @@ export default function HelpSupport() {
     title, 
     subtitle, 
     icon, 
-    onPress 
+    onPress,
+    isLast = false,
   }: {
     title: string;
     subtitle: string;
     icon: string;
     onPress: () => void;
+    isLast?: boolean;
   }) => (
-    <TouchableOpacity style={styles.helpItem} onPress={onPress}>
+    <TouchableOpacity style={[styles.helpItem, isLast && { borderBottomWidth: 0 }]} onPress={onPress}>
       <View style={styles.helpIcon}>
         <Ionicons name={icon as any} size={24} color={themeColors.accent} />
       </View>
@@ -134,16 +159,18 @@ export default function HelpSupport() {
   const FAQItem = ({ 
     question, 
     answer, 
-    index 
+    index,
+    isLast = false,
   }: {
     question: string;
     answer: string;
     index: number;
+    isLast?: boolean;
   }) => {
     const isExpanded = expandedFAQ === index;
     
     return (
-      <View style={styles.faqItem}>
+      <View style={[styles.faqItem, isLast && { borderBottomWidth: 0 }]}>
         <TouchableOpacity
           style={styles.faqQuestion}
           onPress={() => {
@@ -167,6 +194,59 @@ export default function HelpSupport() {
     );
   };
 
+  const TutorialItem = ({
+    tutorial,
+    index,
+    isLast = false,
+  }: {
+    tutorial: typeof tutorials[0];
+    index: number;
+    isLast?: boolean;
+  }) => {
+    const isExpanded = expandedTutorial === index;
+
+    return (
+      <View style={[styles.tutorialItem, isLast && { borderBottomWidth: 0 }]}>
+        <TouchableOpacity
+          style={styles.tutorialHeader}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setExpandedTutorial(isExpanded ? null : index);
+          }}
+        >
+          <View style={styles.tutorialHeaderLeft}>
+            <View style={styles.tutorialStepBadge}>
+              <Text style={styles.tutorialStepText}>{tutorial.step}</Text>
+            </View>
+            <View style={styles.tutorialIcon}>
+              <Ionicons name={tutorial.icon as any} size={24} color={themeColors.accent} />
+            </View>
+            <Text style={styles.tutorialTitle}>{tutorial.title}</Text>
+          </View>
+          <Ionicons
+            name={isExpanded ? "chevron-up" : "chevron-down"}
+            size={20}
+            color={themeColors.textSecondary}
+          />
+        </TouchableOpacity>
+        {isExpanded && (
+          <Animated.View style={styles.tutorialContent}>
+            <Text style={styles.tutorialDescription}>{tutorial.description}</Text>
+            <View style={styles.tutorialTips}>
+              <Text style={styles.tutorialTipsTitle}>💡 Pro Tips:</Text>
+              {tutorial.tips.map((tip, idx) => (
+                <View key={idx} style={styles.tutorialTip}>
+                  <View style={styles.tutorialTipBullet} />
+                  <Text style={styles.tutorialTipText}>{tip}</Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+        )}
+      </View>
+    );
+  };
+
   const styles = StyleSheet.create({
     scrollView: {
       flex: 1,
@@ -177,33 +257,38 @@ export default function HelpSupport() {
     },
     header: {
       paddingHorizontal: Spacing.lg,
-      paddingTop: Spacing.xl,
-      paddingBottom: Spacing.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: themeColors.border,
+      paddingTop: Spacing.xxl,
+      paddingBottom: Spacing.xl,
     },
     headerRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: Spacing.lg,
+      marginBottom: Spacing.md,
     },
     backButton: {
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       borderRadius: BorderRadius.round,
-      backgroundColor: themeColors.backgroundTertiary,
+      backgroundColor: themeColors.backgroundSecondary,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: Spacing.md,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     headerTitle: {
-      ...Typography.h2,
+      ...Typography.h1,
       color: themeColors.text,
       fontWeight: '700',
     },
-    logoContainer: {
-      alignItems: 'center',
-      marginBottom: Spacing.lg,
+    headerSubtitle: {
+      ...Typography.body,
+      color: themeColors.textSecondary,
+      marginTop: Spacing.xs,
+      opacity: 0.8,
     },
     section: {
       paddingHorizontal: Spacing.lg,
@@ -216,22 +301,25 @@ export default function HelpSupport() {
       marginBottom: Spacing.md,
     },
     card: {
-      backgroundColor: themeColors.backgroundSecondary,
-      borderRadius: BorderRadius.lg,
-      padding: Spacing.lg,
+      backgroundColor: themeColors.background,
+      borderRadius: BorderRadius.xl,
+      overflow: 'hidden',
       marginBottom: Spacing.md,
-      shadowColor: themeColors.shadow as any,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
       shadowRadius: 8,
-      elevation: 3,
+      elevation: 6,
+      borderWidth: 1,
+      borderColor: themeColors.border,
     },
     helpItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: Spacing.md,
+      paddingVertical: Spacing.lg,
+      paddingHorizontal: Spacing.lg,
       borderBottomWidth: 1,
-      borderBottomColor: themeColors.border,
+      borderBottomColor: themeColors.borderSecondary,
     },
     helpIcon: {
       width: 48,
@@ -258,13 +346,14 @@ export default function HelpSupport() {
     },
     faqItem: {
       borderBottomWidth: 1,
-      borderBottomColor: themeColors.border,
+      borderBottomColor: themeColors.borderSecondary,
+      paddingHorizontal: Spacing.lg,
     },
     faqQuestion: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: Spacing.md,
+      paddingVertical: Spacing.lg,
     },
     faqQuestionText: {
       ...Typography.body,
@@ -281,45 +370,105 @@ export default function HelpSupport() {
       color: themeColors.textSecondary,
       lineHeight: 22,
     },
-    quickActions: {
+    infoSection: {
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.lg,
+      borderLeftWidth: 3,
+      borderLeftColor: themeColors.info,
+    },
+    infoText: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      lineHeight: 20,
+    },
+    tutorialItem: {
+      borderBottomWidth: 1,
+      borderBottomColor: themeColors.borderSecondary,
+    },
+    tutorialHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: Spacing.lg,
-    },
-    quickAction: {
-      flex: 1,
-      backgroundColor: themeColors.backgroundTertiary,
-      borderRadius: BorderRadius.md,
-      padding: Spacing.md,
       alignItems: 'center',
-      marginHorizontal: Spacing.xs,
+      paddingVertical: Spacing.lg,
+      paddingHorizontal: Spacing.lg,
     },
-    quickActionIcon: {
+    tutorialHeaderLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    tutorialStepBadge: {
       width: 32,
       height: 32,
       borderRadius: BorderRadius.round,
-      backgroundColor: themeColors.accent + '20',
+      backgroundColor: themeColors.accent,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: Spacing.sm,
+      marginRight: Spacing.sm,
     },
-    quickActionTitle: {
-      ...Typography.caption,
+    tutorialStepText: {
+      ...Typography.body,
+      color: '#ffffff',
+      fontWeight: '700',
+    },
+    tutorialIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: BorderRadius.round,
+      backgroundColor: themeColors.accent + '15',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: Spacing.md,
+    },
+    tutorialTitle: {
+      ...Typography.body,
       color: themeColors.text,
       fontWeight: '600',
-      textAlign: 'center',
+      flex: 1,
     },
-    infoSection: {
-      backgroundColor: themeColors.info + '10',
+    tutorialContent: {
+      paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.lg,
+      paddingLeft: Spacing.xl + Spacing.lg,
+    },
+    tutorialDescription: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      lineHeight: 22,
+      marginBottom: Spacing.lg,
+    },
+    tutorialTips: {
+      backgroundColor: themeColors.backgroundSecondary,
       borderRadius: BorderRadius.md,
       padding: Spacing.md,
-      marginTop: Spacing.lg,
+      borderLeftWidth: 3,
+      borderLeftColor: themeColors.warning,
     },
-    infoText: {
-      ...Typography.caption,
+    tutorialTipsTitle: {
+      ...Typography.bodySmall,
+      color: themeColors.text,
+      fontWeight: '700',
+      marginBottom: Spacing.sm,
+    },
+    tutorialTip: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      marginTop: Spacing.xs,
+    },
+    tutorialTipBullet: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: themeColors.warning,
+      marginRight: Spacing.sm,
+      marginTop: 6,
+    },
+    tutorialTipText: {
+      ...Typography.bodySmall,
       color: themeColors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 18,
+      flex: 1,
+      lineHeight: 20,
     },
   });
 
@@ -404,6 +553,7 @@ export default function HelpSupport() {
                 subtitle={option.subtitle}
                 icon={option.icon}
                 onPress={option.action}
+                isLast={index === contactOptions.length - 1}
               />
             ))}
           </View>
@@ -419,6 +569,7 @@ export default function HelpSupport() {
                 question={faq.question}
                 answer={faq.answer}
                 index={index}
+                isLast={index === faqs.length - 1}
               />
             ))}
           </View>

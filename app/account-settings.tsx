@@ -64,6 +64,14 @@ export default function AccountSettings() {
 
           const url = await SupabaseService.getProfilePictureUrl(user.id);
           setProfilePictureUrl(url || undefined);
+
+          // Load user profile from database
+          const userProfile = await SupabaseService.getUserProfile(user.id);
+          if (userProfile?.name) {
+            setName(userProfile.name);
+          } else {
+            setName(user?.email?.split('@')[0] || '');
+          }
         } catch (error) {
           console.error('Error loading profile:', error);
         }
@@ -106,8 +114,21 @@ export default function AccountSettings() {
     }
   };
 
-  const handleCancelEdit = () => {
-    setName(user?.user_metadata?.name || user?.email?.split('@')[0] || '');
+  const handleCancelEdit = async () => {
+    // Reload name from database
+    if (user?.id) {
+      try {
+        const userProfile = await SupabaseService.getUserProfile(user.id);
+        if (userProfile?.name) {
+          setName(userProfile.name);
+        } else {
+          setName(user?.email?.split('@')[0] || '');
+        }
+      } catch (error) {
+        console.error('Error reloading profile:', error);
+        setName(user?.email?.split('@')[0] || '');
+      }
+    }
     setIsEditing(false);
   };
 
