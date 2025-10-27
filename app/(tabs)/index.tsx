@@ -6,7 +6,6 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   Animated,
-  Dimensions,
   FlatList,
   Keyboard,
   Platform,
@@ -164,11 +163,6 @@ export default function Home() {
 
   const stats = getStats();
   
-  // Get screen dimensions for responsive design and layout adjustments
-  const { height } = Dimensions.get('window');
-  const isSmallScreen = height < 800; // iPhone 16 threshold
-  const isVerySmallScreen = height < 750; // Very small screen threshold
-  
   const styles = StyleSheet.create({
     headerListContainer: {
       paddingBottom: Spacing.lg,
@@ -177,10 +171,9 @@ export default function Home() {
     },
     header: {
       paddingTop: Platform.OS === 'ios' ? 50 : Spacing.xxl,
-      paddingBottom: isVerySmallScreen ? Spacing.xs : isSmallScreen ? Spacing.sm : Spacing.md,
-      paddingHorizontal: 0,
-      minHeight: isVerySmallScreen ? 80 : isSmallScreen ? 100 : 120,
-      marginBottom: Spacing.md,
+      paddingBottom: Spacing.xl,
+      paddingHorizontal: Spacing.lg,
+      marginBottom: Spacing.xl,
     },
     headerContent: {
       flex: 1,
@@ -189,24 +182,21 @@ export default function Home() {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: isVerySmallScreen ? Spacing.xs : Spacing.md,
+      marginBottom: Spacing.lg,
     },
     greetingContainer: {
       flex: 1,
     },
-
     greeting: {
       ...Typography.h1,
       color: themeColors.text,
-      marginBottom: Spacing.xs,
+      marginBottom: Spacing.sm,
       fontWeight: '700',
-      fontSize: isVerySmallScreen ? 18 : isSmallScreen ? 20 : Typography.h1.fontSize,
     },
     subtitle: {
       ...Typography.body,
       color: themeColors.textSecondary,
-      opacity: 0.9,
-      fontSize: isVerySmallScreen ? 12 : isSmallScreen ? 14 : Typography.body.fontSize,
+      opacity: 0.8,
     },
     profileButton: {
       marginLeft: Spacing.md,
@@ -243,7 +233,8 @@ export default function Home() {
     statsContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginTop: isVerySmallScreen ? Spacing.xs : Spacing.md,
+      marginTop: Spacing.sm,
+      marginBottom: Spacing.lg,
     },
     statCard: {
       flex: 1,
@@ -252,7 +243,7 @@ export default function Home() {
       borderRadius: BorderRadius.md,
       alignItems: 'center',
       justifyContent: 'center',
-      marginHorizontal: isVerySmallScreen ? 3 : Spacing.xs,
+      marginHorizontal: Spacing.xs,
       shadowColor: themeColors.shadowLight,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
@@ -264,27 +255,27 @@ export default function Home() {
       maxWidth: 100,
     },
     statIconContainer: {
-      width: isVerySmallScreen ? 32 : 36,
-      height: isVerySmallScreen ? 32 : 36,
+      width: 36,
+      height: 36,
       borderRadius: BorderRadius.round,
       backgroundColor: themeColors.accent + '15',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: isVerySmallScreen ? 6 : Spacing.xs,
+      marginBottom: Spacing.xs,
     },
     statNumber: {
       ...Typography.h3,
       color: themeColors.text,
       fontWeight: '700',
       marginBottom: 2,
-      fontSize: isVerySmallScreen ? 16 : isSmallScreen ? 18 : Typography.h3.fontSize,
+      fontSize: Typography.h3.fontSize,
     },
     statLabel: {
       ...Typography.caption,
       color: themeColors.textSecondary,
       textAlign: 'center',
       fontWeight: '500',
-      fontSize: isVerySmallScreen ? 9 : isSmallScreen ? 11 : Typography.caption.fontSize,
+      fontSize: Typography.caption.fontSize,
     },
     searchContainer: {
       paddingHorizontal: 0,
@@ -495,24 +486,19 @@ export default function Home() {
       marginTop: Spacing.sm,
       marginBottom: Spacing.lg,
     },
-    contentOverlay: {
-      backgroundColor: themeColors.background,
-      opacity: safeTheme === 'dark' ? 0.03 : 0.15, // Very subtle overlay
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      borderRadius: BorderRadius.xl,
-    },
-    contentSectionWrapper: {
-      position: 'relative',
-      borderRadius: BorderRadius.xl,
-      marginBottom: Spacing.lg,
-      overflow: 'hidden',
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
-    },
+          contentSectionWrapper: {
+        backgroundColor: themeColors.background,
+        borderRadius: BorderRadius.xl,
+        marginBottom: Spacing.lg,
+        padding: Spacing.lg,
+        shadowColor: themeColors.shadow.medium,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
+        borderWidth: 1,
+        borderColor: themeColors.border,
+      },
     skillsListWrapper: {
       paddingTop: Spacing.lg,
     },
@@ -578,7 +564,7 @@ export default function Home() {
                 <ProfilePicture
                   userId={user?.id || ''}
                   imageUrl={profilePictureUrl}
-                  size={isVerySmallScreen ? 52 : isSmallScreen ? 60 : 72}
+                  size={72}
                   onImageUpdate={setProfilePictureUrl}
                   editable={false}
                 />
@@ -591,37 +577,35 @@ export default function Home() {
         </View>
       </View>
 
-      {/* Content Section with Background Overlay */}
+      {/* Content Section */}
       <View style={styles.contentSectionWrapper}>
-        <View style={styles.contentOverlay} />
-        
         {/* Stats Cards */}
         <View>
           <View style={styles.statsContainerSpaced}> 
             <View style={styles.statCard}>
               <View style={styles.statIconContainer}>
-                <Ionicons name="book-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+                <Ionicons name="book-outline" size={20} color={themeColors.text} />
               </View>
               <Text style={styles.statNumber}>{stats.total}</Text>
               <Text style={styles.statLabel}>{t('skills')}</Text>
             </View>
             <View style={styles.statCard}>
               <View style={styles.statIconContainer}>
-                <Ionicons name="trending-up-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+                <Ionicons name="trending-up-outline" size={20} color={themeColors.text} />
               </View>
               <Text style={styles.statNumber}>{stats.averageProgress}%</Text>
               <Text style={styles.statLabel}>{t('avgProgress')}</Text>
             </View>
             <View style={styles.statCard}>
               <View style={styles.statIconContainer}>
-                <Ionicons name="time-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+                <Ionicons name="time-outline" size={20} color={themeColors.text} />
               </View>
               <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.totalHours || 0), 0)}</Text>
               <Text style={styles.statLabel}>{t('hours')}</Text>
             </View>
             <View style={styles.statCard}>
               <View style={styles.statIconContainer}>
-                <Ionicons name="document-text-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+                <Ionicons name="document-text-outline" size={20} color={themeColors.text} />
               </View>
               <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.entries?.length || 0), 0)}</Text>
               <Text style={styles.statLabel}>{t('entries')}</Text>

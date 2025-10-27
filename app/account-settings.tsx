@@ -20,6 +20,7 @@ import ProfilePicture from '../components/ProfilePicture';
 import UniformLayout from '../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { SupabaseService } from '../services/supabaseService';
 import { UserRole } from '../utils/supabase-types';
@@ -27,6 +28,7 @@ import { UserRole } from '../utils/supabase-types';
 export default function AccountSettings() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
@@ -94,10 +96,10 @@ export default function AccountSettings() {
       setIsEditing(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      Alert.alert('Success', 'Profile updated successfully!');
+      Alert.alert(t('success'), t('profileUpdatedSuccess'));
     } catch (error) {
       console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      Alert.alert(t('error'), t('updateProfileFailed'));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsLoading(false);
@@ -126,11 +128,11 @@ export default function AccountSettings() {
     try {
       setIsLoading(true);
       await SupabaseService.deleteUserAccount(user.id);
-      Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+      Alert.alert(t('accountDeleted'), t('accountDeletedSuccess'));
       router.replace('/');
     } catch (error) {
       console.error('Error deleting account:', error);
-      Alert.alert('Error', 'Failed to delete account. Please try again.');
+      Alert.alert(t('error'), t('deleteAccountFailed'));
     } finally {
       setIsLoading(false);
       setShowDeleteConfirm(false);
@@ -421,15 +423,15 @@ export default function AccountSettings() {
               <Ionicons name="arrow-back" size={24} color={themeColors.text} />
             </TouchableOpacity>
             <View style={styles.headerContent}>
-              <Text style={styles.headerTitle}>Account Settings</Text>
-              <Text style={styles.headerSubtitle}>Manage your profile and account information</Text>
+              <Text style={styles.headerTitle}>{t('accountSettings')}</Text>
+              <Text style={styles.headerSubtitle}>{t('manageAccountInfo')}</Text>
             </View>
           </View>
         </Animated.View>
 
         {/* Profile Picture Section */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Profile Picture</Text>
+          <Text style={styles.sectionTitle}>{t('profilePicture')}</Text>
           <View style={styles.card}>
             <View style={styles.profileSection}>
               <View style={styles.profilePictureContainer}>
@@ -442,7 +444,7 @@ export default function AccountSettings() {
                 />
               </View>
               <Text style={styles.profilePictureLabel}>
-                Tap to change your profile picture
+                {t('tapToChangeProfilePicture')}
               </Text>
             </View>
           </View>
@@ -450,11 +452,11 @@ export default function AccountSettings() {
 
         {/* Profile Information Section */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Profile Information</Text>
+          <Text style={styles.sectionTitle}>{t('profileInformation')}</Text>
           <View style={styles.card}>
             <View style={styles.formSection}>
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Display Name</Text>
+                <Text style={styles.formLabel}>{t('displayName')}</Text>
                 <TextInput
                   style={[
                     styles.formInput,
@@ -462,14 +464,14 @@ export default function AccountSettings() {
                   ]}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Enter your display name"
+                  placeholder={t('enterDisplayName')}
                   placeholderTextColor={themeColors.textSecondary}
                   editable={isEditing}
                 />
               </View>
               {isEditing && (
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Role</Text>
+                  <Text style={styles.formLabel}>{t('role')}</Text>
                   <TouchableOpacity
                     style={[styles.formInput, styles.formInputDisabled]}
                     onPress={() => setShowRoleModal(true)}
@@ -480,7 +482,7 @@ export default function AccountSettings() {
               )}
               {isEditing && (
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Bio</Text>
+                  <Text style={styles.formLabel}>{t('bio')}</Text>
                   <TextInput
                     style={[
                       styles.formInput,
@@ -488,7 +490,7 @@ export default function AccountSettings() {
                     ]}
                     value={bio}
                     onChangeText={setBio}
-                    placeholder="Enter your bio"
+                    placeholder={t('enterBio')}
                     placeholderTextColor={themeColors.textSecondary}
                     editable={isEditing}
                   />
@@ -496,7 +498,7 @@ export default function AccountSettings() {
               )}
               {isEditing && (
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Tutor Specializations</Text>
+                  <Text style={styles.formLabel}>{t('tutorSpecializations')}</Text>
                   <FlatList
                     data={specializations}
                     renderItem={({ item, index }) => (
@@ -513,7 +515,7 @@ export default function AccountSettings() {
                         onPress={() => setNewSpecialization('')}
                       >
                         <Ionicons name="add-circle" size={20} color={themeColors.textSecondary} />
-                        <Text style={styles.addSpecializationText}>Add Specialization</Text>
+                        <Text style={styles.addSpecializationText}>{t('addSpecialization')}</Text>
                       </TouchableOpacity>
                     )}
                     keyExtractor={(item, index) => index.toString()}
@@ -524,7 +526,7 @@ export default function AccountSettings() {
                         style={styles.formInput}
                         value={newSpecialization}
                         onChangeText={setNewSpecialization}
-                        placeholder="Add new specialization"
+                        placeholder={t('addNewSpecialization')}
                         placeholderTextColor={themeColors.textSecondary}
                       />
                       <TouchableOpacity onPress={handleAddSpecialization}>
@@ -537,7 +539,7 @@ export default function AccountSettings() {
             </View>
 
             <View style={styles.emailSection}>
-              <Text style={styles.emailLabel}>Email Address</Text>
+              <Text style={styles.emailLabel}>{t('emailAddress')}</Text>
               <Text style={styles.emailValue}>{user?.email || 'No email'}</Text>
             </View>
 
@@ -548,7 +550,7 @@ export default function AccountSettings() {
                   onPress={handleCancelEdit}
                   disabled={isLoading}
                 >
-                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                  <Text style={styles.secondaryButtonText}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[
@@ -560,7 +562,7 @@ export default function AccountSettings() {
                   disabled={isLoading}
                 >
                   <Text style={styles.primaryButtonText}>
-                    {isLoading ? 'Saving...' : 'Save Changes'}
+                    {isLoading ? t('saving') : t('saveChanges')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -575,7 +577,7 @@ export default function AccountSettings() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   }}
                 >
-                  <Text style={styles.primaryButtonText}>Edit Profile</Text>
+                  <Text style={styles.primaryButtonText}>{t('editProfile')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -584,7 +586,7 @@ export default function AccountSettings() {
 
         {/* Delete Account Section */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Danger Zone</Text>
+          <Text style={styles.sectionTitle}>{t('dangerZone')}</Text>
           <View style={styles.card}>
             <View style={styles.formSection}>
               <TouchableOpacity
@@ -592,7 +594,7 @@ export default function AccountSettings() {
                 onPress={() => setShowDeleteConfirm(true)}
                 disabled={isLoading}
               >
-                <Text style={styles.secondaryButtonText}>Delete Account</Text>
+                <Text style={styles.secondaryButtonText}>{t('deleteAccount')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -612,7 +614,7 @@ export default function AccountSettings() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Select Role</Text>
+              <Text style={styles.modalTitle}>{t('selectRole')}</Text>
               <TouchableOpacity
                 style={[styles.modalButton, role === UserRole.LEARNER && styles.modalButtonActive]}
                 onPress={() => {
@@ -620,7 +622,7 @@ export default function AccountSettings() {
                   setShowRoleModal(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>Learner</Text>
+                <Text style={styles.modalButtonText}>{t('learner')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, role === UserRole.TUTOR && styles.modalButtonActive]}
@@ -629,7 +631,7 @@ export default function AccountSettings() {
                   setShowRoleModal(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>Tutor</Text>
+                <Text style={styles.modalButtonText}>{t('tutor')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, role === UserRole.ADMIN && styles.modalButtonActive]}
@@ -638,7 +640,7 @@ export default function AccountSettings() {
                   setShowRoleModal(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>Admin</Text>
+                <Text style={styles.modalButtonText}>{t('admin')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -658,23 +660,23 @@ export default function AccountSettings() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Confirm Deletion</Text>
+              <Text style={styles.modalTitle}>{t('confirmDeletion')}</Text>
               <Text style={styles.modalText}>
-                Are you sure you want to delete your account? This action cannot be undone.
+                {t('deleteAccountConfirmation')}
               </Text>
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.modalButtonSecondary]}
                   onPress={() => setShowDeleteConfirm(false)}
                 >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
+                  <Text style={styles.modalButtonText}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.modalButtonDanger]}
                   onPress={handleDeleteAccount}
                   disabled={isLoading}
                 >
-                  <Text style={styles.modalButtonText}>Delete</Text>
+                  <Text style={styles.modalButtonText}>{t('delete')}</Text>
                 </TouchableOpacity>
               </View>
             </View>

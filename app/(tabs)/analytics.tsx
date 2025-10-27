@@ -512,18 +512,18 @@ export default function Analytics() {
                 <View style={[styles.insightIcon, { backgroundColor: Colors[safeTheme].accent + '15' }]}>
                   <Ionicons name="flame" size={20} color={Colors[safeTheme].accent} />
                 </View>
-                <Text style={styles.insightTitle}>Current Streak</Text>
+                <Text style={styles.insightTitle}>{t('currentStreak')}</Text>
               </View>
-              <Text style={styles.insightValue}>{analytics.currentStreak} days</Text>
+              <Text style={styles.insightValue}>{analytics.currentStreak} {t('daysAgo')}</Text>
             </View>
             <View style={styles.insightRow}>
               <View style={styles.insightLeft}>
                 <View style={[styles.insightIcon, { backgroundColor: Colors[safeTheme].warning + '15' }]}>
                   <Ionicons name="trophy" size={20} color={Colors[safeTheme].warning} />
                 </View>
-                <Text style={styles.insightTitle}>Best Streak</Text>
+                <Text style={styles.insightTitle}>{t('bestStreak')}</Text>
               </View>
-              <Text style={styles.insightValue}>{analytics.maxStreak} days</Text>
+              <Text style={styles.insightValue}>{analytics.maxStreak} {t('daysAgo')}</Text>
             </View>
             <View style={styles.insightRow}>
               <View style={styles.insightLeft}>
@@ -532,7 +532,7 @@ export default function Analytics() {
                 </View>
                 <Text style={styles.insightTitle}>{t('recentActivity')}</Text>
               </View>
-              <Text style={styles.insightValue}>{analytics.lastWeek} skills updated</Text>
+              <Text style={styles.insightValue}>{analytics.lastWeek} {t('skillsUpdated')}</Text>
             </View>
             <View style={styles.insightRow}>
               <View style={styles.insightLeft}>
@@ -541,7 +541,7 @@ export default function Analytics() {
                 </View>
                 <Text style={styles.insightTitle}>{t('totalHours')}</Text>
               </View>
-              <Text style={styles.insightValue}>{analytics.totalHours}h logged</Text>
+              <Text style={styles.insightValue}>{analytics.totalHours}{t('hoursLogged')}</Text>
             </View>
           </View>
         </Animated.View>
@@ -563,7 +563,7 @@ export default function Analytics() {
 
         {/* Enhanced Recommendations */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Recommendations</Text>
+          <Text style={styles.sectionTitle}>{t('recommendations')}</Text>
           <View style={styles.recommendationsCard}>
             {analytics.inProgress > 0 && (
               <View style={styles.recommendationItem}>
@@ -571,7 +571,7 @@ export default function Analytics() {
                   <Ionicons name="bulb" size={20} color={Colors[safeTheme].warning} />
                 </View>
                 <Text style={styles.recommendationText}>
-                  Focus on completing your {analytics.inProgress} in-progress skills
+                  {t('focusOnCompleting')} {analytics.inProgress} {t('inProgressSkills')}
                 </Text>
               </View>
             )}
@@ -581,7 +581,7 @@ export default function Analytics() {
                   <Ionicons name="trending-up" size={20} color={Colors[safeTheme].info} />
                 </View>
                 <Text style={styles.recommendationText}>
-                  Try to increase your average progress by setting smaller milestones
+                  {t('tryToIncrease')}
                 </Text>
               </View>
             )}
@@ -591,7 +591,7 @@ export default function Analytics() {
                   <Ionicons name="refresh" size={20} color={Colors[safeTheme].accent} />
                 </View>
                 <Text style={styles.recommendationText}>
-                  Update your skills regularly to maintain momentum
+                  {t('updateSkillsRegularly')}
                 </Text>
               </View>
             )}
@@ -601,7 +601,7 @@ export default function Analytics() {
                   <Ionicons name="document-text" size={20} color={Colors[safeTheme].success} />
                 </View>
                 <Text style={styles.recommendationText}>
-                  Add more diary entries to track your learning journey
+                  {t('addMoreDiaryEntries')}
                 </Text>
               </View>
             )}

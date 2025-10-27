@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
   FlatList,
+  Platform,
   RefreshControl,
   StyleSheet,
   Text,
@@ -475,48 +475,42 @@ export default function CommunityScreen() {
   );
 }
 
-const screenWidth = Dimensions.get('window').width;
-const isMobile = screenWidth < 768;
-
 const styles = StyleSheet.create({
   header: {
-    paddingTop: isMobile ? Spacing.lg : Spacing.xl,
-    paddingBottom: isMobile ? Spacing.md : Spacing.lg,
-    paddingHorizontal: isMobile ? Spacing.md : Spacing.lg,
+    paddingTop: Platform.OS === 'ios' ? 50 : Spacing.xxl,
+    paddingBottom: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
   },
   title: {
     ...Typography.h1,
-    marginBottom: isMobile ? Spacing.sm : Spacing.md,
-    fontSize: isMobile ? 24 : 28,
+    marginBottom: Spacing.md,
+    fontWeight: '700',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: BorderRadius.lg,
-    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
-    paddingVertical: isMobile ? 10 : Spacing.sm,
-    marginBottom: isMobile ? Spacing.sm : Spacing.md,
-    gap: isMobile ? 8 : Spacing.sm,
-    minHeight: isMobile ? 44 : 48,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+    minHeight: 48,
   },
   searchInput: {
     flex: 1,
     ...Typography.body,
-    fontSize: isMobile ? 15 : 16,
   },
   filterContainer: {
     flexDirection: 'row',
-    gap: isMobile ? 6 : Spacing.sm,
-    marginBottom: isMobile ? Spacing.sm : 0,
+    gap: Spacing.sm,
   },
   filterButton: {
     flex: 1,
-    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
-    paddingVertical: isMobile ? 10 : Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.round,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: isMobile ? 36 : 32,
   },
   filterButtonActive: {
     backgroundColor: Colors.light.accent,
@@ -526,18 +520,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   listContent: {
-    padding: isMobile ? Spacing.md : Spacing.lg,
-    paddingBottom: isMobile ? Spacing.xl + 20 : Spacing.xl,
+    padding: Spacing.lg,
+    paddingBottom: Platform.OS === 'ios' ? 120 : Spacing.xxl,
   },
   skillContainer: {
-    marginBottom: isMobile ? Spacing.md : Spacing.lg,
+    marginBottom: Spacing.lg,
     borderRadius: BorderRadius.xl,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   ownSkillBadge: {
     flexDirection: 'row',
@@ -554,24 +548,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   skillActionsContainer: {
-    paddingHorizontal: isMobile ? Spacing.md : Spacing.lg,
-    paddingBottom: isMobile ? Spacing.sm : Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.md,
   },
   skillActionsRow: {
     flexDirection: 'row',
-    gap: isMobile ? 8 : Spacing.sm,
-    marginBottom: isMobile ? Spacing.sm : Spacing.xs,
+    gap: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: isMobile ? 12 : Spacing.sm,
+    paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
-    gap: isMobile ? 6 : Spacing.xs,
+    gap: Spacing.xs,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    minHeight: isMobile ? 40 : 36,
   },
   followButton: {
     // Styled via backgroundColor in actionButton
@@ -615,21 +608,19 @@ const styles = StyleSheet.create({
   },
   subTabContainer: {
     flexDirection: 'row',
-    paddingHorizontal: isMobile ? Spacing.md : Spacing.lg,
-    paddingVertical: isMobile ? Spacing.sm : Spacing.md,
-    gap: isMobile ? Spacing.sm : Spacing.md,
-    marginTop: isMobile ? Spacing.sm : 0,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.md,
   },
   subTab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: isMobile ? 12 : Spacing.sm,
+    paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
-    gap: isMobile ? 6 : Spacing.xs,
+    gap: Spacing.xs,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    minHeight: isMobile ? 44 : 40,
   },
   subTabActive: {
     backgroundColor: Colors.light.accent,
