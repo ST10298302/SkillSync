@@ -164,7 +164,7 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
         .from('skills')
         .select(`
           *,
-          users(
+          users!skills_user_id_fkey(
             id,
             name,
             email,
