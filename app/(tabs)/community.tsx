@@ -70,6 +70,11 @@ export default function CommunityScreen() {
       console.log('User ID:', user?.id);
       console.log('User skills IDs:', userSkills.map(s => s.id));
       
+      // Log owner information
+      skills.forEach((skill, index) => {
+        console.log(`Skill ${index + 1} owner:`, (skill as any).owner);
+      });
+      
       // Filter out user's own skills by user_id, not just skill id
       if (user) {
         skills = skills.filter(skill => skill && skill.user_id !== user.id);
@@ -227,31 +232,30 @@ export default function CommunityScreen() {
     const skillAlreadyExists = userSkills.some(s => s.name.toLowerCase() === skill.name.toLowerCase());
     
     return (
-      <View style={styles.skillContainer}>
-        {(isOwnSkill || skillAlreadyExists) && (
-          <View style={[styles.ownSkillBadge, { backgroundColor: themeColors.accent + '20' }]}>
-            <Ionicons name="checkmark-circle" size={16} color={themeColors.accent} />
-            <Text style={[styles.ownSkillText, { color: themeColors.accent }]}>Your Skill</Text>
-          </View>
-        )}
-                 <TouchableOpacity onPress={() => router.push(`/skill/${skill.id}`)}>
-           <SkillCard
-             id={skill.id}
-             name={skill.name || 'Unnamed Skill'}
-             progress={skill.progress || 0}
-             description={skill.description || ''}
-             onPress={() => router.push(`/skill/${skill.id}`)}
-             onEdit={() => {}}
-             onDelete={() => {}}
-             totalEntries={skill.skill_entries?.length || 0}
-             streak={skill.streak || 0}
-             current_level={skill.current_level}
-             likes_count={skill.likes_count || 0}
-             comments_count={skill.comments_count || 0}
-             owner={(skill as any).owner || null}
-           />
-         </TouchableOpacity>
-                   <View style={styles.skillActionsContainer}>
+             <View style={[styles.skillContainer, { backgroundColor: themeColors.background }]}>
+         {(isOwnSkill || skillAlreadyExists) && (
+           <View style={[styles.ownSkillBadge, { backgroundColor: themeColors.accent + '20' }]}>
+             <Ionicons name="checkmark-circle" size={16} color={themeColors.accent} />
+             <Text style={[styles.ownSkillText, { color: themeColors.accent }]}>Your Skill</Text>
+           </View>
+         )}
+          <SkillCard
+            id={skill.id}
+            name={skill.name || 'Unnamed Skill'}
+            progress={skill.progress || 0}
+            description={skill.description || ''}
+            onPress={() => router.push(`/skill/${skill.id}`)}
+            onEdit={() => {}}
+            onDelete={() => {}}
+            totalEntries={skill.skill_entries?.length || 0}
+            streak={skill.streak || 0}
+            current_level={skill.current_level}
+            likes_count={skill.likes_count || 0}
+            comments_count={skill.comments_count || 0}
+            owner={(skill as any).owner || null}
+            transparent={true}
+          />
+          <View style={styles.skillActionsContainer}>
             <View style={styles.skillActionsRow}>
               <TouchableOpacity
                 style={[styles.actionButton, styles.commentButton]}
@@ -525,6 +529,13 @@ const styles = StyleSheet.create({
   },
   skillContainer: {
     marginBottom: isMobile ? Spacing.md : Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   ownSkillBadge: {
     flexDirection: 'row',
@@ -541,8 +552,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   skillActionsContainer: {
-    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
-    marginTop: Spacing.xs,
+    paddingHorizontal: isMobile ? Spacing.md : Spacing.lg,
+    paddingBottom: isMobile ? Spacing.sm : Spacing.md,
   },
   skillActionsRow: {
     flexDirection: 'row',

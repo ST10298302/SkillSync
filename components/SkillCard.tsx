@@ -27,6 +27,7 @@ interface SkillCardProps {
     email?: string;
     profile_picture_url?: string;
   };
+  transparent?: boolean;
 }
 
 export default function SkillCard({
@@ -45,6 +46,7 @@ export default function SkillCard({
   likes_count,
   comments_count,
   owner,
+  transparent = false,
 }: SkillCardProps) {
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
@@ -197,17 +199,17 @@ export default function SkillCard({
 
     // Main card container with border and shadow
     card: {
-      backgroundColor: themeColors.background,
-      borderRadius: BorderRadius.xl,
+      backgroundColor: transparent ? 'transparent' : themeColors.background,
+      borderRadius: transparent ? 0 : BorderRadius.xl,
       padding: isSmall ? Spacing.md : Spacing.lg,
-      marginBottom: isSmall ? Spacing.sm : Spacing.md,
-      shadowColor: themeColors.shadowMedium || '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: themeColors.border,
+      marginBottom: transparent ? 0 : (isSmall ? Spacing.sm : Spacing.md),
+      shadowColor: transparent ? 'transparent' : themeColors.shadowMedium || '#000',
+      shadowOffset: { width: 0, height: transparent ? 0 : 4 },
+      shadowOpacity: transparent ? 0 : 0.15,
+      shadowRadius: transparent ? 0 : 8,
+      elevation: transparent ? 0 : 4,
+      borderWidth: transparent ? 0 : 1,
+      borderColor: transparent ? 'transparent' : themeColors.border,
     },
 
     // Header / Title row
