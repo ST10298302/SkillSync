@@ -63,5 +63,3 @@ FROM pg_policies
 WHERE schemaname = 'public'
 GROUP BY tablename
 ORDER BY tablename;
-
-COMMENT ON PROCEDURE list_rls_policies() IS 'Queries to list all RLS policies in the database for debugging and configuration review';
