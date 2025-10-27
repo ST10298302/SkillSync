@@ -133,7 +133,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
 
   // Add a new skill with defaults
   const addSkill = async (
-    skill: Omit<Skill, 'entries' | 'progress' | 'progressUpdates' | 'createdAt'>
+    skill: Omit<Skill, 'entries' | 'progress' | 'progressUpdates' | 'createdAt'> & { visibility?: string }
   ) => {
     if (!user || typeof window === 'undefined') return;
 
@@ -145,6 +145,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
         user_id: user.id,
         total_hours: 0,
         streak: 0,
+        visibility: (skill as any).visibility || 'public', // Default to public instead of private
       });
 
       const newSkill: Skill = {

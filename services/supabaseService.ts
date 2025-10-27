@@ -569,7 +569,7 @@ export class SupabaseService {
     return data;
   }
 
-  static async createSkill(skill: Omit<Skill, 'id' | 'created_at' | 'updated_at'>) {
+  static async createSkill(skill: Omit<Skill, 'id' | 'created_at' | 'updated_at'> & { visibility?: string }) {
     const { data, error } = await supabase
       .from('skills')
       .insert(skill)
