@@ -254,6 +254,7 @@ export default function CommunityScreen() {
             comments_count={skill.comments_count || 0}
             owner={(skill as any).owner || null}
             transparent={true}
+            isCommunityCard={true}
           />
           <View style={styles.skillActionsContainer}>
             <View style={styles.skillActionsRow}>

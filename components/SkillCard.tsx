@@ -28,6 +28,7 @@ interface SkillCardProps {
     profile_picture_url?: string;
   };
   transparent?: boolean;
+  isCommunityCard?: boolean;
 }
 
 export default function SkillCard({
@@ -47,6 +48,7 @@ export default function SkillCard({
   comments_count,
   owner,
   transparent = false,
+  isCommunityCard = false,
 }: SkillCardProps) {
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
@@ -463,31 +465,35 @@ export default function SkillCard({
                   </Animated.View>
                 )}
 
-                <TouchableOpacity
-                  testID="edit-button"
-                  style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
-                  onPress={handleEditPress}
-                  activeOpacity={0.7}
-                  accessible={true}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('editSkill')}
-                >
-                  <Ionicons name="create-outline" size={16} color={themeColors.accent} />
-                </TouchableOpacity>
+                {!isCommunityCard && (
+                  <>
+                    <TouchableOpacity
+                      testID="edit-button"
+                      style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
+                      onPress={handleEditPress}
+                      activeOpacity={0.7}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('editSkill')}
+                    >
+                      <Ionicons name="create-outline" size={16} color={themeColors.accent} />
+                    </TouchableOpacity>
 
-                <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
-                  <TouchableOpacity
-                    testID="delete-button"
-                    style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
-                    onPress={handleDeletePress}
-                    activeOpacity={0.7}
-                    accessible={true}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('deleteSkill')}
-                  >
-                    <Ionicons name="trash-outline" size={16} color={themeColors.error} />
-                  </TouchableOpacity>
-                </Animated.View>
+                    <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
+                      <TouchableOpacity
+                        testID="delete-button"
+                        style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
+                        onPress={handleDeletePress}
+                        activeOpacity={0.7}
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('deleteSkill')}
+                      >
+                        <Ionicons name="trash-outline" size={16} color={themeColors.error} />
+                      </TouchableOpacity>
+                    </Animated.View>
+                  </>
+                )}
               </View>
             </View>
 
