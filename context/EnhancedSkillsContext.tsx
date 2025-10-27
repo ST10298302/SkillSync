@@ -160,49 +160,65 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       const { supabase } = await import('../utils/supabase');
       console.log('Fetching public skills, current user:', user.id);
       
-      const { data, error } = await supabase
+      // First, get the skills
+      const { data: skillsData, error: skillsError } = await supabase
         .from('skills')
-        .select(`
-          *,
-          users!skills_user_id_fkey(
-            id,
-            name,
-            email,
-            profile_picture_url
-          )
-        `)
+        .select('*')
         .eq('visibility', 'public')
         .order('created_at', { ascending: false });
       
-      console.log('Raw data from query:', data);
-      console.log('Number of skills returned:', data?.length);
-      if (error) {
-        console.error('Error fetching public skills:', error);
-        throw error;
+      if (skillsError) {
+        console.error('Error fetching public skills:', skillsError);
+        throw skillsError;
       }
       
+      console.log('Skills fetched:', skillsData?.length);
+      
+      if (!skillsData || skillsData.length === 0) {
+        return [];
+      }
+      
+      // Get unique user IDs
+      const userIds = [...new Set(skillsData.map(skill => skill.user_id))];
+      console.log('Unique user IDs:', userIds);
+      
+      // Fetch all users in one query
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, name, email, profile_picture_url')
+        .in('id', userIds);
+      
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+        throw usersError;
+      }
+      
+      console.log('Users fetched:', usersData?.length);
+      
+      // Create a map of user_id -> user
+      const userMap = new Map(usersData?.map(u => [u.id, u]) || []);
+      
       // Log each skill's owner info
-      (data || []).forEach((skill: any, index: number) => {
+      (skillsData || []).forEach((skill: any, index: number) => {
+        const owner = userMap.get(skill.user_id);
         console.log(`Skill ${index + 1} detailed:`, {
           name: skill.name,
           user_id: skill.user_id,
           visibility: skill.visibility,
-          users: skill.users,
-          hasUsers: !!skill.users,
-          usersType: typeof skill.users,
-          fullSkill: skill
+          owner: owner,
+          hasOwner: !!owner
         });
       });
       
       // Map the database results to Skill type with default values and owner info
-      return (data || []).map((skill: any) => ({
+      return (skillsData || []).map((skill: any) => ({
         ...skill,
         progress: skill.progress || 0,
         likes_count: skill.likes_count || 0,
         comments_count: skill.comments_count || 0,
         current_level: skill.current_level || 'beginner',
         visibility: skill.visibility || 'private',
-        owner: skill.users || null, // Add owner information
+        owner: userMap.get(skill.user_id) || null, // Add owner information from map
       })) as any[];
     } catch (error) {
       console.error('Failed to get public skills:', error);
