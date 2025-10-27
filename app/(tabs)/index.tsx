@@ -248,7 +248,7 @@ export default function Home() {
     statCard: {
       flex: 1,
       backgroundColor: themeColors.backgroundSecondary + '99', // Add transparency for depth
-      padding: isVerySmallScreen ? 8 : isSmallScreen ? Spacing.sm : Spacing.md,
+      padding: isVerySmallScreen ? 6 : isSmallScreen ? 8 : Spacing.sm,
       borderRadius: BorderRadius.md,
       alignItems: 'center',
       justifyContent: 'center',
@@ -260,8 +260,8 @@ export default function Home() {
       elevation: 2,
       borderWidth: 0.5,
       borderColor: themeColors.border + '40',
-      minWidth: isVerySmallScreen ? 75 : 80,
-      height: isVerySmallScreen ? 75 : isSmallScreen ? 85 : 95,
+      minWidth: 80,
+      height: 80,
     },
     statIconContainer: {
       width: isVerySmallScreen ? 32 : 36,
@@ -505,18 +505,12 @@ export default function Home() {
       bottom: 0,
       borderRadius: BorderRadius.xl,
     },
-    statsSectionWrapper: {
+    contentSectionWrapper: {
       position: 'relative',
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
       borderRadius: BorderRadius.xl,
-      marginBottom: Spacing.md,
+      marginBottom: Spacing.lg,
       overflow: 'hidden',
-    },
-    footerWrapper: {
-      position: 'relative',
-      marginTop: Spacing.lg,
-      overflow: 'hidden',
+      paddingBottom: Spacing.lg,
     },
 
   });
@@ -593,100 +587,110 @@ export default function Home() {
         </View>
       </View>
 
-      {/* Stats Cards with Overlay */}
-      <View style={styles.statsSectionWrapper}>
+      {/* Content Section with Background Overlay */}
+      <View style={styles.contentSectionWrapper}>
         <View style={styles.contentOverlay} />
-        <View style={styles.statsContainerSpaced}> 
-          <View style={styles.statCard}>
-            <View style={styles.statIconContainer}>
-              <Ionicons name="book-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+        
+        {/* Stats Cards */}
+        <View style={{ paddingHorizontal: Spacing.lg, paddingTop: Spacing.md }}>
+          <View style={styles.statsContainerSpaced}> 
+            <View style={styles.statCard}>
+              <View style={styles.statIconContainer}>
+                <Ionicons name="book-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+              </View>
+              <Text style={styles.statNumber}>{stats.total}</Text>
+              <Text style={styles.statLabel}>{t('skills')}</Text>
             </View>
-            <Text style={styles.statNumber}>{stats.total}</Text>
-            <Text style={styles.statLabel}>{t('skills')}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={styles.statIconContainer}>
-              <Ionicons name="trending-up-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+            <View style={styles.statCard}>
+              <View style={styles.statIconContainer}>
+                <Ionicons name="trending-up-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+              </View>
+              <Text style={styles.statNumber}>{stats.averageProgress}%</Text>
+              <Text style={styles.statLabel}>{t('avgProgress')}</Text>
             </View>
-            <Text style={styles.statNumber}>{stats.averageProgress}%</Text>
-            <Text style={styles.statLabel}>{t('avgProgress')}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={styles.statIconContainer}>
-              <Ionicons name="time-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+            <View style={styles.statCard}>
+              <View style={styles.statIconContainer}>
+                <Ionicons name="time-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+              </View>
+              <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.totalHours || 0), 0)}</Text>
+              <Text style={styles.statLabel}>{t('hours')}</Text>
             </View>
-            <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.totalHours || 0), 0)}</Text>
-            <Text style={styles.statLabel}>{t('hours')}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={styles.statIconContainer}>
-              <Ionicons name="document-text-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+            <View style={styles.statCard}>
+              <View style={styles.statIconContainer}>
+                <Ionicons name="document-text-outline" size={isVerySmallScreen ? 18 : 20} color={themeColors.text} />
+              </View>
+              <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.entries?.length || 0), 0)}</Text>
+              <Text style={styles.statLabel}>{t('entries')}</Text>
             </View>
-            <Text style={styles.statNumber}>{skills.reduce((sum, s) => sum + (s.entries?.length || 0), 0)}</Text>
-            <Text style={styles.statLabel}>{t('entries')}</Text>
           </View>
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.quickActionsContainer}>
+          <View style={styles.quickActionsRow}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={handleAddSkill}>
+              <LinearGradient
+                colors={themeColors.gradient.primary}
+                style={styles.quickActionGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Ionicons name="add" size={20} color={themeColors.text} />
+                <Text style={styles.quickActionText}>{t('addSkill')}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => router.push('/analytics')}>
+              <View style={[styles.quickActionSecondary, { backgroundColor: themeColors.backgroundSecondary }]}> 
+                <Ionicons name="analytics-outline" size={20} color={themeColors.accent} />
+                <Text style={[styles.quickActionText, { color: themeColors.accent }]}>{t('analytics')}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Enhanced Search and Filters */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchRow}>
+            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+              <View style={styles.searchInputContainer}>
+                <Ionicons name="search" size={20} color={themeColors.textSecondary} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('searchSkills')}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholderTextColor={themeColors.textSecondary}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity 
+                    onPress={() => setSearchQuery('')}
+                    style={styles.clearButton}
+                  >
+                    <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+
+          {/* Enhanced Filter Buttons */}
+          <View style={styles.filterContainer}>
+            <FilterButton title={t('all')} value="all" count={stats.total} />
+            <FilterButton title={t('inProgress')} value="in-progress" count={stats.inProgress} />
+            <FilterButton title={t('completed')} value="completed" count={stats.completed} />
+          </View>
+        </View>
+
+        {/* Recent Activity */}
+        <View style={{ paddingTop: Spacing.lg }}>
+          <RecentActivity
+            skills={skills.map(s => ({ id: s.id, name: s.name, lastUpdated: s.lastUpdated, progress: s.progress, entries: s.entries }))}
+            onSkillPress={(id) => router.push(`/skill/${id}`)}
+          />
         </View>
       </View>
-
-      {/* Quick Actions */}
-      <View style={styles.quickActionsContainer}>
-        <View style={styles.quickActionsRow}>
-          <TouchableOpacity style={styles.quickActionButton} onPress={handleAddSkill}>
-            <LinearGradient
-              colors={themeColors.gradient.primary}
-              style={styles.quickActionGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Ionicons name="add" size={20} color={themeColors.text} />
-              <Text style={styles.quickActionText}>{t('addSkill')}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionButton} onPress={() => router.push('/analytics')}>
-            <View style={[styles.quickActionSecondary, { backgroundColor: themeColors.backgroundSecondary }]}> 
-              <Ionicons name="analytics-outline" size={20} color={themeColors.accent} />
-              <Text style={[styles.quickActionText, { color: themeColors.accent }]}>{t('analytics')}</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Enhanced Search and Filters */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchRow}>
-          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-            <View style={styles.searchInputContainer}>
-              <Ionicons name="search" size={20} color={themeColors.textSecondary} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={t('searchSkills')}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholderTextColor={themeColors.textSecondary}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity 
-                  onPress={() => setSearchQuery('')}
-                  style={styles.clearButton}
-                >
-                  <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
-                </TouchableOpacity>
-              )}
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-
-        {/* Enhanced Filter Buttons */}
-        <View style={styles.filterContainer}>
-          <FilterButton title={t('all')} value="all" count={stats.total} />
-          <FilterButton title={t('inProgress')} value="in-progress" count={stats.inProgress} />
-          <FilterButton title={t('completed')} value="completed" count={stats.completed} />
-        </View>
-      </View>
-
-      {/* Recent Activity is now shown below the skills list as a footer */}
     </View>
   );
 
@@ -716,15 +720,7 @@ export default function Home() {
         )}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={renderListHeader}
-        ListFooterComponent={
-          <View style={styles.footerWrapper}>
-            <View style={styles.contentOverlay} />
-            <RecentActivity
-              skills={skills.map(s => ({ id: s.id, name: s.name, lastUpdated: s.lastUpdated, progress: s.progress, entries: s.entries }))}
-              onSkillPress={(id) => router.push(`/skill/${id}`)}
-            />
-          </View>
-        }
+        ListFooterComponent={<View />}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
