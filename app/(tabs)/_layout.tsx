@@ -10,7 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 export default function TabLayout() {
   const { resolvedTheme } = useTheme();
   const { t } = useLanguage();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   
   // State for responsive designs
   const [screenDimensions, setScreenDimensions] = useState(Dimensions.get('window'));

@@ -14,7 +14,7 @@ interface LanguageSelectorProps {
 export default function LanguageSelector({ onLanguageChange }: LanguageSelectorProps) {
   const { currentLanguage, changeLanguage, isTranslating } = useLanguage();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   // Handle language selection with haptic feedback and error handling

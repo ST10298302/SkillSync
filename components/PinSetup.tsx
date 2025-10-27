@@ -23,7 +23,7 @@ interface PinSetupProps {
 
 export default function PinSetup({ onComplete, onCancel, title = "Set Up PIN", subtitle = "Create a 4-digit PIN to secure your app" }: PinSetupProps) {
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [pin, setPin] = useState('');

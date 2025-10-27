@@ -45,7 +45,7 @@ export default function EnhancedSkillDetail() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const { t } = useLanguage();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   
   const skill = skills.find(s => s.id === id);
   const [activeTab, setActiveTab] = useState<TabType>('overview');

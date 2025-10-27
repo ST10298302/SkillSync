@@ -34,7 +34,7 @@ export default function Profile() {
   const { skills } = useSkills();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { t } = useLanguage();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   
   // Ensure we have valid colors even during initial render to prevent crashes
   const themeColors = Colors[safeTheme] || Colors.light;
@@ -196,6 +196,7 @@ export default function Profile() {
     const options: { label: string; value: ThemeMode; icon: any }[] = [
       { label: 'Light', value: 'light', icon: 'sunny-outline' },
       { label: 'Dark', value: 'dark', icon: 'moon-outline' },
+      { label: 'Darker', value: 'darker', icon: 'moon' },
       { label: 'Auto', value: 'auto', icon: 'phone-portrait-outline' },
     ];
     return (

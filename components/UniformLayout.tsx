@@ -37,12 +37,12 @@ export default function UniformLayout({
   contentStyle
 }: UniformLayoutProps) {
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
   // Use provided gradient colors or default to theme gradient
   const colors = gradientColors || (themeColors.gradient.primary as [string, string]);
-  const barStyle = statusBarStyle || (safeTheme === 'dark' ? 'light-content' : 'dark-content') as StatusBarStyle;
+  const barStyle = statusBarStyle || (safeTheme === 'dark' || safeTheme === 'darker' ? 'light-content' : 'dark-content') as StatusBarStyle;
 
   return (
     <View style={[styles.container, containerStyle]}>

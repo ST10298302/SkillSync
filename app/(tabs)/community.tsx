@@ -32,7 +32,7 @@ export default function CommunityScreen() {
   const { user } = useAuth();
   const { addSkill } = useSkills();
   const { followUser, isFollowing, getPublicSkills } = useEnhancedSkills();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [publicSkills, setPublicSkills] = useState<Skill[]>([]);

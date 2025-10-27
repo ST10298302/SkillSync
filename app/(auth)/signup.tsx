@@ -28,7 +28,7 @@ export default function Signup() {
   const router = useRouter();
   const { signUp } = useAuth();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -20,7 +20,7 @@ export default function PinVerificationScreen() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const { unlockApp } = usePinLock();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [isVerifying, setIsVerifying] = useState(true);

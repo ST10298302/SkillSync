@@ -31,7 +31,7 @@ export default function BiometricVerification({
   maxAttempts = 3
 }: BiometricVerificationProps) {
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [isLoading, setIsLoading] = useState(false);

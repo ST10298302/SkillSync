@@ -32,7 +32,7 @@ const OptimizedSkillCard = React.memo<OptimizedSkillCardProps>(({
   streak = 0,
 }) => {
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const { translateText, currentLanguage, t } = useLanguage();
