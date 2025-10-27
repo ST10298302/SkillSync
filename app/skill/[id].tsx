@@ -21,6 +21,7 @@ import { AddProgressModal } from '../../components/AddProgressModal';
 import { AddResourceModal } from '../../components/AddResourceModal';
 import { CommentThread } from '../../components/CommentThread';
 import DiaryItem from '../../components/DiaryItem';
+import { EditDiaryEntryModal } from '../../components/EditDiaryEntryModal';
 import { LevelBadge } from '../../components/LevelBadge';
 import { MilestoneTracker } from '../../components/MilestoneTracker';
 import ProgressBar from '../../components/ProgressBar';
@@ -30,7 +31,7 @@ import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useEnhancedSkills } from '../../context/EnhancedSkillsContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useSkills } from '../../context/SkillsContext';
+import { DiaryEntry, useSkills } from '../../context/SkillsContext';
 import { useTheme } from '../../context/ThemeContext';
 
 type TabType = 'overview' | 'milestones' | 'resources' | 'comments';
@@ -57,9 +58,12 @@ export default function EnhancedSkillDetail() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showDiaryModal, setShowDiaryModal] = useState(false);
+  const [showEditDiaryModal, setShowEditDiaryModal] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
   const [showResourceModal, setShowResourceModal] = useState(false);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showArtifactModal, setShowArtifactModal] = useState(false);
+  const { updateEntry, deleteEntry } = useSkills();
 
   // Load enhanced data
   useEffect(() => {
@@ -118,6 +122,17 @@ export default function EnhancedSkillDetail() {
         getComments(id),
         refreshSkills(),
       ]);
+    }
+  };
+
+  const handleEditEntry = (entry: DiaryEntry) => {
+    setSelectedEntry(entry);
+    setShowEditDiaryModal(true);
+  };
+
+  const handleDeleteEntry = async (entry: DiaryEntry) => {
+    if (typeof id === 'string' && confirm('Are you sure you want to delete this entry?')) {
+      await deleteEntry(id, entry.id);
     }
   };
 
@@ -180,7 +195,15 @@ export default function EnhancedSkillDetail() {
                   <FlatList
                     data={[...skill.entries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
                     keyExtractor={item => item.id}
-                    renderItem={({ item }) => <DiaryItem text={item.text} date={item.date} hours={item.hours} />}
+                    renderItem={({ item }) => (
+                      <DiaryItem 
+                        text={item.text} 
+                        date={item.date} 
+                        hours={item.hours}
+                        onEdit={() => handleEditEntry(item)}
+                        onDelete={() => handleDeleteEntry(item)}
+                      />
+                    )}
                     scrollEnabled={false}
                   />
                 </View>
@@ -357,6 +380,16 @@ export default function EnhancedSkillDetail() {
         skillId={skill.id}
       />
       
+      <EditDiaryEntryModal
+        visible={showEditDiaryModal}
+        onClose={() => {
+          setShowEditDiaryModal(false);
+          setSelectedEntry(null);
+        }}
+        skillId={skill.id}
+        entry={selectedEntry}
+      />
+
       <AddResourceModal
         visible={showResourceModal}
         onClose={() => setShowResourceModal(false)}

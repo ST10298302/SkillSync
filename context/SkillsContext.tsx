@@ -39,6 +39,8 @@ interface SkillsContextProps {
   updateSkill: (id: string, updates: { name?: string; description?: string }) => Promise<void>;
   deleteSkill: (id: string) => Promise<void>;
   addEntry: (skillId: string, text: string, hours?: number) => Promise<void>;
+  updateEntry: (skillId: string, entryId: string, text: string, hours?: number) => Promise<void>;
+  deleteEntry: (skillId: string, entryId: string) => Promise<void>;
   addProgressUpdate: (skillId: string, value: number) => Promise<void>;
   refreshSkills: () => Promise<void>;
 }
@@ -240,6 +242,101 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Update a diary entry
+  const updateEntry = async (skillId: string, entryId: string, text: string, hours: number = 0) => {
+    if (!user || typeof window === 'undefined') return;
+
+    try {
+      await SupabaseService.updateSkillEntry(entryId, {
+        content: text,
+        hours: hours,
+      });
+
+      // Get the current skill to calculate new totals
+      const currentSkill = skills.find(s => s.id === skillId);
+      if (!currentSkill) return;
+
+      // Update the entry in the local state
+      const updatedEntries = currentSkill.entries.map(entry =>
+        entry.id === entryId
+          ? { ...entry, text, hours }
+          : entry
+      );
+
+      // Calculate new total hours
+      const newTotalHours = updatedEntries.reduce((sum, e) => sum + (e.hours || 0), 0);
+      
+      // Calculate new streak
+      const newStreak = calculateSkillStreak(updatedEntries, currentSkill.progressUpdates);
+
+      // Update the skill in the database with new totals
+      await SupabaseService.updateSkill(skillId, {
+        total_hours: newTotalHours,
+        streak: newStreak,
+      });
+
+      setSkills(prev =>
+        prev.map(skill => {
+          if (skill.id !== skillId) return skill;
+          
+          return {
+            ...skill,
+            entries: updatedEntries,
+            streak: newStreak,
+            totalHours: newTotalHours,
+          };
+        })
+      );
+    } catch (e) {
+      console.error('Failed to update entry', e);
+      throw e;
+    }
+  };
+
+  // Delete a diary entry
+  const deleteEntry = async (skillId: string, entryId: string) => {
+    if (!user || typeof window === 'undefined') return;
+
+    try {
+      await SupabaseService.deleteSkillEntry(entryId);
+
+      // Get the current skill to calculate new totals
+      const currentSkill = skills.find(s => s.id === skillId);
+      if (!currentSkill) return;
+
+      // Remove the entry from local state
+      const updatedEntries = currentSkill.entries.filter(entry => entry.id !== entryId);
+
+      // Calculate new total hours
+      const newTotalHours = updatedEntries.reduce((sum, e) => sum + (e.hours || 0), 0);
+      
+      // Calculate new streak
+      const newStreak = calculateSkillStreak(updatedEntries, currentSkill.progressUpdates);
+
+      // Update the skill in the database with new totals
+      await SupabaseService.updateSkill(skillId, {
+        total_hours: newTotalHours,
+        streak: newStreak,
+      });
+
+      setSkills(prev =>
+        prev.map(skill => {
+          if (skill.id !== skillId) return skill;
+          
+          return {
+            ...skill,
+            entries: updatedEntries,
+            streak: newStreak,
+            totalHours: newTotalHours,
+          };
+        })
+      );
+    } catch (e) {
+      console.error('Failed to delete entry', e);
+      throw e;
+    }
+  };
+
   // Add a progress update to a skill
   const addProgressUpdate = async (skillId: string, value: number) => {
     if (!user || typeof window === 'undefined') return;
@@ -286,7 +383,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <SkillsContext.Provider value={{ skills, addSkill, updateSkill, deleteSkill, addEntry, addProgressUpdate, refreshSkills }}>
+    <SkillsContext.Provider value={{ skills, addSkill, updateSkill, deleteSkill, addEntry, updateEntry, deleteEntry, addProgressUpdate, refreshSkills }}>
       {children}
     </SkillsContext.Provider>
   );
