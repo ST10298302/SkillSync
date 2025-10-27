@@ -654,7 +654,9 @@ export default function EnhancedSkillDetail() {
                     <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
                     <View style={styles.statItem}>
                       <Ionicons name="chatbubble-outline" size={16} color={themeColors.textSecondary} />
-                      <Text style={[styles.statText, { color: themeColors.textSecondary }]}>{skill.comments_count || 0}</Text>
+                      <Text style={[styles.statText, { color: themeColors.textSecondary }]}>
+                        {skillComments.filter(c => !c.parent_comment_id).length}
+                      </Text>
                     </View>
                   </View>
                 </View>

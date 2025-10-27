@@ -126,14 +126,17 @@ export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadPro
     );
   };
 
+  // Filter out replies - only count top-level comments
+  const topLevelComments = comments.filter(c => !c.parent_comment_id);
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        Comments ({comments.length})
+        Comments ({topLevelComments.length})
       </Text>
 
       <FlatList
-        data={comments.filter(c => !c.parent_comment_id)}
+        data={topLevelComments}
         renderItem={renderComment}
         keyExtractor={(item) => item.id}
         style={styles.commentsList}
