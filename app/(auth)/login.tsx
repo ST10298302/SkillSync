@@ -391,6 +391,9 @@ export default function Login() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  textContentType="emailAddress"
+                  autoComplete="email"
+                  autoFocus={false}
                 />
 
                 <AnimatedInput
@@ -404,6 +407,8 @@ export default function Login() {
                   autoCorrect={false}
                   rightIcon={showPassword ? "eye-off-outline" : "eye-outline"}
                   onRightIconPress={togglePasswordVisibility}
+                  textContentType="password"
+                  autoComplete="password"
                 />
 
                 <TouchableOpacity 

@@ -339,6 +339,8 @@ export default function Signup() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  textContentType="emailAddress"
+                  autoComplete="email"
                 />
 
                 <AnimatedInput
@@ -351,6 +353,8 @@ export default function Signup() {
                   autoCorrect={false}
                   rightIcon={showPassword ? "eye-off-outline" : "eye-outline"}
                   onRightIconPress={togglePasswordVisibility}
+                  textContentType="password"
+                  autoComplete="password"
                 />
 
                 <AnimatedInput
@@ -363,6 +367,8 @@ export default function Signup() {
                   autoCorrect={false}
                   rightIcon={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
                   onRightIconPress={toggleConfirmPasswordVisibility}
+                  textContentType="password"
+                  autoComplete="password"
                 />
 
                 <View style={styles.requirementsContainer}>

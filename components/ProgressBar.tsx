@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Colors } from '../constants/Colors';
+import { BorderRadius, Colors } from '../constants/Colors';
 import { useTheme } from '../context/ThemeContext';
 
 interface ProgressBarProps {
@@ -19,7 +19,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress, height = 10, color 
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
-  const fillGradient = color ? [color, color] : ['#60a5fa', '#f59e42'];
+  const fillGradient = color ? [color, color] : themeColors.gradient.primary;
   const bgColor = themeColors.backgroundTertiary;
 
   return (
@@ -39,7 +39,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress, height = 10, color 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    borderRadius: 4,
+    borderRadius: BorderRadius.sm,
     overflow: 'hidden',
   },
   fill: {
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
     height: '100%',
-    borderRadius: 4,
+    borderRadius: BorderRadius.sm,
   },
 });
 

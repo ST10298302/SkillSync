@@ -38,6 +38,10 @@ export const Colors = {
       medium: 'rgba(55,65,81,0.15)', // Gunmetal
       heavy: 'rgba(17,24,39,0.25)', // Charcoal
     },
+    // Semantic shadow colors as strings for direct use
+    shadowLight: 'rgba(209,213,219,0.2)',
+    shadowMedium: 'rgba(55,65,81,0.15)',
+    shadowHeavy: 'rgba(17,24,39,0.25)',
   },
   dark: {
     // Core metallic colors
@@ -73,6 +77,10 @@ export const Colors = {
       medium: 'rgba(17,24,39,0.25)', // Charcoal
       heavy: 'rgba(0,0,0,0.4)',
     },
+    // Semantic shadow colors as strings for direct use
+    shadowLight: 'rgba(60,72,100,0.15)',
+    shadowMedium: 'rgba(17,24,39,0.25)',
+    shadowHeavy: 'rgba(0,0,0,0.4)',
   },
 };
 
@@ -86,11 +94,13 @@ export const Spacing = {
 };
 
 export const BorderRadius = {
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
   xxl: 24,
+  xxxl: 32,
   round: 50,
 };
 

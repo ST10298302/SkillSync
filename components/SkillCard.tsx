@@ -165,7 +165,7 @@ export default function SkillCard({
   // Calculate progress values and colors with safety bounds
   const progressPercentage = Math.min(Math.max(typeof progress === 'number' ? progress : 0, 0), 100);
   const progressColor = progressPercentage >= 100 ? themeColors.success : themeColors.accent;
-  const accentGold = (themeColors as any)?.accentGold ?? themeColors.accent;
+  const accentGold = themeColors.accentGold ?? themeColors.accent;
 
   // Component styling with theme-aware colors and consistent spacing
   const styles = StyleSheet.create({
@@ -188,7 +188,7 @@ export default function SkillCard({
       borderRadius: BorderRadius.xl,
       padding: Spacing.lg,
       marginBottom: Spacing.md,
-      shadowColor: (themeColors as any)?.shadow?.medium ?? '#000',
+      shadowColor: themeColors.shadowMedium,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
@@ -361,11 +361,14 @@ export default function SkillCard({
       style={[styles.container, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}
     >
       <TouchableOpacity
-        style={[styles.touchable, { shadowColor: (themeColors as any)?.shadow?.medium ?? '#000' }]}
+        style={[styles.touchable, { shadowColor: themeColors.shadowMedium }]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.9}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('skill')}: ${translatedName}`}
       >
         <View
           style={[
@@ -415,6 +418,9 @@ export default function SkillCard({
                   style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
                   onPress={handleEditPress}
                   activeOpacity={0.7}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('editSkill')}
                 >
                   <Ionicons name="create-outline" size={16} color={themeColors.accent} />
                 </TouchableOpacity>
@@ -425,6 +431,9 @@ export default function SkillCard({
                     style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
                     onPress={handleDeletePress}
                     activeOpacity={0.7}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('deleteSkill')}
                   >
                     <Ionicons name="trash-outline" size={16} color={themeColors.error} />
                   </TouchableOpacity>
