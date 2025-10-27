@@ -32,7 +32,7 @@ export default function CommunityScreen() {
   const { user } = useAuth();
   const { addSkill } = useSkills();
   const { followUser, isFollowing, getPublicSkills } = useEnhancedSkills();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [publicSkills, setPublicSkills] = useState<Skill[]>([]);
@@ -204,8 +204,8 @@ export default function CommunityScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={styles.title}>Community Skills</Text>
-        <Text style={styles.subtitle}>Discover and learn from others</Text>
+        <Text style={[styles.title, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>Community Skills</Text>
+        <Text style={[styles.subtitle, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>Discover and learn from others</Text>
 
         {/* Search Bar */}
         <View style={[styles.searchContainer, { backgroundColor: themeColors.background }]}>
@@ -236,7 +236,7 @@ export default function CommunityScreen() {
               ]}
               onPress={() => setFilterType(filter)}
             >
-              <Text style={styles.filterText}>
+              <Text style={[styles.filterText, { color: safeTheme === 'dark' ? '#ffffff' : (filterType === filter ? '#ffffff' : '#000000') }]}>
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
               </Text>
             </TouchableOpacity>
@@ -287,12 +287,11 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.h1,
-    color: Colors.light.text,
     marginBottom: Spacing.xs,
   },
   subtitle: {
     ...Typography.body,
-    color: Colors.light.textSecondary,
+    opacity: 0.9,
     marginBottom: Spacing.lg,
   },
   searchContainer: {
@@ -323,7 +322,6 @@ const styles = StyleSheet.create({
   filterText: {
     ...Typography.bodySmall,
     fontWeight: '600',
-    color: Colors.light.text,
   },
   listContent: {
     padding: Spacing.lg,

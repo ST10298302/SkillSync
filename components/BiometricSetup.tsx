@@ -27,7 +27,7 @@ export default function BiometricSetup({
   subtitle = "Use your fingerprint or face to quickly access SkillSync" 
 }: BiometricSetupProps) {
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [isLoading, setIsLoading] = useState(false);

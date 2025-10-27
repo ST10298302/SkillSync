@@ -22,7 +22,7 @@ export default function NotificationsSettings() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const { user } = useAuth();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [notifications, setNotifications] = useState({

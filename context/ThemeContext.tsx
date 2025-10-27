@@ -2,12 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Appearance } from 'react-native';
 
-export type ThemeMode = 'light' | 'dark' | 'darker' | 'auto';
+export type ThemeMode = 'light' | 'dark' | 'auto';
 
 interface ThemeContextProps {
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
-  resolvedTheme: 'light' | 'dark' | 'darker';
+  resolvedTheme: 'light' | 'dark';
 }
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -16,14 +16,14 @@ const THEME_KEY = 'userThemePreference';
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<ThemeMode>('auto');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark' | 'darker'>(
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
   );
 
   // Load theme preference from storage
   useEffect(() => {
     AsyncStorage.getItem(THEME_KEY).then((stored) => {
-      if (stored === 'light' || stored === 'dark' || stored === 'darker' || stored === 'auto') {
+      if (stored === 'light' || stored === 'dark' || stored === 'auto') {
         setThemeState(stored);
       }
     });

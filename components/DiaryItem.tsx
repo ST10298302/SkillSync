@@ -18,7 +18,7 @@ interface DiaryItemProps {
  */
 const DiaryItem: React.FC<DiaryItemProps> = ({ text, date, hours, onEdit, onDelete }) => {
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   const formattedDate = new Date(date).toLocaleString();
   return (

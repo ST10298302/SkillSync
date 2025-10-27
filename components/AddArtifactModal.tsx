@@ -17,7 +17,7 @@ interface AddArtifactModalProps {
 export const AddArtifactModal = ({ visible, onClose, skillId }: AddArtifactModalProps) => {
   const { getResources } = useEnhancedSkills();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const [title, setTitle] = useState('');

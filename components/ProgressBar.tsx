@@ -17,7 +17,7 @@ interface ProgressBarProps {
  */
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress, height = 10, color }) => {
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   const fillGradient = color ? [color, color] : themeColors.gradient.primary;
   const bgColor = themeColors.backgroundTertiary;

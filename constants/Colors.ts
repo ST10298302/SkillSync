@@ -5,43 +5,43 @@
 
 export const Colors = {
   light: {
-    // Core metallic colors - Clean, modern light theme
+    // Core metallic colors - Futuristic clean white theme
     background: '#ffffff', // Pure white base
-    backgroundSecondary: '#f8fafc', // Very light blue-gray
-    backgroundTertiary: '#e2e8f0', // Soft silver
+    backgroundSecondary: '#fafafa', // Very subtle off-white
+    backgroundTertiary: '#f0f0f0', // Light metallic gray
     surface: '#ffffff',
-    surfaceShadow: 'inset 0 2px 8px #f1f5f9',
-    border: '#e2e8f0', // Soft silver border
-    borderSecondary: '#f1f5f9',
-    text: '#0f172a', // Deep slate (better contrast)
-    textSecondary: '#475569', // Medium slate
-    textTertiary: '#64748b',
+    surfaceShadow: 'inset 0 2px 8px #f5f5f5',
+    border: '#e0e0e0', // Clean metallic border
+    borderSecondary: '#f0f0f0',
+    text: '#000000', // Pure black (maximum contrast)
+    textSecondary: '#4a4a4a', // Medium gray
+    textTertiary: '#7a7a7a',
     black: '#000000', // Pure black for high contrast
-    accentBlue: '#3b82f6', // Vibrant blue
-    accentGold: '#f59e0b', // Rich gold
-    accentEmerald: '#10b981', // Emerald
-    accent: '#3b82f6', // Default accent (vibrant blue)
-    error: '#ef4444',
-    success: '#10b981',
-    info: '#3b82f6',
-    warning: '#f59e0b',
+    accentBlue: '#0066ff', // Futuristic blue
+    accentGold: '#ff9500', // Modern orange-gold
+    accentEmerald: '#00c853', // Vibrant green
+    accent: '#0066ff', // Default accent (futuristic blue)
+    error: '#ff3b30',
+    success: '#00c853',
+    info: '#0066ff',
+    warning: '#ff9500',
     // Gradients
     gradient: {
-      background: ['#ffffff', '#f8fafc'] as const, // Clean white to light
+      background: ['#f5f5f7', '#fafafa'] as const, // Metallic gray gradient
       primary: ['#3b82f6', '#f59e0b'] as const, // Blue to gold
       stats: ['#3b82f6', '#f59e0b'] as const, // For progress/stats
-      surface: ['#ffffff', '#f8fafc'] as const,
+      surface: ['#fafafa', '#f5f5f7'] as const,
       accent: ['#3b82f6', '#10b981'] as const,
     },
     shadow: {
-      light: 'rgba(148,163,184,0.08)', // Very subtle
-      medium: 'rgba(100,116,139,0.12)', // Soft shadow
-      heavy: 'rgba(51,65,85,0.18)', // Defined shadow
+      light: 'rgba(0,0,0,0.04)', // Very subtle
+      medium: 'rgba(0,0,0,0.08)', // Soft shadow
+      heavy: 'rgba(0,0,0,0.15)', // Defined shadow
     },
     // Semantic shadow colors as strings for direct use
-    shadowLight: 'rgba(148,163,184,0.08)',
-    shadowMedium: 'rgba(100,116,139,0.12)',
-    shadowHeavy: 'rgba(51,65,85,0.18)',
+    shadowLight: 'rgba(0,0,0,0.04)',
+    shadowMedium: 'rgba(0,0,0,0.08)',
+    shadowHeavy: 'rgba(0,0,0,0.15)',
   },
   dark: {
     // Core metallic colors - Dark theme with good contrast
@@ -67,10 +67,10 @@ export const Colors = {
     // Gradients
     gradient: {
       background: ['#0a0e1a', '#1e293b'] as const, // Very dark gradient
-      primary: ['#60a5fa', '#fbbf24'] as const, // Blue to gold
-      stats: ['#60a5fa', '#fbbf24'] as const, // For progress/stats
+      primary: ['#1d4ed8', '#f59e0b'] as const, // Darker blue to rich gold
+      stats: ['#1d4ed8', '#f59e0b'] as const, // For progress/stats (darker blue to gold)
       surface: ['#111827', '#1e293b'] as const,
-      accent: ['#60a5fa', '#34d399'] as const,
+      accent: ['#1d4ed8', '#10b981'] as const, // Darker blue accent gradient
     },
     shadow: {
       light: 'rgba(0,0,0,0.2)', // Dark shadow
@@ -81,45 +81,6 @@ export const Colors = {
     shadowLight: 'rgba(0,0,0,0.2)',
     shadowMedium: 'rgba(0,0,0,0.4)',
     shadowHeavy: 'rgba(0,0,0,0.6)',
-  },
-  darker: {
-    // Core metallic colors - Ultra dark theme with maximum contrast
-    background: '#000000', // Pure black background
-    backgroundSecondary: '#0a0a0a', // Near black
-    backgroundTertiary: '#141414', // Very dark gray
-    surface: '#0a0a0a',
-    surfaceShadow: '0 1px 12px #000000 inset',
-    border: '#1a1a1a', // Very dark border
-    borderSecondary: 'rgba(255,255,255,0.03)',
-    text: '#ffffff', // Pure white text
-    textSecondary: '#e5e5e5', // Very light gray
-    textTertiary: '#b0b0b0',
-    black: '#ffffff', // Pure white for dark theme (inverted black)
-    accentBlue: '#70b5ff', // Even brighter blue
-    accentGold: '#fcd34d', // Even brighter gold
-    accentEmerald: '#4ade80', // Even brighter emerald
-    accent: '#70b5ff', // Default accent
-    error: '#fca5a5',
-    success: '#4ade80',
-    info: '#70b5ff',
-    warning: '#fcd34d',
-    // Gradients
-    gradient: {
-      background: ['#000000', '#141414'] as const, // Pure black gradient
-      primary: ['#70b5ff', '#fcd34d'] as const, // Bright blue to gold
-      stats: ['#70b5ff', '#fcd34d'] as const, // For progress/stats
-      surface: ['#0a0a0a', '#141414'] as const,
-      accent: ['#70b5ff', '#4ade80'] as const,
-    },
-    shadow: {
-      light: 'rgba(0,0,0,0.3)', // Darker shadow
-      medium: 'rgba(0,0,0,0.5)', // Very dark shadow
-      heavy: 'rgba(0,0,0,0.8)', // Maximum shadow
-    },
-    // Semantic shadow colors as strings for direct use
-    shadowLight: 'rgba(0,0,0,0.3)',
-    shadowMedium: 'rgba(0,0,0,0.5)',
-    shadowHeavy: 'rgba(0,0,0,0.8)',
   },
 };
 

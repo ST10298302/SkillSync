@@ -32,7 +32,7 @@ export default function EditSkill() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { skills, updateSkill } = useSkills();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
   // Find the skill to edit

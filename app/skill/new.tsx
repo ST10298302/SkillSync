@@ -32,7 +32,7 @@ export default function NewSkill() {
   const { addSkill } = useSkills();
   const { t } = useLanguage();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const [name, setName] = useState('');

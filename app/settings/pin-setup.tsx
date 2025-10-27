@@ -23,7 +23,7 @@ export default function PinSetupScreen() {
   const { resolvedTheme } = useTheme();
   const { user } = useAuth();
   const { refreshPinStatus } = usePinLock();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [isSettingUp, setIsSettingUp] = useState(false);

@@ -28,7 +28,7 @@ export default function PrivacySecuritySettings() {
   const { resolvedTheme } = useTheme();
   const { user } = useAuth();
   const { refreshPinStatus, refreshSessionTimeout } = usePinLock();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [privacySettings, setPrivacySettings] = useState({

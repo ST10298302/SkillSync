@@ -20,7 +20,7 @@ import { useTheme } from '../../context/ThemeContext';
 export default function HelpSupport() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);

@@ -30,7 +30,7 @@ export default function Analytics() {
   const { skills } = useSkills();
   const { resolvedTheme } = useTheme();
   const { t } = useLanguage();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
   // Ensure we have valid colors even during initial render to prevent crashes
   const themeColors = Colors[safeTheme] || Colors.light;

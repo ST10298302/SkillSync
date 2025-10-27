@@ -14,7 +14,7 @@ interface AddDiaryEntryModalProps {
 export const AddDiaryEntryModal = ({ visible, onClose, skillId }: AddDiaryEntryModalProps) => {
   const { addEntry } = useSkills();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const [text, setText] = useState('');

@@ -10,7 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 export default function TabLayout() {
   const { resolvedTheme } = useTheme();
   const { t } = useLanguage();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   
   // State for responsive designs
   const [screenDimensions, setScreenDimensions] = useState(Dimensions.get('window'));
@@ -115,7 +115,7 @@ export default function TabLayout() {
         options={{
           title: t('add'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size + 4} color={Colors[safeTheme].accent} />
+            <Ionicons name="add-circle-outline" size={size + 4} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}

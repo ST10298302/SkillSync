@@ -15,7 +15,7 @@ interface AddProgressModalProps {
 export const AddProgressModal = ({ visible, onClose, skillId, currentProgress }: AddProgressModalProps) => {
   const { addProgressUpdate } = useSkills();
   const { resolvedTheme } = useTheme();
-  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' || resolvedTheme === 'darker' ? resolvedTheme : 'light';
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
   const [progress, setProgress] = useState('');
