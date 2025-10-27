@@ -442,7 +442,7 @@ export default function CommunityScreen() {
             <FlatList
               data={followedUsers}
               renderItem={({ item }) => (
-                <View style={styles.friendContainer}>
+                <View style={[styles.friendContainer, { backgroundColor: themeColors.backgroundSecondary }]}>
                   <Text style={[styles.friendName, { color: themeColors.text }]}>{item.name || item.email}</Text>
                   {/* Add more friend details */}
                 </View>
@@ -640,7 +640,6 @@ const styles = StyleSheet.create({
   },
   friendContainer: {
     padding: Spacing.md,
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     marginBottom: Spacing.sm,
   },
