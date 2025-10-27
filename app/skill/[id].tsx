@@ -126,7 +126,7 @@ export default function EnhancedSkillDetail() {
       // If not in context, fetch from database
       try {
         const { supabase } = await import('../../utils/supabase');
-        const { data, error } = await supabase
+        const { data: skillData, error: skillError } = await supabase
           .from('skills')
           .select(`
             *,
@@ -140,21 +140,45 @@ export default function EnhancedSkillDetail() {
           .eq('id', id)
           .single();
 
-      if (data && !error) {
-        // Ensure skill has all required properties with defaults
-        setSkill({
-          ...data,
-          progressUpdates: data.progressUpdates || [],
-          entries: data.entries || [],
-          description: data.description || '',
-          progress: data.progress || 0,
-          likes_count: data.likes_count || 0,
-          comments_count: data.comments_count || 0,
-          current_level: data.current_level || 'beginner',
-          user_id: data.user_id, // Include user_id for ownership checks
-          owner: (data as any).users || null, // Include owner information
-        });
-      }
+        // Fetch entries and progress updates separately
+        const { data: entriesData } = await supabase
+          .from('skill_entries')
+          .select('*')
+          .eq('skill_id', id)
+          .order('created_at', { ascending: false });
+
+        const { data: progressData } = await supabase
+          .from('progress_updates')
+          .select('*')
+          .eq('skill_id', id)
+          .order('created_at', { ascending: false });
+
+        if (skillData && !skillError) {
+          // Ensure skill has all required properties with defaults
+          setSkill({
+            ...skillData,
+            progressUpdates: progressData?.map(p => ({
+              id: p.id,
+              skill_id: p.skill_id,
+              progress: p.progress,
+              created_at: p.created_at,
+              notes: p.notes,
+            })) || [],
+            entries: entriesData?.map(e => ({
+              id: e.id,
+              text: e.content,
+              date: e.created_at,
+              hours: e.hours,
+            })) || [],
+            description: skillData.description || '',
+            progress: skillData.progress || 0,
+            likes_count: skillData.likes_count || 0,
+            comments_count: skillData.comments_count || 0,
+            current_level: skillData.current_level || 'beginner',
+            user_id: skillData.user_id, // Include user_id for ownership checks
+            owner: (skillData as any).users || null, // Include owner information
+          });
+        }
       } catch (error) {
         console.error('Error loading skill:', error);
       } finally {
@@ -266,23 +290,47 @@ export default function EnhancedSkillDetail() {
       
       // Then reload the skill from the database to get the latest data
       const { supabase } = await import('../../utils/supabase');
-      const { data, error } = await supabase
+      const { data: skillData, error: skillError } = await supabase
         .from('skills')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (data && !error) {
+      // Fetch entries and progress updates separately
+      const { data: entriesData } = await supabase
+        .from('skill_entries')
+        .select('*')
+        .eq('skill_id', id)
+        .order('created_at', { ascending: false });
+
+      const { data: progressData } = await supabase
+        .from('progress_updates')
+        .select('*')
+        .eq('skill_id', id)
+        .order('created_at', { ascending: false });
+
+      if (skillData && !skillError) {
         setSkill({
-          ...data,
-          progressUpdates: data.progressUpdates || [],
-          entries: data.entries || [],
-          description: data.description || '',
-          progress: data.progress || 0,
-          likes_count: data.likes_count || 0,
-          comments_count: data.comments_count || 0,
-          current_level: data.current_level || 'beginner',
-          user_id: data.user_id,
+          ...skillData,
+          progressUpdates: progressData?.map(p => ({
+            id: p.id,
+            skill_id: p.skill_id,
+            progress: p.progress,
+            created_at: p.created_at,
+            notes: p.notes,
+          })) || [],
+          entries: entriesData?.map(e => ({
+            id: e.id,
+            text: e.content,
+            date: e.created_at,
+            hours: e.hours,
+          })) || [],
+          description: skillData.description || '',
+          progress: skillData.progress || 0,
+          likes_count: skillData.likes_count || 0,
+          comments_count: skillData.comments_count || 0,
+          current_level: skillData.current_level || 'beginner',
+          user_id: skillData.user_id,
         });
       }
       
