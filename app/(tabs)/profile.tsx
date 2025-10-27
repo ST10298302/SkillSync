@@ -3,14 +3,14 @@ import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Animated,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 import LanguageSelector from '../../components/LanguageSelector';
@@ -135,6 +135,10 @@ export default function Profile() {
     );
   };
 
+  /**
+   * Calculate user statistics from skills data
+   * @returns Object containing total, completed, inProgress, averageProgress, totalEntries, and totalHours
+   */
   const getStats = () => {
     const total = skills.length;
     const completed = skills.filter(s => s.progress >= 100).length;
@@ -150,6 +154,13 @@ export default function Profile() {
 
   const stats = getStats();
 
+  /**
+   * Stat Card Component - Displays a single statistic with icon
+   * @param title - Stat label
+   * @param value - Stat value (string or number)
+   * @param icon - Ionicon name
+   * @param color - Icon and accent color
+   */
   const StatCard = ({ title, value, icon, color }: { title: string; value: string | number; icon: string; color: string }) => (
     <View style={styles.statCard}>
       <View style={[styles.statIcon, { backgroundColor: color + '15' }]}>
@@ -160,6 +171,15 @@ export default function Profile() {
     </View>
   );
 
+  /**
+   * Menu Item Component - Clickable list item for settings navigation
+   * @param title - Menu item title
+   * @param subtitle - Optional subtitle/description
+   * @param icon - Ionicon name
+   * @param onPress - Click handler
+   * @param showArrow - Whether to show chevron arrow (default: true)
+   * @param destructive - Whether to apply destructive styling (default: false)
+   */
   const MenuItem = ({ 
     title, 
     subtitle, 
@@ -191,7 +211,10 @@ export default function Profile() {
     </TouchableOpacity>
   );
 
-  // Theme toggle UI
+  /**
+   * Theme Toggle Component - Allows users to switch between light, dark, and auto themes
+   * Displays three toggle buttons with icons and labels
+   */
   const ThemeToggle = () => {
     const options: { labelKey: string; value: ThemeMode; icon: any }[] = [
       { labelKey: 'themeLight', value: 'light', icon: 'sunny-outline' },
