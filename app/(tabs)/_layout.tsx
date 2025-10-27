@@ -27,49 +27,64 @@ export default function TabLayout() {
   const { width } = screenDimensions;
   const isWeb = Platform.OS === 'web';
   const isSmallScreen = width < 768; // Mobile breakpoint
+  const isTablet = width >= 768;
   
   // Calculate responsive tab bar dimensions
   const getTabBarHeight = () => {
     if (isWeb) {
-      return isSmallScreen ? 60 : 70; // Smaller on mobile web, larger on desktop
+      return isSmallScreen ? 64 : 72;
     }
-    return Platform.OS === 'ios' ? 88 : 60;
+    return Platform.OS === 'ios' ? 85 : 60;
   };
   
   const getTabBarPadding = () => {
     if (isWeb) {
-      return isSmallScreen ? 8 : 12; // Responsive padding for web
+      return isSmallScreen ? 8 : 14;
     }
-    return Platform.OS === 'ios' ? 34 : 8;
+    return Platform.OS === 'ios' ? 32 : 6;
   };
   
   const getTabBarTopPadding = () => {
     if (isWeb) {
-      return isSmallScreen ? 6 : 8; // Responsive top padding for web
+      return isSmallScreen ? 6 : 10;
     }
-    return 8;
+    return Platform.OS === 'ios' ? 6 : 4;
   };
   
-  const getTabBarFontSize = () => {
+  const getIconSize = () => {
     if (isWeb) {
-      return isSmallScreen ? 11 : 12; // Smaller font on mobile web
+      return isSmallScreen ? 26 : 28;
     }
-    return 12;
+    return Platform.OS === 'ios' ? 26 : 28;
   };
+
+  const themeColors = Colors[safeTheme];
   
+  // Glass-morphism background colors with gradient
+  const glassBackground = safeTheme === 'dark' 
+    ? 'rgba(26, 29, 36, 0.95)' 
+    : 'rgba(248, 249, 250, 0.95)';
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors[safeTheme].accent,
-        tabBarInactiveTintColor: Colors[safeTheme].textSecondary,
+        tabBarActiveTintColor: themeColors.accent,
+        tabBarInactiveTintColor: themeColors.textSecondary,
         tabBarStyle: {
-          backgroundColor: Colors[safeTheme].background,
-          borderTopColor: Colors[safeTheme].border,
+          backgroundColor: glassBackground,
+          borderTopColor: safeTheme === 'dark' ? 'rgba(55, 62, 77, 0.5)' : 'rgba(226, 232, 240, 0.8)',
           borderTopWidth: 1,
           paddingBottom: getTabBarPadding(),
           height: getTabBarHeight(),
           paddingTop: getTabBarTopPadding(),
+          paddingHorizontal: isTablet ? 24 : 8,
+          // Enhanced shadows
+          shadowColor: safeTheme === 'dark' ? '#000' : '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: safeTheme === 'dark' ? 0.3 : 0.08,
+          shadowRadius: 12,
+          elevation: 20,
           // Web-specific styles
           ...(isWeb && {
             minHeight: getTabBarHeight(),
@@ -79,33 +94,45 @@ export default function TabLayout() {
             left: 0,
             right: 0,
             zIndex: 1000,
-            boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+            boxShadow: safeTheme === 'dark'
+              ? '0 -4px 20px rgba(0, 0, 0, 0.4)'
+              : '0 -4px 20px rgba(0, 0, 0, 0.1)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            borderTop: `1px solid ${safeTheme === 'dark' ? 'rgba(55, 62, 77, 0.5)' : 'rgba(226, 232, 240, 0.8)'}`,
           }),
         },
         tabBarLabelStyle: {
-          fontSize: getTabBarFontSize(),
-          fontWeight: '500',
+          fontSize: isTablet ? 14 : 13,
+          fontWeight: '600',
+          marginTop: 2,
           // Web-specific label styles
           ...(isWeb && {
             marginTop: isSmallScreen ? 2 : 4,
           }),
         },
         tabBarIconStyle: {
+          marginBottom: 0,
           // Web-specific icon styles
           ...(isWeb && {
-            marginBottom: isSmallScreen ? 2 : 4,
+            marginBottom: isSmallScreen ? 0 : 2,
           }),
         },
+        tabBarItemStyle: {
+          paddingVertical: Platform.OS === 'ios' ? 4 : 2,
+          paddingHorizontal: isTablet ? 12 : 4,
+          minHeight: 44, // Minimum touch target for iOS
+        },
+        tabBarHideOnKeyboard: true,
+        tabBarShowLabel: true,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: t('skills'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="library-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name="library" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -114,8 +141,8 @@ export default function TabLayout() {
         name="add"
         options={{
           title: t('add'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size + 4} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name="add-circle" size={getIconSize() + 2} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -130,8 +157,8 @@ export default function TabLayout() {
         name="community"
         options={{
           title: t('community'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name="people" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -140,8 +167,8 @@ export default function TabLayout() {
         name="analytics"
         options={{
           title: t('analytics'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="analytics-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name="analytics" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -150,8 +177,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: t('profile'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name="person" size={getIconSize()} color={color} />
           ),
           tabBarButton: (props) => <HapticTab {...props} />,
         }}
@@ -159,3 +186,4 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+

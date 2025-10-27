@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
-import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -28,21 +28,25 @@ export const AddArtifactModal = ({ visible, onClose, skillId }: AddArtifactModal
 
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please grant permission to access your photos.');
-        return;
+      // On web, we don't need to request permissions in the same way
+      if (Platform.OS !== 'web') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Required', 'Please grant permission to access your photos.');
+          return;
+        }
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsEditing: Platform.OS !== 'web', // Disable editing on web for better compatibility
+        aspect: Platform.OS === 'web' ? undefined : [4, 3],
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]) {
-        setSelectedImage(result.assets[0].uri);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setSelectedImage(asset.uri);
         setFileType(ArtifactFileType.IMAGE);
       }
     } catch (error) {
@@ -114,15 +118,21 @@ export const AddArtifactModal = ({ visible, onClose, skillId }: AddArtifactModal
   };
 
   const showImageOptions = () => {
-    Alert.alert(
-      'Add Artifact',
-      'Choose an option',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Take Photo', onPress: takePhoto },
-        { text: 'Choose from Library', onPress: pickImage },
-      ]
-    );
+    if (Platform.OS === 'web') {
+      // On web, just open the file picker directly
+      pickImage();
+    } else {
+      // On native, show options
+      Alert.alert(
+        'Add Artifact',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Take Photo', onPress: takePhoto },
+          { text: 'Choose from Library', onPress: pickImage },
+        ]
+      );
+    }
   };
 
   return (

@@ -1,7 +1,32 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 export class BiometricService {
+  // Platform-aware storage helpers
+  private static async getItem(key: string): Promise<string | null> {
+    if (Platform.OS === 'web') {
+      return await AsyncStorage.getItem(key);
+    }
+    return await SecureStore.getItemAsync(key);
+  }
+
+  private static async setItem(key: string, value: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(key, value);
+    } else {
+      await SecureStore.setItemAsync(key, value);
+    }
+  }
+
+  private static async deleteItem(key: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.removeItem(key);
+    } else {
+      await SecureStore.deleteItemAsync(key);
+    }
+  }
   private static readonly BIOMETRIC_ENABLED_KEY = 'biometric_enabled';
   private static readonly STORED_EMAIL_KEY = 'stored_email';
   private static readonly STORED_PASSWORD_KEY = 'stored_password';
@@ -37,7 +62,7 @@ export class BiometricService {
    */
   static async isBiometricEnabled(): Promise<boolean> {
     try {
-      const enabled = await SecureStore.getItemAsync(this.BIOMETRIC_ENABLED_KEY);
+      const enabled = await this.getItem(this.BIOMETRIC_ENABLED_KEY);
       return enabled === 'true';
     } catch (error) {
       console.error('Error checking biometric status:', error);
@@ -50,7 +75,7 @@ export class BiometricService {
    */
   static async enableBiometric(): Promise<void> {
     try {
-      await SecureStore.setItemAsync(this.BIOMETRIC_ENABLED_KEY, 'true');
+      await this.setItem(this.BIOMETRIC_ENABLED_KEY, 'true');
     } catch (error) {
       console.error('Error enabling biometric:', error);
       throw error;
@@ -62,7 +87,7 @@ export class BiometricService {
    */
   static async disableBiometric(): Promise<void> {
     try {
-      await SecureStore.setItemAsync(this.BIOMETRIC_ENABLED_KEY, 'false');
+      await this.setItem(this.BIOMETRIC_ENABLED_KEY, 'false');
     } catch (error) {
       console.error('Error disabling biometric:', error);
       throw error;
@@ -155,8 +180,8 @@ export class BiometricService {
   static async storeCredentials(email: string, password: string): Promise<void> {
     try {
       await Promise.all([
-        SecureStore.setItemAsync(this.STORED_EMAIL_KEY, email),
-        SecureStore.setItemAsync(this.STORED_PASSWORD_KEY, password),
+        this.setItem(this.STORED_EMAIL_KEY, email),
+        this.setItem(this.STORED_PASSWORD_KEY, password),
       ]);
     } catch (error) {
       console.error('Error storing credentials:', error);
@@ -170,8 +195,8 @@ export class BiometricService {
   static async getStoredCredentials(): Promise<{ email: string; password: string } | null> {
     try {
       const [email, password] = await Promise.all([
-        SecureStore.getItemAsync(this.STORED_EMAIL_KEY),
-        SecureStore.getItemAsync(this.STORED_PASSWORD_KEY),
+        this.getItem(this.STORED_EMAIL_KEY),
+        this.getItem(this.STORED_PASSWORD_KEY),
       ]);
 
       if (email && password) {
@@ -190,8 +215,8 @@ export class BiometricService {
   static async clearStoredCredentials(): Promise<void> {
     try {
       await Promise.all([
-        SecureStore.deleteItemAsync(this.STORED_EMAIL_KEY),
-        SecureStore.deleteItemAsync(this.STORED_PASSWORD_KEY),
+        this.deleteItem(this.STORED_EMAIL_KEY),
+        this.deleteItem(this.STORED_PASSWORD_KEY),
       ]);
     } catch (error) {
       console.error('Error clearing credentials:', error);

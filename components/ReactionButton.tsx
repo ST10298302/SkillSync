@@ -12,6 +12,7 @@ interface ReactionButtonProps {
   skillId: string;
   initialReaction?: ReactionType;
   reactionCount: number;
+  onReactionChange?: () => void;
 }
 
 const reactionTypes = [
@@ -22,7 +23,7 @@ const reactionTypes = [
   { type: 'motivate' as ReactionType, icon: 'rocket', label: 'Motivate', emoji: '🚀' },
 ];
 
-export const ReactionButton = ({ skillId, initialReaction, reactionCount }: ReactionButtonProps) => {
+export const ReactionButton = ({ skillId, initialReaction, reactionCount, onReactionChange }: ReactionButtonProps) => {
   const { addReaction, removeReaction } = useEnhancedSkills();
   const [currentReaction, setCurrentReaction] = useState<ReactionType | undefined>(initialReaction);
   const [showPicker, setShowPicker] = useState(false);
@@ -39,6 +40,7 @@ export const ReactionButton = ({ skillId, initialReaction, reactionCount }: Reac
         setCurrentReaction(reactionType);
       }
       setShowPicker(false);
+      onReactionChange?.();
     } catch (error) {
       console.error('Failed to update reaction:', error);
     }

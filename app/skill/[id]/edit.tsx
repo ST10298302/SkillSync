@@ -351,9 +351,14 @@ export default function EditSkill() {
                           style={styles.pickerButton}
                           onPress={() => setCategoryId(category.id)}
                         >
-                          <Text style={[styles.pickerText, { color: categoryId === category.id ? themeColors.accent : themeColors.text }]}>
-                            {category.name}
-                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            {category.icon && (
+                              <Text style={{ fontSize: 18 }}>{category.icon}</Text>
+                            )}
+                            <Text style={[styles.pickerText, { color: categoryId === category.id ? themeColors.accent : themeColors.text }]}>
+                              {category.name}
+                            </Text>
+                          </View>
                         </TouchableOpacity>
                       ))}
                     </View>

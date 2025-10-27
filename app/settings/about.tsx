@@ -15,6 +15,7 @@ import {
 
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 /**
@@ -23,6 +24,7 @@ import { useTheme } from '../../context/ThemeContext';
  */
 export default function About() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
@@ -523,18 +525,18 @@ export default function About() {
             >
               <Ionicons name="arrow-back" size={24} color={themeColors.text} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>About SkillSync</Text>
+            <Text style={styles.headerTitle}>{t('aboutSkillSync')}</Text>
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.appInfoContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <Text style={styles.appName}>{appInfo.name}</Text>
-          <Text style={styles.appVersion}>Version {appInfo.version} (Build {appInfo.buildNumber})</Text>
+          <Text style={styles.appVersion}>{t('version')} {appInfo.version} (Build {appInfo.buildNumber})</Text>
           <Text style={styles.appDescription}>{appInfo.description}</Text>
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Our Team</Text>
+          <Text style={styles.sectionTitle}>{t('features')}</Text>
           
           <View style={styles.card}>
             <View style={styles.teamGrid}>
@@ -546,7 +548,7 @@ export default function About() {
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Key Features</Text>
+          <Text style={styles.sectionTitle}>{t('ourTeam')}</Text>
           
           <View style={styles.featuresGrid}>
             {appInfo.features.map((feature, index) => (
@@ -556,45 +558,81 @@ export default function About() {
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Legal & Privacy</Text>
+          <Text style={styles.sectionTitle}>{t('legal')}</Text>
           
           <View style={styles.card}>
-            {legalLinks.map((link, index) => (
-              <LegalItem
-                key={index}
-                title={link.title}
-                subtitle={link.subtitle}
-                icon={link.icon}
-                index={index}
-                isExpanded={expandedLegal === index}
-              />
-            ))}
+            {legalLinks.map((link, index) => {
+              let titleKey = '';
+              let subtitleKey = '';
+              if (link.title === 'Privacy Policy') {
+                titleKey = 'privacyPolicy';
+                subtitleKey = 'howWeProtectYourData';
+              } else if (link.title === 'Terms of Service') {
+                titleKey = 'termsOfService';
+                subtitleKey = 'ourTermsAndConditions';
+              } else if (link.title === 'Cookie Policy') {
+                titleKey = 'cookiePolicy';
+                subtitleKey = 'howWeUseCookies';
+              } else if (link.title === 'Data Processing') {
+                titleKey = 'dataProcessing';
+                subtitleKey = 'howWeProcessYourData';
+              }
+              return (
+                <AboutItem
+                  key={index}
+                  title={titleKey ? t(titleKey) : link.title}
+                  subtitle={subtitleKey ? t(subtitleKey) : link.subtitle}
+                  icon={link.icon}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    Linking.openURL(link.url);
+                  }}
+                />
+              );
+            })}
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Connect With Us</Text>
+          <Text style={styles.sectionTitle}>{t('connectWithUs')}</Text>
           
           <View style={styles.card}>
-            {socialLinks.map((link, index) => (
-              <AboutItem
-                key={index}
-                title={link.title}
-                subtitle={link.subtitle}
-                icon={link.icon}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  Linking.openURL(link.url);
-                }}
-              />
-            ))}
+            {socialLinks.map((link, index) => {
+              let titleKey = '';
+              let subtitleKey = '';
+              if (link.title === 'Website') {
+                titleKey = 'website';
+                subtitleKey = 'visitOurWebsite';
+              } else if (link.title === 'Twitter') {
+                titleKey = 'twitter';
+                subtitleKey = 'followUsOnTwitter';
+              } else if (link.title === 'GitHub') {
+                titleKey = 'github';
+                subtitleKey = 'viewOurOpenSourceProjects';
+              } else if (link.title === 'Discord') {
+                titleKey = 'discord';
+                subtitleKey = 'joinOurCommunity';
+              }
+              return (
+                <AboutItem
+                  key={index}
+                  title={titleKey ? t(titleKey) : link.title}
+                  subtitle={subtitleKey ? t(subtitleKey) : link.subtitle}
+                  icon={link.icon}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    Linking.openURL(link.url);
+                  }}
+                />
+              );
+            })}
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.footer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <Text style={styles.footerText}>
-            Made with ❤️ by the SkillSync team{'\n'}
-            © 2025 SkillSync. All rights reserved.
+            {t('madeWith')}{'\n'}
+            {t('allRightsReserved')}
           </Text>
         </Animated.View>
       </ScrollView>

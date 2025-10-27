@@ -4,17 +4,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Alert,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 import UniformLayout from '../../components/UniformLayout';
@@ -214,34 +214,39 @@ export default function NewSkill() {
                   )}
                 </View>
 
-                {/* Description Input */}
-                <View style={styles.inputField}>
-                  <Text style={[styles.inputLabel, { color: themeColors.text }]}>{t('description')} (Optional)</Text>
-                  <View style={[styles.inputContainer, errors.description && styles.inputContainerError,
-                    { backgroundColor: themeColors.backgroundSecondary, borderColor: errors.description ? themeColors.error : themeColors.border }]}>
-                    <TextInput
-                      ref={descriptionInputRef}
-                      style={[styles.input, styles.inputMultiline, { color: themeColors.text }]}
-                      value={description}
-                      onChangeText={setDescription}
-                      placeholder={t('descriptionPlaceholder')}
-                      placeholderTextColor={themeColors.textSecondary}
-                      multiline={true}
-                      autoCapitalize="sentences"
-                      autoCorrect={true}
-                      textAlignVertical="top"
-                      maxLength={500}
-                      returnKeyType="default"
-                      blurOnSubmit={false}
-                    />
-                  </View>
-                  {errors.description && (
-                    <View style={styles.errorContainer}>
-                      <Ionicons name="alert-circle" size={16} color={themeColors.error} />
-                      <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.description}</Text>
-                    </View>
-                  )}
-                </View>
+                                 {/* Description Input */}
+                 <View style={styles.inputField}>
+                   <Text style={[styles.inputLabel, { color: themeColors.text }]}>{t('description')} (Optional)</Text>
+                   <View style={[styles.inputContainer, errors.description && styles.inputContainerError,
+                     { backgroundColor: themeColors.backgroundSecondary, borderColor: errors.description ? themeColors.error : themeColors.border }]}>
+                     <TextInput
+                       ref={descriptionInputRef}
+                       style={[styles.input, styles.inputMultiline, { color: themeColors.text }]}
+                       value={description}
+                       onChangeText={setDescription}
+                       placeholder={t('descriptionPlaceholder')}
+                       placeholderTextColor={themeColors.textSecondary}
+                       multiline={true}
+                       autoCapitalize="sentences"
+                       autoCorrect={true}
+                       textAlignVertical="top"
+                       maxLength={500}
+                       returnKeyType="default"
+                       blurOnSubmit={false}
+                     />
+                   </View>
+                   <View style={styles.characterCount}>
+                     <Text style={[styles.characterCountText, { color: themeColors.textSecondary }]}>
+                       {description.length}/500 characters
+                     </Text>
+                   </View>
+                   {errors.description && (
+                     <View style={styles.errorContainer}>
+                       <Ionicons name="alert-circle" size={16} color={themeColors.error} />
+                       <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.description}</Text>
+                     </View>
+                   )}
+                 </View>
 
                 {/* Add Visibility Selector */}
                 <View style={styles.section}>
@@ -267,7 +272,7 @@ export default function NewSkill() {
                       >
                         <Ionicons
                           name={option.icon as any}
-                          size={20}
+                          size={24}
                           color={visibility === option.value ? themeColors.accent : themeColors.textSecondary}
                         />
                         <Text
@@ -281,15 +286,9 @@ export default function NewSkill() {
                       </TouchableOpacity>
                     ))}
                   </View>
-                </View>
+                                 </View>
 
-                <View style={styles.characterCount}>
-                  <Text style={[styles.characterCountText, { color: themeColors.textSecondary }]}>
-                    {description.length}/500 characters
-                  </Text>
-                </View>
-
-                <View style={[styles.tipsContainer, { backgroundColor: themeColors.backgroundTertiary }]}>
+                 <View style={[styles.tipsContainer, { backgroundColor: themeColors.backgroundTertiary }]}>
                   <Text style={[styles.tipsTitle, { color: themeColors.text }]}>💡 Tips for success:</Text>
                   <View style={styles.tipItem}>
                     <Ionicons name="checkmark-circle" size={16} color={themeColors.success} />
@@ -448,7 +447,7 @@ const styles = StyleSheet.create({
   },
   characterCount: {
     alignItems: 'flex-end',
-    marginBottom: Spacing.lg,
+    marginTop: Spacing.xs,
   },
   characterCountText: {
     ...Typography.caption,
@@ -540,25 +539,31 @@ const styles = StyleSheet.create({
   },
   visibilityOptions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
     backgroundColor: 'transparent',
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    padding: Spacing.sm,
+    padding: Spacing.xs,
   },
   visibilityOption: {
-    flexDirection: 'row',
+    flex: 1,
+    minWidth: '48%',
+    flexDirection: 'column',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xs,
     borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
   },
   visibilityOptionActive: {
     backgroundColor: 'transparent',
     borderWidth: 1,
   },
   visibilityLabel: {
-    ...Typography.bodySmall,
-    marginLeft: Spacing.sm,
+    ...Typography.caption,
+    textAlign: 'center',
+    fontSize: 12,
   },
 });

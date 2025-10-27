@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
@@ -18,8 +18,17 @@ interface SkillCardProps {
   totalEntries?: number;
   streak?: number;
   current_level?: 'beginner' | 'novice' | 'intermediate' | 'advanced' | 'expert';
+  completed_levels?: string[];
   likes_count?: number;
   comments_count?: number;
+  owner?: {
+    id: string;
+    name: string;
+    email?: string;
+    profile_picture_url?: string;
+  };
+  transparent?: boolean;
+  isCommunityCard?: boolean;
 }
 
 export default function SkillCard({
@@ -34,8 +43,12 @@ export default function SkillCard({
   totalEntries = 0,
   streak = 0,
   current_level,
+  completed_levels = [],
   likes_count,
   comments_count,
+  owner,
+  transparent = false,
+  isCommunityCard = false,
 }: SkillCardProps) {
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
@@ -44,6 +57,10 @@ export default function SkillCard({
   const { translateText, currentLanguage, t } = useLanguage();
   const [translatedName, setTranslatedName] = useState(name);
   const [translatedDescription, setTranslatedDescription] = useState(description || '');
+
+  // Responsive sizing
+  const screenWidth = Dimensions.get('window').width;
+  const isSmall = screenWidth < 375;
 
   // Animation values for interactive feedback and visual effects
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -184,17 +201,17 @@ export default function SkillCard({
 
     // Main card container with border and shadow
     card: {
-      backgroundColor: themeColors.background,
-      borderRadius: BorderRadius.xl,
-      padding: Spacing.lg,
-      marginBottom: Spacing.md,
-      shadowColor: themeColors.shadowMedium,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: themeColors.border,
+      backgroundColor: transparent ? 'transparent' : themeColors.background,
+      borderRadius: transparent ? 0 : BorderRadius.xl,
+      padding: isSmall ? Spacing.md : Spacing.lg,
+      marginBottom: transparent ? 0 : (isSmall ? Spacing.sm : Spacing.md),
+      shadowColor: transparent ? 'transparent' : themeColors.shadowMedium || '#000',
+      shadowOffset: { width: 0, height: transparent ? 0 : 4 },
+      shadowOpacity: transparent ? 0 : 0.15,
+      shadowRadius: transparent ? 0 : 8,
+      elevation: transparent ? 0 : 4,
+      borderWidth: transparent ? 0 : 1,
+      borderColor: transparent ? 'transparent' : themeColors.border,
     },
 
     // Header / Title row
@@ -226,22 +243,24 @@ export default function SkillCard({
       color: themeColors.text,
       marginBottom: Spacing.xs,
       fontWeight: '600',
-      maxWidth: '80%',
+      maxWidth: isSmall ? '85%' : '80%',
+      fontSize: isSmall ? 16 : Typography.h3.fontSize,
     },
     description: {
       ...Typography.bodySmall,
       color: themeColors.textSecondary,
-      lineHeight: 18,
+      lineHeight: isSmall ? 16 : 18,
+      fontSize: isSmall ? 12 : Typography.bodySmall.fontSize,
     },
 
     // Actions
     actions: {
       flexDirection: 'row',
-      gap: Spacing.xs,
+      gap: isSmall ? 4 : Spacing.xs,
     },
     actionButton: {
-      width: 32,
-      height: 32,
+      width: isSmall ? 28 : 32,
+      height: isSmall ? 28 : 32,
       borderRadius: BorderRadius.round,
       backgroundColor: themeColors.backgroundSecondary,
       justifyContent: 'center',
@@ -250,8 +269,8 @@ export default function SkillCard({
       borderColor: themeColors.border,
     },
     editButton: {
-      width: 28,
-      height: 28,
+      width: isSmall ? 24 : 28,
+      height: isSmall ? 24 : 28,
       borderRadius: BorderRadius.round,
       justifyContent: 'center',
       alignItems: 'center',
@@ -259,8 +278,8 @@ export default function SkillCard({
       borderColor: themeColors.accent + '40',
     },
     deleteButton: {
-      width: 28,
-      height: 28,
+      width: isSmall ? 24 : 28,
+      height: isSmall ? 24 : 28,
       borderRadius: BorderRadius.round,
       justifyContent: 'center',
       alignItems: 'center',
@@ -287,12 +306,12 @@ export default function SkillCard({
       fontWeight: '500',
     },
     progressBarContainer: {
-      width: 140,
-      height: 8,
+      width: isSmall ? 100 : 140,
+      height: isSmall ? 6 : 8,
       backgroundColor: themeColors.backgroundSecondary,
       borderRadius: BorderRadius.round,
       overflow: 'hidden',
-      marginLeft: Spacing.sm,
+      marginLeft: isSmall ? Spacing.xs : Spacing.sm,
     },
     // Progress bar fill element (inner bar showing completion)
     progressBar: {
@@ -309,13 +328,13 @@ export default function SkillCard({
     streakContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 8,
-      height: 24,
-      borderRadius: 12,
+      paddingHorizontal: isSmall ? 6 : 8,
+      height: isSmall ? 20 : 24,
+      borderRadius: isSmall ? 10 : 12,
       borderWidth: 1,
       borderColor: accentGold + '40',
-      marginRight: Spacing.xs,
-      gap: 4,
+      marginRight: isSmall ? 4 : Spacing.xs,
+      gap: isSmall ? 2 : 4,
     },
     streakText: {
       ...Typography.caption,
@@ -328,17 +347,21 @@ export default function SkillCard({
       justifyContent: 'space-between',
       alignItems: 'center',
       marginTop: Spacing.sm,
+      flexWrap: 'wrap',
+      gap: isSmall ? 4 : 0,
     },
     stat: { alignItems: 'center' },
     statValue: {
       ...Typography.h4,
       color: themeColors.text,
       fontWeight: '700',
+      fontSize: isSmall ? 14 : Typography.h4.fontSize,
     },
     statLabel: {
       ...Typography.caption,
       color: themeColors.textSecondary,
       marginTop: 2,
+      fontSize: isSmall ? 10 : Typography.caption.fontSize,
     },
     footer: {
       flexDirection: 'row',
@@ -379,19 +402,48 @@ export default function SkillCard({
           {/* Header Section */}
           <View style={styles.header}>
             <View style={styles.titleRow}>
-              <View style={styles.titleContainer}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
-                    {translatedName || ' '}
-                  </Text>
-                  {current_level && (
-                    <LevelBadge level={current_level} size="small" />
-                  )}
-                </View>
+                <View style={styles.titleContainer}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: isSmall ? 4 : 8, flexWrap: 'wrap' }}>
+                    <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={isSmall ? 2 : 1}>
+                      {translatedName || ' '}
+                    </Text>
+                    {current_level && !isSmall && (
+                      <LevelBadge level={current_level} size="small" />
+                    )}
+                    {completed_levels && completed_levels.length > 0 && (
+                      <View style={{
+                        backgroundColor: themeColors.success + '20',
+                        borderWidth: 1,
+                        borderColor: themeColors.success + '40',
+                        borderRadius: BorderRadius.sm,
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                      }}>
+                        <Text style={{
+                          ...Typography.caption,
+                          color: themeColors.success,
+                          fontWeight: '600',
+                          fontSize: 10,
+                        }}>
+                          ✓ {completed_levels.map(level => 
+                            level.charAt(0).toUpperCase() + level.slice(1)
+                          ).join(', ')}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 {!!translatedDescription && (
                   <Text style={styles.description} numberOfLines={2}>
                     {translatedDescription}
                   </Text>
+                )}
+                {owner && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs }}>
+                    <Ionicons name="person-circle-outline" size={14} color={themeColors.textSecondary} />
+                    <Text style={[styles.description, { marginLeft: Spacing.xs }]}>
+                      {owner?.name || owner?.email || 'Unknown'}
+                    </Text>
+                  </View>
                 )}
               </View>
 
@@ -413,31 +465,35 @@ export default function SkillCard({
                   </Animated.View>
                 )}
 
-                <TouchableOpacity
-                  testID="edit-button"
-                  style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
-                  onPress={handleEditPress}
-                  activeOpacity={0.7}
-                  accessible={true}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('editSkill')}
-                >
-                  <Ionicons name="create-outline" size={16} color={themeColors.accent} />
-                </TouchableOpacity>
+                {!isCommunityCard && (
+                  <>
+                    <TouchableOpacity
+                      testID="edit-button"
+                      style={[styles.editButton, { backgroundColor: themeColors.accent + '15' }]}
+                      onPress={handleEditPress}
+                      activeOpacity={0.7}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('editSkill')}
+                    >
+                      <Ionicons name="create-outline" size={16} color={themeColors.accent} />
+                    </TouchableOpacity>
 
-                <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
-                  <TouchableOpacity
-                    testID="delete-button"
-                    style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
-                    onPress={handleDeletePress}
-                    activeOpacity={0.7}
-                    accessible={true}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('deleteSkill')}
-                  >
-                    <Ionicons name="trash-outline" size={16} color={themeColors.error} />
-                  </TouchableOpacity>
-                </Animated.View>
+                    <Animated.View style={{ transform: [{ scale: deleteAnim }] }}>
+                      <TouchableOpacity
+                        testID="delete-button"
+                        style={[styles.deleteButton, { backgroundColor: themeColors.error + '15' }]}
+                        onPress={handleDeletePress}
+                        activeOpacity={0.7}
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('deleteSkill')}
+                      >
+                        <Ionicons name="trash-outline" size={16} color={themeColors.error} />
+                      </TouchableOpacity>
+                    </Animated.View>
+                  </>
+                )}
               </View>
             </View>
 

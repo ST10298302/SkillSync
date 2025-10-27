@@ -14,11 +14,13 @@ import {
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { SupabaseService } from '../../services/supabaseService';
 
 export default function NotificationsSettings() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const { user } = useAuth();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
@@ -348,37 +350,37 @@ export default function NotificationsSettings() {
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Push Notifications</Text>
+          <Text style={styles.sectionTitle}>{t('pushNotifications')}</Text>
           
           <View style={styles.card}>
             <NotificationItem
               id="daily-reminders"
-              title="Daily Reminders"
-              subtitle="Get reminded to practice your skills daily"
+              title={t('dailyReminders')}
+              subtitle={t('getRemindedToPractice')}
               value={notifications.dailyReminders}
               onToggle={() => toggleSwitch('dailyReminders')}
               icon="time-outline"
             />
             <NotificationItem
               id="weekly-reports"
-              title="Weekly Reports"
-              subtitle="Receive weekly progress summaries"
+              title={t('weeklyReports')}
+              subtitle={t('receiveWeeklySummaries')}
               value={notifications.weeklyReports}
               onToggle={() => toggleSwitch('weeklyReports')}
               icon="bar-chart-outline"
             />
             <NotificationItem
               id="skill-completions"
-              title="Skill Completions"
-              subtitle="Celebrate when you complete a skill"
+              title={t('skillCompletions')}
+              subtitle={t('celebrateWhenComplete')}
               value={notifications.skillCompletions}
               onToggle={() => toggleSwitch('skillCompletions')}
               icon="trophy-outline"
             />
             <NotificationItem
               id="streak-alerts"
-              title="Streak Alerts"
-              subtitle="Stay motivated with streak notifications"
+              title={t('streakAlerts')}
+              subtitle={t('stayMotivatedWithStreaks')}
               value={notifications.streakAlerts}
               onToggle={() => toggleSwitch('streakAlerts')}
               icon="flame-outline"
@@ -388,21 +390,21 @@ export default function NotificationsSettings() {
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Email Notifications</Text>
+          <Text style={styles.sectionTitle}>{t('emailNotifications')}</Text>
           
           <View style={styles.card}>
             <NotificationItem
               id="tips-and-tricks"
-              title="Tips & Tricks"
-              subtitle="Receive helpful learning tips via email"
+              title={t('tipsTricks')}
+              subtitle={t('receiveHelpfulTips')}
               value={notifications.tipsAndTricks}
               onToggle={() => toggleSwitch('tipsAndTricks')}
               icon="bulb-outline"
             />
             <NotificationItem
               id="marketing-emails"
-              title="Marketing Emails"
-              subtitle="Get updates about new features and offers"
+              title={t('marketingEmails')}
+              subtitle={t('getUpdatesAboutFeatures')}
               value={notifications.marketingEmails}
               onToggle={() => toggleSwitch('marketingEmails')}
               icon="mail-outline"
@@ -414,7 +416,7 @@ export default function NotificationsSettings() {
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <View style={styles.infoSection}>
             <Text style={styles.infoText}>
-              You can change these settings at any time. Some notifications are essential for app functionality and cannot be disabled.
+              {t('changeSettingsAnyTime')}
             </Text>
           </View>
         </Animated.View>

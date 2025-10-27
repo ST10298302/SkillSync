@@ -1,86 +1,86 @@
 /**
- * Metallic UI Color Palette for SkillSync
- * Supports both light and dark modes, with gradients and semantic roles
+ * Education-Focused Color Palette for SkillSync
+ * Warm, inviting colors optimized for learning and tutoring environments
  */
 
 export const Colors = {
   light: {
-    // Core metallic colors - Futuristic clean white theme
-    background: '#ffffff', // Pure white base
-    backgroundSecondary: '#fafafa', // Very subtle off-white
-    backgroundTertiary: '#f0f0f0', // Light metallic gray
+    // Core educational colors - Warm, inviting tones with metallic feel
+    background: '#fafbfc', // Very soft warm background
+    backgroundSecondary: '#f8f9fa', // Metallic silver-gray for cards
+    backgroundTertiary: '#eef2f6', // Slightly darker metallic tone
     surface: '#ffffff',
-    surfaceShadow: 'inset 0 2px 8px #f5f5f5',
-    border: '#e0e0e0', // Clean metallic border
-    borderSecondary: '#f0f0f0',
-    text: '#000000', // Pure black (maximum contrast)
-    textSecondary: '#4a4a4a', // Medium gray
-    textTertiary: '#7a7a7a',
-    black: '#000000', // Pure black for high contrast
-    accentBlue: '#0066ff', // Futuristic blue
-    accentGold: '#ff9500', // Modern orange-gold
-    accentEmerald: '#00c853', // Vibrant green
-    accent: '#0066ff', // Default accent (futuristic blue)
-    error: '#ff3b30',
-    success: '#00c853',
-    info: '#0066ff',
-    warning: '#ff9500',
-    // Gradients
+    surfaceShadow: 'inset 0 2px 8px #f1f3f5',
+    border: '#e2e8f0', // Metallic border with slight blue tint
+    borderSecondary: '#e8ecf0',
+    text: '#1a1d29', // Rich soft black
+    textSecondary: '#4a5568', // Warm medium gray
+    textTertiary: '#718096',
+    black: '#1a1d29',
+    accentBlue: '#4a90e2', // Softer professional blue
+    accentGold: '#f6ad55', // Warmer, softer amber
+    accentEmerald: '#48bb78', // Softer educational green
+    accent: '#4a90e2', // Default accent (softer blue)
+    error: '#fc8181', // Softer red
+    success: '#48bb78',
+    info: '#4a90e2',
+    warning: '#f6ad55',
+    // Gradients - Warm and educational
     gradient: {
-      background: ['#f5f5f7', '#fafafa'] as const, // Metallic gray gradient
-      primary: ['#3b82f6', '#f59e0b'] as const, // Blue to gold
+      background: ['#3b82f6', '#f59e0b'] as const, // Blue to amber gradient (your original favorite!)
+      primary: ['#3b82f6', '#f59e0b'] as const, // Professional blue to amber
       stats: ['#3b82f6', '#f59e0b'] as const, // For progress/stats
-      surface: ['#fafafa', '#f5f5f7'] as const,
-      accent: ['#3b82f6', '#10b981'] as const,
+      surface: ['#fafbfc', '#ffffff'] as const, // Subtle background to white
+      accent: ['#4facfe', '#00f2fe'] as const, // Cyan accent
     },
     shadow: {
-      light: 'rgba(0,0,0,0.04)', // Very subtle
-      medium: 'rgba(0,0,0,0.08)', // Soft shadow
-      heavy: 'rgba(0,0,0,0.15)', // Defined shadow
+      light: 'rgba(0,0,0,0.03)', // Softer shadows
+      medium: 'rgba(0,0,0,0.06)',
+      heavy: 'rgba(0,0,0,0.12)',
     },
     // Semantic shadow colors as strings for direct use
-    shadowLight: 'rgba(0,0,0,0.04)',
-    shadowMedium: 'rgba(0,0,0,0.08)',
-    shadowHeavy: 'rgba(0,0,0,0.15)',
+    shadowLight: 'rgba(0,0,0,0.03)',
+    shadowMedium: 'rgba(0,0,0,0.06)',
+    shadowHeavy: 'rgba(0,0,0,0.12)',
   },
   dark: {
-    // Core metallic colors - Dark theme with good contrast
-    background: '#0a0e1a', // Almost black background
-    backgroundSecondary: '#111827', // Dark charcoal
-    backgroundTertiary: '#1e293b', // Gunmetal
-    surface: '#111827',
+    // Core educational dark colors - Comfortable dark theme
+    background: '#1a1d24', // Warm dark gray (was almost black)
+    backgroundSecondary: '#232832', // Medium dark gray for cards (was #111827)
+    backgroundTertiary: '#2d333f', // Lighter dark gray
+    surface: '#232832',
     surfaceShadow: '0 1px 12px #000000 inset',
-    border: '#1e293b', // Darker border
-    borderSecondary: 'rgba(255,255,255,0.05)',
+    border: '#373e4d', // Visible border (was #1e293b)
+    borderSecondary: 'rgba(255,255,255,0.08)',
     text: '#f1f5f9', // Bright text
     textSecondary: '#cbd5e1', // Light gray
     textTertiary: '#94a3b8',
-    black: '#ffffff', // Pure white for dark theme (inverted black)
+    black: '#f1f5f9',
     accentBlue: '#60a5fa', // Bright blue
-    accentGold: '#fbbf24', // Bright gold
-    accentEmerald: '#34d399', // Bright emerald
+    accentGold: '#fbbf24', // Bright amber
+    accentEmerald: '#34d399', // Bright green
     accent: '#60a5fa', // Default accent
     error: '#f87171',
     success: '#34d399',
     info: '#60a5fa',
     warning: '#fbbf24',
-    // Gradients
+    // Gradients - Warm dark tones
     gradient: {
-      background: ['#0a0e1a', '#1e293b'] as const, // Very dark gradient
-      primary: ['#1d4ed8', '#f59e0b'] as const, // Darker blue to rich gold
-      stats: ['#1d4ed8', '#f59e0b'] as const, // For progress/stats (darker blue to gold)
-      surface: ['#111827', '#1e293b'] as const,
-      accent: ['#1d4ed8', '#10b981'] as const, // Darker blue accent gradient
+      background: ['#232832', '#2d333f'] as const, // Medium to lighter dark gray
+      primary: ['#1e40af', '#d97706'] as const, // Deep blue to rich amber
+      stats: ['#1e40af', '#d97706'] as const, // Deep blue to amber for progress
+      surface: ['#1a1d24', '#232832'] as const, // Dark to medium dark
+      accent: ['#1e40af', '#059669'] as const, // Deep blue to emerald
     },
     shadow: {
-      light: 'rgba(0,0,0,0.2)', // Dark shadow
-      medium: 'rgba(0,0,0,0.4)', // Medium dark shadow
-      heavy: 'rgba(0,0,0,0.6)', // Heavy shadow
+      light: 'rgba(0,0,0,0.3)', // More visible in dark
+      medium: 'rgba(0,0,0,0.5)',
+      heavy: 'rgba(0,0,0,0.7)',
     },
     // Semantic shadow colors as strings for direct use
-    shadowLight: 'rgba(0,0,0,0.2)',
-    shadowMedium: 'rgba(0,0,0,0.4)',
-    shadowHeavy: 'rgba(0,0,0,0.6)',
+    shadowLight: 'rgba(0,0,0,0.3)',
+    shadowMedium: 'rgba(0,0,0,0.5)',
+    shadowHeavy: 'rgba(0,0,0,0.7)',
   },
 };
 

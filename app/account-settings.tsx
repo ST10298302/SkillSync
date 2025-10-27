@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import {
     Alert,
     Animated,
+    FlatList,
+    Modal,
     Platform,
     ScrollView,
     StyleSheet,
@@ -18,27 +20,48 @@ import ProfilePicture from '../components/ProfilePicture';
 import UniformLayout from '../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { SupabaseService } from '../services/supabaseService';
+import { UserRole } from '../utils/supabase-types';
 
 export default function AccountSettings() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
 
   const [isLoading, setIsLoading] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
-  const [name, setName] = useState('');
+  const [name, setName] = useState(user?.user_metadata?.name || user?.email?.split('@')[0] || '');
+  const [bio, setBio] = useState('');
+  const [role, setRole] = useState<UserRole>(UserRole.LEARNER);
+  const [specializations, setSpecializations] = useState<string[]>([]);
+  const [newSpecialization, setNewSpecialization] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Load profile data
+  // Load user profile data
   React.useEffect(() => {
-    const loadProfileData = async () => {
+    const loadUserProfile = async () => {
       if (user?.id) {
         try {
-          // Load profile picture URL
+          const { supabase } = await import('../utils/supabase');
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          if (data && !error) {
+            setBio(data.bio || '');
+            setRole(data.role || UserRole.LEARNER);
+            setSpecializations(data.tutor_specializations || []);
+          }
+
           const url = await SupabaseService.getProfilePictureUrl(user.id);
           setProfilePictureUrl(url || undefined);
 
@@ -50,14 +73,13 @@ export default function AccountSettings() {
             setName(user?.email?.split('@')[0] || '');
           }
         } catch (error) {
-          console.error('Error loading profile data:', error);
-          setName(user?.email?.split('@')[0] || '');
+          console.error('Error loading profile:', error);
         }
       }
     };
 
-    loadProfileData();
-  }, [user?.id, user?.email]);
+    loadUserProfile();
+  }, [user?.id]);
 
   const handleSaveProfile = async () => {
     if (!user?.id) return;
@@ -66,19 +88,26 @@ export default function AccountSettings() {
       setIsLoading(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-      await SupabaseService.updateUserProfile(user.id, { name });
+      const { supabase } = await import('../utils/supabase');
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name,
+          bio,
+          role,
+          tutor_specializations: role === UserRole.TUTOR ? specializations : [],
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
       setIsEditing(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      Alert.alert('Success', 'Profile updated successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.back()
-        }
-      ]);
+      Alert.alert(t('success'), t('profileUpdatedSuccess'));
     } catch (error) {
       console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      Alert.alert(t('error'), t('updateProfileFailed'));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsLoading(false);
@@ -101,6 +130,34 @@ export default function AccountSettings() {
       }
     }
     setIsEditing(false);
+  };
+
+  const handleAddSpecialization = () => {
+    if (newSpecialization.trim() && !specializations.includes(newSpecialization.trim())) {
+      setSpecializations([...specializations, newSpecialization.trim()]);
+      setNewSpecialization('');
+    }
+  };
+
+  const handleRemoveSpecialization = (index: number) => {
+    setSpecializations(specializations.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoading(true);
+      await SupabaseService.deleteUserAccount(user.id);
+      Alert.alert(t('accountDeleted'), t('accountDeletedSuccess'));
+      router.replace('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      Alert.alert(t('error'), t('deleteAccountFailed'));
+    } finally {
+      setIsLoading(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -284,6 +341,87 @@ export default function AccountSettings() {
     disabledButton: {
       opacity: 0.5,
     },
+    specializationItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: Spacing.sm,
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.sm,
+      marginBottom: Spacing.xs,
+    },
+    specializationText: {
+      ...Typography.body,
+      color: themeColors.text,
+    },
+    addSpecializationButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: Spacing.md,
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.md,
+      marginTop: Spacing.sm,
+    },
+    addSpecializationText: {
+      ...Typography.bodySmall,
+      color: themeColors.textSecondary,
+      marginLeft: Spacing.xs,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: themeColors.background,
+      borderRadius: BorderRadius.xl,
+      padding: Spacing.xl,
+      minWidth: 300,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 12,
+    },
+    modalTitle: {
+      ...Typography.h2,
+      color: themeColors.text,
+      marginBottom: Spacing.lg,
+      textAlign: 'center',
+    },
+    modalText: {
+      ...Typography.body,
+      color: themeColors.textSecondary,
+      marginBottom: Spacing.lg,
+      textAlign: 'center',
+    },
+    modalButton: {
+      padding: Spacing.md,
+      borderRadius: BorderRadius.md,
+      marginBottom: Spacing.sm,
+      backgroundColor: themeColors.backgroundSecondary,
+    },
+    modalButtonActive: {
+      backgroundColor: themeColors.accent,
+    },
+    modalButtonSecondary: {
+      backgroundColor: themeColors.backgroundSecondary,
+    },
+    modalButtonDanger: {
+      backgroundColor: themeColors.error || '#ef4444',
+    },
+    modalButtonText: {
+      ...Typography.body,
+      color: themeColors.text,
+      textAlign: 'center',
+      fontWeight: '600',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: Spacing.md,
+    },
   });
 
   return (
@@ -306,15 +444,15 @@ export default function AccountSettings() {
               <Ionicons name="arrow-back" size={24} color={themeColors.text} />
             </TouchableOpacity>
             <View style={styles.headerContent}>
-              <Text style={styles.headerTitle}>Account Settings</Text>
-              <Text style={styles.headerSubtitle}>Manage your profile and account information</Text>
+              <Text style={styles.headerTitle}>{t('accountSettings')}</Text>
+              <Text style={styles.headerSubtitle}>{t('manageAccountInfo')}</Text>
             </View>
           </View>
         </Animated.View>
 
         {/* Profile Picture Section */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Profile Picture</Text>
+          <Text style={styles.sectionTitle}>{t('profilePicture')}</Text>
           <View style={styles.card}>
             <View style={styles.profileSection}>
               <View style={styles.profilePictureContainer}>
@@ -327,7 +465,7 @@ export default function AccountSettings() {
                 />
               </View>
               <Text style={styles.profilePictureLabel}>
-                Tap to change your profile picture
+                {t('tapToChangeProfilePicture')}
               </Text>
             </View>
           </View>
@@ -335,11 +473,11 @@ export default function AccountSettings() {
 
         {/* Profile Information Section */}
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>Profile Information</Text>
+          <Text style={styles.sectionTitle}>{t('profileInformation')}</Text>
           <View style={styles.card}>
             <View style={styles.formSection}>
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Display Name</Text>
+                <Text style={styles.formLabel}>{t('displayName')}</Text>
                 <TextInput
                   style={[
                     styles.formInput,
@@ -347,15 +485,82 @@ export default function AccountSettings() {
                   ]}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Enter your display name"
+                  placeholder={t('enterDisplayName')}
                   placeholderTextColor={themeColors.textSecondary}
                   editable={isEditing}
                 />
               </View>
+              {isEditing && (
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>{t('role')}</Text>
+                  <TouchableOpacity
+                    style={[styles.formInput, styles.formInputDisabled]}
+                    onPress={() => setShowRoleModal(true)}
+                  >
+                    <Text style={styles.emailValue}>{role}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {isEditing && (
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>{t('bio')}</Text>
+                  <TextInput
+                    style={[
+                      styles.formInput,
+                      isEditing ? styles.formInputFocused : styles.formInputDisabled
+                    ]}
+                    value={bio}
+                    onChangeText={setBio}
+                    placeholder={t('enterBio')}
+                    placeholderTextColor={themeColors.textSecondary}
+                    editable={isEditing}
+                  />
+                </View>
+              )}
+              {isEditing && (
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>{t('tutorSpecializations')}</Text>
+                  <FlatList
+                    data={specializations}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.specializationItem}>
+                        <Text style={styles.specializationText}>{item}</Text>
+                        <TouchableOpacity onPress={() => handleRemoveSpecialization(index)}>
+                          <Ionicons name="close" size={16} color={themeColors.textSecondary} />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    ListEmptyComponent={() => (
+                      <TouchableOpacity
+                        style={styles.addSpecializationButton}
+                        onPress={() => setNewSpecialization('')}
+                      >
+                        <Ionicons name="add-circle" size={20} color={themeColors.textSecondary} />
+                        <Text style={styles.addSpecializationText}>{t('addSpecialization')}</Text>
+                      </TouchableOpacity>
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                  />
+                  {isEditing && (
+                    <View style={styles.formGroup}>
+                      <TextInput
+                        style={styles.formInput}
+                        value={newSpecialization}
+                        onChangeText={setNewSpecialization}
+                        placeholder={t('addNewSpecialization')}
+                        placeholderTextColor={themeColors.textSecondary}
+                      />
+                      <TouchableOpacity onPress={handleAddSpecialization}>
+                        <Ionicons name="add-circle" size={20} color={themeColors.accent} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
 
             <View style={styles.emailSection}>
-              <Text style={styles.emailLabel}>Email Address</Text>
+              <Text style={styles.emailLabel}>{t('emailAddress')}</Text>
               <Text style={styles.emailValue}>{user?.email || 'No email'}</Text>
             </View>
 
@@ -366,7 +571,7 @@ export default function AccountSettings() {
                   onPress={handleCancelEdit}
                   disabled={isLoading}
                 >
-                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                  <Text style={styles.secondaryButtonText}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[
@@ -378,7 +583,7 @@ export default function AccountSettings() {
                   disabled={isLoading}
                 >
                   <Text style={styles.primaryButtonText}>
-                    {isLoading ? 'Saving...' : 'Save Changes'}
+                    {isLoading ? t('saving') : t('saveChanges')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -393,13 +598,112 @@ export default function AccountSettings() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   }}
                 >
-                  <Text style={styles.primaryButtonText}>Edit Profile</Text>
+                  <Text style={styles.primaryButtonText}>{t('editProfile')}</Text>
                 </TouchableOpacity>
               </View>
             )}
           </View>
         </Animated.View>
+
+        {/* Delete Account Section */}
+        <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          <Text style={styles.sectionTitle}>{t('dangerZone')}</Text>
+          <View style={styles.card}>
+            <View style={styles.formSection}>
+              <TouchableOpacity
+                style={[styles.button, styles.secondaryButton]}
+                onPress={() => setShowDeleteConfirm(true)}
+                disabled={isLoading}
+              >
+                <Text style={styles.secondaryButtonText}>{t('deleteAccount')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Animated.View>
       </ScrollView>
+
+      {/* Role Modal */}
+      <Modal
+        visible={showRoleModal}
+        onRequestClose={() => setShowRoleModal(false)}
+        transparent={true}
+        animationType="fade"
+      >
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          onPress={() => setShowRoleModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{t('selectRole')}</Text>
+              <TouchableOpacity
+                style={[styles.modalButton, role === UserRole.LEARNER && styles.modalButtonActive]}
+                onPress={() => {
+                  setRole(UserRole.LEARNER);
+                  setShowRoleModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>{t('learner')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, role === UserRole.TUTOR && styles.modalButtonActive]}
+                onPress={() => {
+                  setRole(UserRole.TUTOR);
+                  setShowRoleModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>{t('tutor')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, role === UserRole.ADMIN && styles.modalButtonActive]}
+                onPress={() => {
+                  setRole(UserRole.ADMIN);
+                  setShowRoleModal(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>{t('admin')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteConfirm}
+        onRequestClose={() => setShowDeleteConfirm(false)}
+        transparent={true}
+        animationType="fade"
+      >
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          onPress={() => setShowDeleteConfirm(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{t('confirmDeletion')}</Text>
+              <Text style={styles.modalText}>
+                {t('deleteAccountConfirmation')}
+              </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonSecondary]}
+                  onPress={() => setShowDeleteConfirm(false)}
+                >
+                  <Text style={styles.modalButtonText}>{t('cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonDanger]}
+                  onPress={handleDeleteAccount}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.modalButtonText}>{t('delete')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </UniformLayout>
   );
 }
