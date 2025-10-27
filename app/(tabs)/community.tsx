@@ -234,21 +234,23 @@ export default function CommunityScreen() {
             <Text style={[styles.ownSkillText, { color: themeColors.accent }]}>Your Skill</Text>
           </View>
         )}
-                 <SkillCard
-           id={skill.id}
-           name={skill.name || 'Unnamed Skill'}
-           progress={skill.progress || 0}
-           description={skill.description || ''}
-           onPress={() => {}}
-           onEdit={() => {}}
-           onDelete={() => {}}
-           totalEntries={skill.skill_entries?.length || 0}
-           streak={skill.streak || 0}
-           current_level={skill.current_level}
-           likes_count={skill.likes_count || 0}
-           comments_count={skill.comments_count || 0}
-           owner={(skill as any).owner || null}
-         />
+                 <TouchableOpacity onPress={() => router.push(`/skill/${skill.id}`)}>
+           <SkillCard
+             id={skill.id}
+             name={skill.name || 'Unnamed Skill'}
+             progress={skill.progress || 0}
+             description={skill.description || ''}
+             onPress={() => router.push(`/skill/${skill.id}`)}
+             onEdit={() => {}}
+             onDelete={() => {}}
+             totalEntries={skill.skill_entries?.length || 0}
+             streak={skill.streak || 0}
+             current_level={skill.current_level}
+             likes_count={skill.likes_count || 0}
+             comments_count={skill.comments_count || 0}
+             owner={(skill as any).owner || null}
+           />
+         </TouchableOpacity>
                    <View style={styles.skillActionsContainer}>
             <View style={styles.skillActionsRow}>
               <TouchableOpacity
@@ -310,14 +312,11 @@ export default function CommunityScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={[styles.title, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>
-          {activeSubTab === 'skills' ? 'Community Skills' : 'My Friends'}
-        </Text>
-        <Text style={[styles.subtitle, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>
-          {activeSubTab === 'skills' ? 'Discover and learn from others' : 'Manage your connections'}
-        </Text>
+                 <Text style={[styles.title, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>
+           {activeSubTab === 'skills' ? 'Community Skills' : 'My Friends'}
+         </Text>
 
-        {/* Sub-tabs */}
+         {/* Sub-tabs */}
         <View style={styles.subTabContainer}>
           <TouchableOpacity
             style={[styles.subTab, activeSubTab === 'skills' && styles.subTabActive]}
@@ -481,14 +480,8 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.h1,
-    marginBottom: Spacing.xs,
+    marginBottom: isMobile ? Spacing.sm : Spacing.md,
     fontSize: isMobile ? 24 : 28,
-  },
-  subtitle: {
-    ...Typography.body,
-    opacity: 0.9,
-    marginBottom: isMobile ? Spacing.md : Spacing.lg,
-    fontSize: isMobile ? 13 : 15,
   },
   searchContainer: {
     flexDirection: 'row',
