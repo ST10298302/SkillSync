@@ -60,10 +60,10 @@ export default function TabLayout() {
 
   const themeColors = Colors[safeTheme];
   
-  // Glass-morphism background colors
+  // Glass-morphism background colors with gradient
   const glassBackground = safeTheme === 'dark' 
-    ? 'rgba(26, 29, 36, 0.85)' 
-    : 'rgba(255, 255, 255, 0.8)';
+    ? 'rgba(26, 29, 36, 0.95)' 
+    : 'rgba(248, 249, 250, 0.95)';
 
   return (
     <Tabs

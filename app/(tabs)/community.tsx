@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -461,42 +462,54 @@ export default function CommunityScreen() {
   );
 }
 
+const screenWidth = Dimensions.get('window').width;
+const isMobile = screenWidth < 768;
+
 const styles = StyleSheet.create({
   header: {
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
+    paddingTop: isMobile ? Spacing.lg : Spacing.xl,
+    paddingBottom: isMobile ? Spacing.md : Spacing.lg,
+    paddingHorizontal: isMobile ? Spacing.md : Spacing.lg,
   },
   title: {
     ...Typography.h1,
     marginBottom: Spacing.xs,
+    fontSize: isMobile ? 24 : 28,
   },
   subtitle: {
     ...Typography.body,
     opacity: 0.9,
-    marginBottom: Spacing.lg,
+    marginBottom: isMobile ? Spacing.md : Spacing.lg,
+    fontSize: isMobile ? 13 : 15,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    marginBottom: Spacing.md,
-    gap: Spacing.sm,
+    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
+    paddingVertical: isMobile ? 10 : Spacing.sm,
+    marginBottom: isMobile ? Spacing.sm : Spacing.md,
+    gap: isMobile ? 8 : Spacing.sm,
+    minHeight: isMobile ? 44 : 48,
   },
   searchInput: {
     flex: 1,
     ...Typography.body,
+    fontSize: isMobile ? 15 : 16,
   },
   filterContainer: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: isMobile ? 6 : Spacing.sm,
+    marginBottom: isMobile ? Spacing.sm : 0,
   },
   filterButton: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
+    flex: 1,
+    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
+    paddingVertical: isMobile ? 10 : Spacing.xs,
     borderRadius: BorderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: isMobile ? 36 : 32,
   },
   filterButtonActive: {
     backgroundColor: Colors.light.accent,
@@ -506,10 +519,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   listContent: {
-    padding: Spacing.lg,
+    padding: isMobile ? Spacing.md : Spacing.lg,
+    paddingBottom: isMobile ? Spacing.xl + 20 : Spacing.xl,
   },
   skillContainer: {
-    marginBottom: Spacing.lg,
+    marginBottom: isMobile ? Spacing.md : Spacing.lg,
   },
   ownSkillBadge: {
     flexDirection: 'row',
@@ -527,19 +541,21 @@ const styles = StyleSheet.create({
   },
   skillActions: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: isMobile ? 8 : Spacing.sm,
     marginTop: -Spacing.md,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
+    marginBottom: isMobile ? Spacing.xs : 0,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.sm,
+    paddingVertical: isMobile ? 12 : Spacing.sm,
     borderRadius: BorderRadius.md,
-    gap: Spacing.xs,
+    gap: isMobile ? 6 : Spacing.xs,
     backgroundColor: 'rgba(255,255,255,0.1)',
+    minHeight: isMobile ? 40 : 36,
   },
   followButton: {
     // Styled via backgroundColor in actionButton
@@ -583,19 +599,21 @@ const styles = StyleSheet.create({
   },
   subTabContainer: {
     flexDirection: 'row',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.md,
+    paddingHorizontal: isMobile ? Spacing.md : Spacing.lg,
+    paddingVertical: isMobile ? Spacing.sm : Spacing.md,
+    gap: isMobile ? Spacing.sm : Spacing.md,
+    marginTop: isMobile ? Spacing.sm : 0,
   },
   subTab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.sm,
+    paddingVertical: isMobile ? 12 : Spacing.sm,
     borderRadius: BorderRadius.md,
-    gap: Spacing.xs,
+    gap: isMobile ? 6 : Spacing.xs,
     backgroundColor: 'rgba(255,255,255,0.1)',
+    minHeight: isMobile ? 44 : 40,
   },
   subTabActive: {
     backgroundColor: Colors.light.accent,
