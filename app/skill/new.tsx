@@ -4,23 +4,24 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    Alert,
+    Animated,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSkills } from '../../context/SkillsContext';
+import { useTheme } from '../../context/ThemeContext';
 import { SkillVisibility } from '../../utils/supabase-types';
 
 /**
@@ -30,6 +31,9 @@ export default function NewSkill() {
   const router = useRouter();
   const { addSkill } = useSkills();
   const { t } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
+  const themeColors = Colors[safeTheme] || Colors.light;
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -148,7 +152,7 @@ export default function NewSkill() {
             {/* Header */}
             <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <LinearGradient
-                colors={Colors.light.gradient.primary as any}
+                colors={themeColors.gradient.primary as any}
                 style={styles.headerGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -158,12 +162,12 @@ export default function NewSkill() {
                     style={styles.backButton}
                     onPress={handleCancel}
                   >
-                    <Ionicons name="close" size={24} color={Colors.light.text} />
+                    <Ionicons name="close" size={24} color={themeColors.text} />
                   </TouchableOpacity>
-                  <View style={styles.headerInfo}>
-                    <Text style={styles.headerTitle}>{t('addNewSkill')}</Text>
-                    <Text style={styles.headerSubtitle}>{t('trackYourLearningProgress')}</Text>
-                  </View>
+                <View style={styles.headerInfo}>
+                  <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t('addNewSkill')}</Text>
+                  <Text style={[styles.headerSubtitle, { color: themeColors.textSecondary }]}>{t('trackYourLearningProgress')}</Text>
+                </View>
                 </View>
               </LinearGradient>
             </Animated.View>
@@ -171,29 +175,30 @@ export default function NewSkill() {
             {/* Form */}
             <Animated.View style={[styles.formSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <LinearGradient
-                colors={Colors.light.gradient.background as any}
-                style={styles.formCard}
+                colors={themeColors.gradient.background as any}
+                style={[styles.formCard, { borderColor: themeColors.border }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
                 {errors.general && (
-                  <View style={styles.generalErrorContainer}>
-                    <Ionicons name="alert-circle" size={20} color={Colors.light.error} />
-                    <Text style={styles.generalErrorText}>{errors.general}</Text>
+                  <View style={[styles.generalErrorContainer, { backgroundColor: themeColors.error + '10' }]}>
+                    <Ionicons name="alert-circle" size={20} color={themeColors.error} />
+                    <Text style={[styles.generalErrorText, { color: themeColors.error }]}>{errors.general}</Text>
                   </View>
                 )}
 
                 {/* Skill Name Input */}
                 <View style={styles.inputField}>
-                  <Text style={styles.inputLabel}>{t('skillName')}</Text>
-                  <View style={[styles.inputContainer, errors.name && styles.inputContainerError]}>
+                  <Text style={[styles.inputLabel, { color: themeColors.text }]}>{t('skillName')}</Text>
+                  <View style={[styles.inputContainer, errors.name && styles.inputContainerError, 
+                    { backgroundColor: themeColors.backgroundSecondary, borderColor: errors.name ? themeColors.error : themeColors.border }]}>
                     <TextInput
                       ref={nameInputRef}
-                      style={styles.input}
+                      style={[styles.input, { color: themeColors.text }]}
                       value={name}
                       onChangeText={setName}
                       placeholder={t('skillNamePlaceholder')}
-                      placeholderTextColor={Colors.light.textSecondary}
+                      placeholderTextColor={themeColors.textSecondary}
                       autoCapitalize="words"
                       autoCorrect={false}
                       returnKeyType="next"
@@ -203,23 +208,24 @@ export default function NewSkill() {
                   </View>
                   {errors.name && (
                     <View style={styles.errorContainer}>
-                      <Ionicons name="alert-circle" size={16} color={Colors.light.error} />
-                      <Text style={styles.errorText}>{errors.name}</Text>
+                      <Ionicons name="alert-circle" size={16} color={themeColors.error} />
+                      <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.name}</Text>
                     </View>
                   )}
                 </View>
 
                 {/* Description Input */}
                 <View style={styles.inputField}>
-                  <Text style={styles.inputLabel}>{t('description')} (Optional)</Text>
-                  <View style={[styles.inputContainer, errors.description && styles.inputContainerError]}>
+                  <Text style={[styles.inputLabel, { color: themeColors.text }]}>{t('description')} (Optional)</Text>
+                  <View style={[styles.inputContainer, errors.description && styles.inputContainerError,
+                    { backgroundColor: themeColors.backgroundSecondary, borderColor: errors.description ? themeColors.error : themeColors.border }]}>
                     <TextInput
                       ref={descriptionInputRef}
-                      style={[styles.input, styles.inputMultiline]}
+                      style={[styles.input, styles.inputMultiline, { color: themeColors.text }]}
                       value={description}
                       onChangeText={setDescription}
                       placeholder={t('descriptionPlaceholder')}
-                      placeholderTextColor={Colors.light.textSecondary}
+                      placeholderTextColor={themeColors.textSecondary}
                       multiline={true}
                       autoCapitalize="sentences"
                       autoCorrect={true}
@@ -231,19 +237,19 @@ export default function NewSkill() {
                   </View>
                   {errors.description && (
                     <View style={styles.errorContainer}>
-                      <Ionicons name="alert-circle" size={16} color={Colors.light.error} />
-                      <Text style={styles.errorText}>{errors.description}</Text>
+                      <Ionicons name="alert-circle" size={16} color={themeColors.error} />
+                      <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.description}</Text>
                     </View>
                   )}
                 </View>
 
                 {/* Add Visibility Selector */}
                 <View style={styles.section}>
-                  <Text style={[styles.label, { color: Colors.light.text }]}>Visibility</Text>
-                  <Text style={[styles.description, { color: Colors.light.textSecondary }]}>
+                  <Text style={[styles.label, { color: themeColors.text }]}>Visibility</Text>
+                  <Text style={[styles.description, { color: themeColors.textSecondary }]}>
                     Who can see this skill?
                   </Text>
-                  <View style={styles.visibilityOptions}>
+                  <View style={[styles.visibilityOptions, { backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}>
                     {[
                       { value: SkillVisibility.PRIVATE, label: 'Private', icon: 'lock-closed' },
                       { value: SkillVisibility.PUBLIC, label: 'Public', icon: 'globe' },
@@ -254,19 +260,20 @@ export default function NewSkill() {
                         key={option.value}
                         style={[
                           styles.visibilityOption,
-                          visibility === option.value && styles.visibilityOptionActive,
+                          visibility === option.value && [styles.visibilityOptionActive, 
+                            { backgroundColor: themeColors.backgroundTertiary, borderColor: themeColors.accent }],
                         ]}
                         onPress={() => setVisibility(option.value)}
                       >
                         <Ionicons
                           name={option.icon as any}
                           size={20}
-                          color={visibility === option.value ? Colors.light.accent : Colors.light.textSecondary}
+                          color={visibility === option.value ? themeColors.accent : themeColors.textSecondary}
                         />
                         <Text
                           style={[
                             styles.visibilityLabel,
-                            { color: visibility === option.value ? Colors.light.accent : Colors.light.textSecondary },
+                            { color: visibility === option.value ? themeColors.accent : themeColors.textSecondary },
                           ]}
                         >
                           {option.label}
@@ -277,24 +284,24 @@ export default function NewSkill() {
                 </View>
 
                 <View style={styles.characterCount}>
-                  <Text style={styles.characterCountText}>
+                  <Text style={[styles.characterCountText, { color: themeColors.textSecondary }]}>
                     {description.length}/500 characters
                   </Text>
                 </View>
 
-                <View style={styles.tipsContainer}>
-                  <Text style={styles.tipsTitle}>💡 Tips for success:</Text>
+                <View style={[styles.tipsContainer, { backgroundColor: themeColors.backgroundTertiary }]}>
+                  <Text style={[styles.tipsTitle, { color: themeColors.text }]}>💡 Tips for success:</Text>
                   <View style={styles.tipItem}>
-                    <Ionicons name="checkmark-circle" size={16} color={Colors.light.success} />
-                    <Text style={styles.tipText}>Be specific about what you want to learn</Text>
+                    <Ionicons name="checkmark-circle" size={16} color={themeColors.success} />
+                    <Text style={[styles.tipText, { color: themeColors.textSecondary }]}>Be specific about what you want to learn</Text>
                   </View>
                   <View style={styles.tipItem}>
-                    <Ionicons name="checkmark-circle" size={16} color={Colors.light.success} />
-                    <Text style={styles.tipText}>Set realistic goals and milestones</Text>
+                    <Ionicons name="checkmark-circle" size={16} color={themeColors.success} />
+                    <Text style={[styles.tipText, { color: themeColors.textSecondary }]}>Set realistic goals and milestones</Text>
                   </View>
                   <View style={styles.tipItem}>
-                    <Ionicons name="checkmark-circle" size={16} color={Colors.light.success} />
-                    <Text style={styles.tipText}>Update your progress regularly</Text>
+                    <Ionicons name="checkmark-circle" size={16} color={themeColors.success} />
+                    <Text style={[styles.tipText, { color: themeColors.textSecondary }]}>Update your progress regularly</Text>
                   </View>
                 </View>
               </LinearGradient>
@@ -305,10 +312,10 @@ export default function NewSkill() {
           <Animated.View style={[styles.actionSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             <View style={styles.actionButtons}>
               <TouchableOpacity 
-                style={styles.cancelButton}
+                style={[styles.cancelButton, { backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
                 onPress={handleCancel}
               >
-                <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
+                <Text style={[styles.cancelButtonText, { color: themeColors.textSecondary }]}>{t('cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -317,20 +324,20 @@ export default function NewSkill() {
                 disabled={isLoading}
               >
                 <LinearGradient
-                  colors={isLoading ? [Colors.light.backgroundSecondary, Colors.light.backgroundSecondary] : Colors.light.gradient.primary as any}
+                  colors={isLoading ? [themeColors.backgroundSecondary, themeColors.backgroundSecondary] : themeColors.gradient.primary as any}
                   style={styles.createButtonGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
                   {isLoading ? (
                     <View style={styles.loadingContainer}>
-                      <Animated.View style={[styles.loadingSpinner, { transform: [{ rotate: '360deg' }] }]} />
-                      <Text style={styles.loadingText}>{t('creatingSkill')}</Text>
+                      <Animated.View style={[styles.loadingSpinner, { borderColor: themeColors.text, transform: [{ rotate: '360deg' }] }]} />
+                      <Text style={[styles.loadingText, { color: themeColors.text }]}>{t('creatingSkill')}</Text>
                     </View>
                   ) : (
                     <>
-                      <Ionicons name="add-circle" size={20} color={Colors.light.text} />
-                      <Text style={styles.createButtonText}>{t('createSkill')}</Text>
+                      <Ionicons name="add-circle" size={20} color={themeColors.text} />
+                      <Text style={[styles.createButtonText, { color: themeColors.text }]}>{t('createSkill')}</Text>
                     </>
                   )}
                 </LinearGradient>
@@ -376,12 +383,10 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...Typography.h1,
-    color: Colors.light.text,
     marginBottom: Spacing.xs,
   },
   headerSubtitle: {
     ...Typography.body,
-    color: Colors.light.textSecondary,
   },
   formSection: {
     paddingHorizontal: Spacing.lg,
@@ -391,19 +396,16 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   generalErrorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.light.error + '10',
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     marginBottom: Spacing.lg,
   },
   generalErrorText: {
     ...Typography.bodySmall,
-    color: Colors.light.error,
     marginLeft: Spacing.sm,
     flex: 1,
   },
@@ -412,23 +414,20 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     ...Typography.body,
-    color: Colors.light.text,
     fontWeight: '600',
     marginBottom: Spacing.sm,
   },
   inputContainer: {
-    backgroundColor: Colors.light.backgroundSecondary,
+    backgroundColor: 'transparent',
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   inputContainerError: {
-    borderColor: Colors.light.error,
+    borderColor: 'transparent',
   },
   input: {
     padding: Spacing.md,
     ...Typography.body,
-    color: Colors.light.text,
     fontSize: 16,
     lineHeight: 24,
   },
@@ -445,7 +444,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...Typography.bodySmall,
-    color: Colors.light.error,
     marginLeft: Spacing.xs,
   },
   characterCount: {
@@ -454,16 +452,14 @@ const styles = StyleSheet.create({
   },
   characterCountText: {
     ...Typography.caption,
-    color: Colors.light.textSecondary,
   },
   tipsContainer: {
-    backgroundColor: Colors.light.backgroundTertiary,
+    backgroundColor: 'transparent',
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
   },
   tipsTitle: {
     ...Typography.bodySmall,
-    color: Colors.light.text,
     fontWeight: '600',
     marginBottom: Spacing.sm,
   },
@@ -474,7 +470,6 @@ const styles = StyleSheet.create({
   },
   tipText: {
     ...Typography.bodySmall,
-    color: Colors.light.textSecondary,
     marginLeft: Spacing.xs,
     flex: 1,
   },
@@ -488,17 +483,15 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundSecondary,
+    backgroundColor: 'transparent',
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
     marginRight: Spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   cancelButtonText: {
     ...Typography.button,
-    color: Colors.light.textSecondary,
   },
   createButton: {
     flex: 2,
@@ -516,7 +509,6 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     ...Typography.button,
-    color: Colors.light.text,
     marginLeft: Spacing.xs,
   },
   loadingContainer: {
@@ -527,14 +519,12 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: Colors.light.text,
     borderTopColor: 'transparent',
     borderRadius: BorderRadius.round,
     marginRight: Spacing.sm,
   },
   loadingText: {
     ...Typography.button,
-    color: Colors.light.text,
   },
   section: {
     marginBottom: Spacing.lg,
@@ -551,10 +541,9 @@ const styles = StyleSheet.create({
   visibilityOptions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: Colors.light.backgroundSecondary,
+    backgroundColor: 'transparent',
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: Colors.light.border,
     padding: Spacing.sm,
   },
   visibilityOption: {
@@ -565,8 +554,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   visibilityOptionActive: {
-    backgroundColor: Colors.light.backgroundTertiary,
-    borderColor: Colors.light.accent,
+    backgroundColor: 'transparent',
     borderWidth: 1,
   },
   visibilityLabel: {
