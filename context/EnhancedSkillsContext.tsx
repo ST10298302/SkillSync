@@ -158,6 +158,8 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
     try {
       // Query public skills with user information
       const { supabase } = await import('../utils/supabase');
+      console.log('Fetching public skills, current user:', user.id);
+      
       const { data, error } = await supabase
         .from('skills')
         .select(`
@@ -172,10 +174,22 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
         .eq('visibility', 'public')
         .order('created_at', { ascending: false });
       
+      console.log('Raw data from query:', data);
+      console.log('Number of skills returned:', data?.length);
       if (error) {
         console.error('Error fetching public skills:', error);
         throw error;
       }
+      
+      // Log each skill's owner info
+      (data || []).forEach((skill: any, index: number) => {
+        console.log(`Skill ${index + 1}:`, {
+          name: skill.name,
+          user_id: skill.user_id,
+          visibility: skill.visibility,
+          owner: skill.users
+        });
+      });
       
       // Map the database results to Skill type with default values and owner info
       return (data || []).map((skill: any) => ({
