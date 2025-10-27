@@ -4,6 +4,7 @@ import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { LevelBadge } from './LevelBadge';
 
 interface SkillCardProps {
   id: string;
@@ -16,6 +17,9 @@ interface SkillCardProps {
   lastUpdated?: string;
   totalEntries?: number;
   streak?: number;
+  current_level?: 'beginner' | 'novice' | 'intermediate' | 'advanced' | 'expert';
+  likes_count?: number;
+  comments_count?: number;
 }
 
 export default function SkillCard({
@@ -29,6 +33,9 @@ export default function SkillCard({
   lastUpdated,
   totalEntries = 0,
   streak = 0,
+  current_level,
+  likes_count,
+  comments_count,
 }: SkillCardProps) {
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
@@ -370,9 +377,14 @@ export default function SkillCard({
           <View style={styles.header}>
             <View style={styles.titleRow}>
               <View style={styles.titleContainer}>
-                <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
-                  {translatedName || ' '}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
+                    {translatedName || ' '}
+                  </Text>
+                  {current_level && (
+                    <LevelBadge level={current_level} size="small" />
+                  )}
+                </View>
                 {!!translatedDescription && (
                   <Text style={styles.description} numberOfLines={2}>
                     {translatedDescription}
@@ -448,6 +460,18 @@ export default function SkillCard({
               <Text style={styles.statValue}>{streak}</Text>
               <Text style={styles.statLabel}>{t('streak')}</Text>
             </View>
+            {typeof likes_count === 'number' && likes_count > 0 && (
+              <View style={[styles.stat, { flexDirection: 'row', gap: 4, alignItems: 'center' }]}>
+                <Ionicons name="heart" size={16} color={themeColors.error} />
+                <Text style={styles.statValue}>{likes_count}</Text>
+              </View>
+            )}
+            {typeof comments_count === 'number' && comments_count > 0 && (
+              <View style={[styles.stat, { flexDirection: 'row', gap: 4, alignItems: 'center' }]}>
+                <Ionicons name="chatbubble-outline" size={16} color={themeColors.accent} />
+                <Text style={styles.statValue}>{comments_count}</Text>
+              </View>
+            )}
           </View>
 
           {/* Footer */}

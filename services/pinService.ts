@@ -1,17 +1,43 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 export class PinService {
   private static readonly PIN_KEY = 'user_pin';
   private static readonly PIN_ENABLED_KEY = 'pin_enabled';
   private static readonly SALT = 'skillsync_salt';
 
+  // Use AsyncStorage on web, SecureStore on native
+  private static async getItem(key: string): Promise<string | null> {
+    if (Platform.OS === 'web') {
+      return await AsyncStorage.getItem(key);
+    }
+    return await SecureStore.getItemAsync(key);
+  }
+
+  private static async setItem(key: string, value: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(key, value);
+    } else {
+      await SecureStore.setItemAsync(key, value);
+    }
+  }
+
+  private static async deleteItem(key: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.removeItem(key);
+    } else {
+      await SecureStore.deleteItemAsync(key);
+    }
+  }
+
   /**
    * Check if PIN is enabled
    */
   static async isPinEnabled(): Promise<boolean> {
     try {
-      const enabled = await SecureStore.getItemAsync(this.PIN_ENABLED_KEY);
+      const enabled = await this.getItem(this.PIN_ENABLED_KEY);
       return enabled === 'true';
     } catch (error) {
       console.error('Error checking PIN status:', error);
@@ -24,7 +50,7 @@ export class PinService {
    */
   static async enablePin(): Promise<void> {
     try {
-      await SecureStore.setItemAsync(this.PIN_ENABLED_KEY, 'true');
+      await this.setItem(this.PIN_ENABLED_KEY, 'true');
     } catch (error) {
       console.error('Error enabling PIN:', error);
       throw error;
@@ -36,8 +62,8 @@ export class PinService {
    */
   static async disablePin(): Promise<void> {
     try {
-      await SecureStore.deleteItemAsync(this.PIN_ENABLED_KEY);
-      await SecureStore.deleteItemAsync(this.PIN_KEY);
+      await this.deleteItem(this.PIN_ENABLED_KEY);
+      await this.deleteItem(this.PIN_KEY);
     } catch (error) {
       console.error('Error disabling PIN:', error);
       throw error;
@@ -49,8 +75,8 @@ export class PinService {
    */
   static async removePin(): Promise<void> {
     try {
-      await SecureStore.deleteItemAsync(this.PIN_ENABLED_KEY);
-      await SecureStore.deleteItemAsync(this.PIN_KEY);
+      await this.deleteItem(this.PIN_ENABLED_KEY);
+      await this.deleteItem(this.PIN_KEY);
     } catch (error) {
       console.error('Error removing PIN:', error);
       throw error;
@@ -63,8 +89,8 @@ export class PinService {
   static async setPin(pin: string): Promise<void> {
     try {
       const hashedPin = await this.hashPin(pin);
-      await SecureStore.setItemAsync(this.PIN_KEY, hashedPin);
-      await SecureStore.setItemAsync(this.PIN_ENABLED_KEY, 'true');
+      await this.setItem(this.PIN_KEY, hashedPin);
+      await this.setItem(this.PIN_ENABLED_KEY, 'true');
     } catch (error) {
       console.error('Error setting PIN:', error);
       throw error;
@@ -76,7 +102,7 @@ export class PinService {
    */
   static async verifyPin(pin: string): Promise<boolean> {
     try {
-      const storedPin = await SecureStore.getItemAsync(this.PIN_KEY);
+      const storedPin = await this.getItem(this.PIN_KEY);
       if (!storedPin) {
         return false;
       }
@@ -119,7 +145,7 @@ export class PinService {
    */
   static async hasPin(): Promise<boolean> {
     try {
-      const pin = await SecureStore.getItemAsync(this.PIN_KEY);
+      const pin = await this.getItem(this.PIN_KEY);
       return !!pin;
     } catch (error) {
       console.error('Error checking if PIN exists:', error);

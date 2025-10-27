@@ -19,8 +19,9 @@ import {
 
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
-import { useSkills } from '../../context/SkillsContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSkills } from '../../context/SkillsContext';
+import { SkillVisibility } from '../../utils/supabase-types';
 
 /**
  * Enhanced new skill creation page with modern design and form validation
@@ -34,6 +35,7 @@ export default function NewSkill() {
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [visibility, setVisibility] = useState<SkillVisibility>(SkillVisibility.PRIVATE);
   
   // Refs for input focus management
   const nameInputRef = useRef<TextInput>(null);
@@ -86,6 +88,9 @@ export default function NewSkill() {
         description: description.trim() || '',
         startDate: new Date().toISOString(),
       });
+      
+      // TODO: Update skill with visibility after creation
+      // For now, we'll skip this since SkillsContext doesn't support visibility yet
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
@@ -230,6 +235,45 @@ export default function NewSkill() {
                       <Text style={styles.errorText}>{errors.description}</Text>
                     </View>
                   )}
+                </View>
+
+                {/* Add Visibility Selector */}
+                <View style={styles.section}>
+                  <Text style={[styles.label, { color: Colors.light.text }]}>Visibility</Text>
+                  <Text style={[styles.description, { color: Colors.light.textSecondary }]}>
+                    Who can see this skill?
+                  </Text>
+                  <View style={styles.visibilityOptions}>
+                    {[
+                      { value: SkillVisibility.PRIVATE, label: 'Private', icon: 'lock-closed' },
+                      { value: SkillVisibility.PUBLIC, label: 'Public', icon: 'globe' },
+                      { value: SkillVisibility.STUDENTS, label: 'My Students', icon: 'people' },
+                      { value: SkillVisibility.TUTOR, label: 'My Tutor', icon: 'school' },
+                    ].map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          styles.visibilityOption,
+                          visibility === option.value && styles.visibilityOptionActive,
+                        ]}
+                        onPress={() => setVisibility(option.value)}
+                      >
+                        <Ionicons
+                          name={option.icon as any}
+                          size={20}
+                          color={visibility === option.value ? Colors.light.accent : Colors.light.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.visibilityLabel,
+                            { color: visibility === option.value ? Colors.light.accent : Colors.light.textSecondary },
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
 
                 <View style={styles.characterCount}>
@@ -491,5 +535,42 @@ const styles = StyleSheet.create({
   loadingText: {
     ...Typography.button,
     color: Colors.light.text,
+  },
+  section: {
+    marginBottom: Spacing.lg,
+  },
+  label: {
+    ...Typography.body,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  description: {
+    ...Typography.bodySmall,
+    marginBottom: Spacing.sm,
+  },
+  visibilityOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    padding: Spacing.sm,
+  },
+  visibilityOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  visibilityOptionActive: {
+    backgroundColor: Colors.light.backgroundTertiary,
+    borderColor: Colors.light.accent,
+    borderWidth: 1,
+  },
+  visibilityLabel: {
+    ...Typography.bodySmall,
+    marginLeft: Spacing.sm,
   },
 });

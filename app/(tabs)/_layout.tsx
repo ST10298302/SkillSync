@@ -127,6 +127,16 @@ export default function TabLayout() {
         })}
       />
       <Tabs.Screen
+        name="community"
+        options={{
+          title: 'Community',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-outline" size={size} color={color} />
+          ),
+          tabBarButton: (props) => <HapticTab {...props} />,
+        }}
+      />
+      <Tabs.Screen
         name="analytics"
         options={{
           title: t('analytics'),

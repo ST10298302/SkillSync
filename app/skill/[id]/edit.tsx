@@ -21,6 +21,8 @@ import UniformLayout from '../../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../../constants/Colors';
 import { useSkills } from '../../../context/SkillsContext';
 import { useTheme } from '../../../context/ThemeContext';
+import { supabase } from '../../../utils/supabase';
+import { SkillCategory, SkillVisibility } from '../../../utils/supabase-types';
 
 /**
  * Enhanced skill edit page with modern design and form validation
@@ -38,7 +40,11 @@ export default function EditSkill() {
   
   const [name, setName] = useState(skill?.name || '');
   const [description, setDescription] = useState(skill?.description || '');
+  const [visibility, setVisibility] = useState<SkillVisibility>(SkillVisibility.PRIVATE);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   
   // Refs for input focus management
@@ -62,6 +68,54 @@ export default function EditSkill() {
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
+
+  // Load categories
+  React.useEffect(() => {
+    loadCategories();
+  }, []);
+
+  // Load skill details from Supabase
+  React.useEffect(() => {
+    if (id && skill) {
+      loadSkillDetails();
+    }
+  }, [id]);
+
+  const loadCategories = async () => {
+    setIsLoadingCategories(true);
+    try {
+      const { data, error } = await supabase
+        .from('skill_categories')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  const loadSkillDetails = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('skills')
+        .select('visibility, category_id')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        setVisibility(data.visibility || SkillVisibility.PRIVATE);
+        setCategoryId(data.category_id || null);
+      }
+    } catch (error) {
+      console.error('Failed to load skill details:', error);
+    }
+  };
 
   // If skill not found, show error
   if (!skill) {
@@ -105,10 +159,22 @@ export default function EditSkill() {
 
     setIsLoading(true);
     try {
+      // Update basic fields via context
       await updateSkill(id, {
         name: name.trim(),
         description: description.trim(),
       });
+      
+      // Update visibility and category directly in Supabase
+      const { error } = await supabase
+        .from('skills')
+        .update({
+          visibility,
+          category_id: categoryId || null,
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
@@ -259,12 +325,81 @@ export default function EditSkill() {
                        <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.description}</Text>
                      </View>
                    )}
-                   <Text style={[styles.characterCount, { color: themeColors.textSecondary }]}>
-                     {description.length}/500 characters
-                   </Text>
-                 </View>
+                                     <Text style={[styles.characterCount, { color: themeColors.textSecondary }]}>
+                    {description.length}/500 characters
+                  </Text>
+                </View>
 
-                                 {/* Action Buttons */}
+                {/* Category Selector */}
+                <View style={styles.inputField}>
+                  <Text style={[styles.inputLabel, { color: themeColors.text }]}>Category (Optional)</Text>
+                  {isLoadingCategories ? (
+                    <Text style={[styles.helperText, { color: themeColors.textSecondary }]}>Loading categories...</Text>
+                  ) : (
+                    <View style={[styles.pickerContainer, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}>
+                      <TouchableOpacity
+                        style={styles.pickerButton}
+                        onPress={() => setCategoryId(null)}
+                      >
+                        <Text style={[styles.pickerText, { color: categoryId ? themeColors.textSecondary : themeColors.text }]}>
+                          None
+                        </Text>
+                      </TouchableOpacity>
+                      {categories.map((category) => (
+                        <TouchableOpacity
+                          key={category.id}
+                          style={styles.pickerButton}
+                          onPress={() => setCategoryId(category.id)}
+                        >
+                          <Text style={[styles.pickerText, { color: categoryId === category.id ? themeColors.accent : themeColors.text }]}>
+                            {category.name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+
+                {/* Visibility Selector */}
+                <View style={styles.section}>
+                  <Text style={[styles.label, { color: themeColors.text }]}>Visibility</Text>
+                  <Text style={[styles.description, { color: themeColors.textSecondary }]}>
+                    Who can see this skill?
+                  </Text>
+                  <View style={[styles.visibilityOptions, { backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}>
+                    {[
+                      { value: SkillVisibility.PRIVATE, label: 'Private', icon: 'lock-closed' },
+                      { value: SkillVisibility.PUBLIC, label: 'Public', icon: 'globe' },
+                      { value: SkillVisibility.STUDENTS, label: 'My Students', icon: 'people' },
+                      { value: SkillVisibility.TUTOR, label: 'My Tutor', icon: 'school' },
+                    ].map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          styles.visibilityOption,
+                          visibility === option.value && [styles.visibilityOptionActive, { backgroundColor: themeColors.background, borderColor: themeColors.accent }],
+                        ]}
+                        onPress={() => setVisibility(option.value)}
+                      >
+                        <Ionicons
+                          name={option.icon as any}
+                          size={20}
+                          color={visibility === option.value ? themeColors.accent : themeColors.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.visibilityLabel,
+                            { color: visibility === option.value ? themeColors.accent : themeColors.textSecondary },
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                                {/* Action Buttons */}
                  <View style={styles.actionButtons}>
                    <TouchableOpacity
                      style={[
@@ -465,5 +600,55 @@ const styles = StyleSheet.create({
   errorButtonText: {
     ...Typography.body,
     fontWeight: '600',
+  },
+  section: {
+    marginBottom: Spacing.lg,
+  },
+  label: {
+    ...Typography.body,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  description: {
+    ...Typography.bodySmall,
+    marginBottom: Spacing.sm,
+  },
+  visibilityOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    padding: Spacing.sm,
+  },
+  visibilityOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  visibilityOptionActive: {
+    borderWidth: 1,
+  },
+  visibilityLabel: {
+    ...Typography.bodySmall,
+    marginLeft: Spacing.sm,
+  },
+  pickerContainer: {
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  pickerButton: {
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  pickerText: {
+    ...Typography.body,
+  },
+  helperText: {
+    ...Typography.caption,
+    fontStyle: 'italic',
   },
 });

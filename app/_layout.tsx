@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { EnhancedSkillsProvider } from '../context/EnhancedSkillsContext';
 import { LanguageProvider } from '../context/LanguageContext';
 import { PinLockProvider } from '../context/PinLockContext';
 import { SkillsProvider } from '../context/SkillsContext';
@@ -15,11 +16,13 @@ export default function RootLayout() {
     <ThemeProvider>
       <AuthProvider>
         <SkillsProvider>
-          <LanguageProvider>
-            <PinLockProvider>
-              <AppLayout />
-            </PinLockProvider>
-          </LanguageProvider>
+          <EnhancedSkillsProvider>
+            <LanguageProvider>
+              <PinLockProvider>
+                <AppLayout />
+              </PinLockProvider>
+            </LanguageProvider>
+          </EnhancedSkillsProvider>
         </SkillsProvider>
       </AuthProvider>
     </ThemeProvider>

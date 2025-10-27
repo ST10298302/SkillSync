@@ -14,11 +14,6 @@ import {
     View
 } from 'react-native';
 
-import { AddArtifactModal } from '../../components/AddArtifactModal';
-import { AddDiaryEntryModal } from '../../components/AddDiaryEntryModal';
-import { AddMilestoneModal } from '../../components/AddMilestoneModal';
-import { AddProgressModal } from '../../components/AddProgressModal';
-import { AddResourceModal } from '../../components/AddResourceModal';
 import { CommentThread } from '../../components/CommentThread';
 import DiaryItem from '../../components/DiaryItem';
 import { LevelBadge } from '../../components/LevelBadge';
@@ -39,9 +34,9 @@ export default function EnhancedSkillDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { skills } = useSkills();
   const { 
-    milestones: skillMilestones,
-    resources: skillResources,
-    comments: skillComments,
+    skillMilestones, 
+    skillResources, 
+    skillComments,
     getMilestones, 
     getResources, 
     getComments,
@@ -54,31 +49,15 @@ export default function EnhancedSkillDetail() {
   
   const skill = skills.find(s => s.id === id);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const [showDiaryModal, setShowDiaryModal] = useState(false);
-  const [showResourceModal, setShowResourceModal] = useState(false);
-  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
-  const [showArtifactModal, setShowArtifactModal] = useState(false);
 
   // Load enhanced data
   useEffect(() => {
     if (id) {
-      loadEnhancedData();
+      getMilestones(id);
+      getResources(id);
+      getComments(id);
     }
   }, [id]);
-
-  const loadEnhancedData = async () => {
-    if (!id) return;
-    try {
-      await Promise.all([
-        getMilestones(id),
-        getResources(id),
-        getComments(id),
-      ]);
-    } catch (error) {
-      console.error('Failed to load enhanced data:', error);
-    }
-  };
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -127,15 +106,7 @@ export default function EnhancedSkillDetail() {
           <View>
             {/* Progress Updates */}
             <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{t('progressUpdates')}</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => setShowProgressModal(true)}
-                >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.sectionTitle}>{t('progressUpdates')}</Text>
               {skill.progressUpdates.length === 0 ? (
                 <View style={styles.emptyCard}>
                   <Ionicons name="trending-up-outline" size={48} color={Colors.light.textSecondary} />
@@ -160,15 +131,7 @@ export default function EnhancedSkillDetail() {
 
             {/* Diary Section */}
             <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{t('diaryEntries')}</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => setShowDiaryModal(true)}
-                >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.sectionTitle}>{t('diaryEntries')}</Text>
               {skill.entries.length === 0 ? (
                 <View style={styles.emptyCard}>
                   <Ionicons name="document-text-outline" size={48} color={Colors.light.textSecondary} />
@@ -190,62 +153,28 @@ export default function EnhancedSkillDetail() {
       
       case 'milestones':
         return (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Milestones</Text>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => setShowMilestoneModal(true)}
-              >
-                <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
-              </TouchableOpacity>
-            </View>
-            <MilestoneTracker 
-              skillId={skill.id} 
-              milestones={skillMilestones} 
-              onRefresh={handleRefresh}
-              hideTitle
-            />
-          </View>
+          <MilestoneTracker 
+            skillId={skill.id} 
+            milestones={skillMilestones} 
+            onRefresh={handleRefresh}
+          />
         );
       
       case 'resources':
         return (
-          <>
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Learning Resources</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => setShowResourceModal(true)}
-                >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
-                </TouchableOpacity>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Learning Resources</Text>
+            {skillResources.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Ionicons name="book-outline" size={48} color={Colors.light.textSecondary} />
+                <Text style={styles.emptyTitle}>No resources yet</Text>
               </View>
-              {skillResources.length === 0 ? (
-                <View style={styles.emptyCard}>
-                  <Ionicons name="book-outline" size={48} color={Colors.light.textSecondary} />
-                  <Text style={styles.emptyTitle}>No resources yet</Text>
-                </View>
-              ) : (
-                skillResources.map(resource => (
-                  <ResourceCard key={resource.id} resource={resource} />
-                ))
-              )}
-            </View>
-            
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Evidence/Artifacts</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => setShowArtifactModal(true)}
-                >
-                  <Ionicons name="add-circle" size={24} color={Colors.light.accent} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </>
+            ) : (
+              skillResources.map(resource => (
+                <ResourceCard key={resource.id} resource={resource} />
+              ))
+            )}
+          </View>
         );
       
       case 'comments':
@@ -340,38 +269,6 @@ export default function EnhancedSkillDetail() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* Modals */}
-      <AddProgressModal
-        visible={showProgressModal}
-        onClose={() => setShowProgressModal(false)}
-        skillId={skill.id}
-        currentProgress={skill.progress}
-      />
-      
-      <AddDiaryEntryModal
-        visible={showDiaryModal}
-        onClose={() => setShowDiaryModal(false)}
-        skillId={skill.id}
-      />
-      
-      <AddResourceModal
-        visible={showResourceModal}
-        onClose={() => setShowResourceModal(false)}
-        skillId={skill.id}
-      />
-      
-      <AddMilestoneModal
-        visible={showMilestoneModal}
-        onClose={() => setShowMilestoneModal(false)}
-        skillId={skill.id}
-      />
-      
-      <AddArtifactModal
-        visible={showArtifactModal}
-        onClose={() => setShowArtifactModal(false)}
-        skillId={skill.id}
-      />
     </UniformLayout>
   );
 }
@@ -405,9 +302,7 @@ const styles = StyleSheet.create({
   tabTextActive: { color: Colors.light.accent, fontWeight: '600' },
   tabContent: { paddingHorizontal: Spacing.lg },
   section: { marginVertical: 16 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
-  sectionTitle: { ...Typography.h3, color: Colors.light.text },
-  addButton: { padding: Spacing.xs },
+  sectionTitle: { ...Typography.h3, color: Colors.light.text, marginBottom: Spacing.md },
   emptyCard: { padding: Spacing.xl, borderRadius: BorderRadius.lg, alignItems: 'center', backgroundColor: Colors.light.backgroundSecondary },
   emptyTitle: { ...Typography.h4, color: Colors.light.text, marginTop: Spacing.md },
   updatesCard: { padding: Spacing.lg, borderRadius: BorderRadius.lg, backgroundColor: Colors.light.backgroundSecondary },
