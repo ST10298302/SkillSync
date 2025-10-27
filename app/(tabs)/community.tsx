@@ -249,7 +249,7 @@ export default function CommunityScreen() {
           comments_count={skill.comments_count || 0}
           owner={(skill as any).owner || null}
         />
-        <View style={styles.skillActions}>
+        <View style={styles.skillActionsRow}>
           <TouchableOpacity
             style={[styles.actionButton, styles.commentButton]}
             onPress={() => {
@@ -268,7 +268,7 @@ export default function CommunityScreen() {
             reactionCount={skill.likes_count || 0}
           />
         </View>
-        <View style={styles.skillActions}>
+        <View style={styles.skillActionsRow}>
           <TouchableOpacity
             style={[styles.actionButton, styles.followButton]}
             onPress={() => isFollowingOwner 
@@ -308,44 +308,12 @@ export default function CommunityScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={[styles.title, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>Community Skills</Text>
-        <Text style={[styles.subtitle, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>Discover and learn from others</Text>
-
-        {/* Search Bar */}
-        <View style={[styles.searchContainer, { backgroundColor: themeColors.background }]}>
-          <Ionicons name="search" size={20} color={themeColors.textSecondary} />
-          <TextInput
-            style={[styles.searchInput, { color: themeColors.text }]}
-            placeholder="Search skills..."
-            placeholderTextColor={themeColors.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Filter Buttons */}
-        <View style={styles.filterContainer}>
-          {(['all', 'popular', 'recent'] as const).map((filter) => (
-            <TouchableOpacity
-              key={filter}
-              style={[
-                styles.filterButton,
-                filterType === filter && styles.filterButtonActive,
-                { backgroundColor: filterType === filter ? themeColors.accent : 'rgba(255,255,255,0.2)' }
-              ]}
-              onPress={() => setFilterType(filter)}
-            >
-              <Text style={[styles.filterText, { color: safeTheme === 'dark' ? '#ffffff' : (filterType === filter ? '#ffffff' : '#000000') }]}>
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Text style={[styles.title, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>
+          {activeSubTab === 'skills' ? 'Community Skills' : 'My Friends'}
+        </Text>
+        <Text style={[styles.subtitle, { color: safeTheme === 'dark' ? '#ffffff' : '#000000' }]}>
+          {activeSubTab === 'skills' ? 'Discover and learn from others' : 'Manage your connections'}
+        </Text>
 
         {/* Sub-tabs */}
         <View style={styles.subTabContainer}>
@@ -368,6 +336,44 @@ export default function CommunityScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Search Bar */}
+        <View style={[styles.searchContainer, { backgroundColor: themeColors.background }]}>
+          <Ionicons name="search" size={20} color={themeColors.textSecondary} />
+          <TextInput
+            style={[styles.searchInput, { color: themeColors.text }]}
+            placeholder="Search skills..."
+            placeholderTextColor={themeColors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={20} color={themeColors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Filter Buttons - Only show on Community Skills tab */}
+        {activeSubTab === 'skills' && (
+          <View style={styles.filterContainer}>
+            {(['all', 'popular', 'recent'] as const).map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={[
+                  styles.filterButton,
+                  filterType === filter && styles.filterButtonActive,
+                  { backgroundColor: filterType === filter ? themeColors.accent : 'rgba(255,255,255,0.2)' }
+                ]}
+                onPress={() => setFilterType(filter)}
+              >
+                <Text style={[styles.filterText, { color: safeTheme === 'dark' ? '#ffffff' : (filterType === filter ? '#ffffff' : '#000000') }]}>
+                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </LinearGradient>
 
       {/* Content based on active sub-tab */}
@@ -539,12 +545,12 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     fontWeight: '600',
   },
-  skillActions: {
+  skillActionsRow: {
     flexDirection: 'row',
     gap: isMobile ? 8 : Spacing.sm,
-    marginTop: -Spacing.md,
+    marginTop: isMobile ? Spacing.xs : Spacing.sm,
     paddingHorizontal: isMobile ? Spacing.sm : Spacing.md,
-    marginBottom: isMobile ? Spacing.xs : 0,
+    marginBottom: isMobile ? Spacing.sm : Spacing.xs,
   },
   actionButton: {
     flex: 1,
