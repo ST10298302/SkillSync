@@ -128,7 +128,15 @@ export default function EnhancedSkillDetail() {
         const { supabase } = await import('../../utils/supabase');
         const { data, error } = await supabase
           .from('skills')
-          .select('*')
+          .select(`
+            *,
+            users(
+              id,
+              name,
+              email,
+              profile_picture_url
+            )
+          `)
           .eq('id', id)
           .single();
 
@@ -144,6 +152,7 @@ export default function EnhancedSkillDetail() {
           comments_count: data.comments_count || 0,
           current_level: data.current_level || 'beginner',
           user_id: data.user_id, // Include user_id for ownership checks
+          owner: (data as any).users || null, // Include owner information
         });
       }
       } catch (error) {
@@ -632,6 +641,14 @@ export default function EnhancedSkillDetail() {
                   </View>
                   {skill.description && (
                     <Text style={[styles.skillDescription, { color: themeColors.textSecondary }]}>{skill.description}</Text>
+                  )}
+                  {!isOwnSkill && skill.owner && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs }}>
+                      <Ionicons name="person-circle-outline" size={14} color={themeColors.textSecondary} />
+                      <Text style={{ ...Typography.bodySmall, color: themeColors.textSecondary, marginLeft: Spacing.xs }}>
+                        Created by {skill.owner.name || skill.owner.email || 'Unknown'}
+                      </Text>
+                    </View>
                   )}
                   <View style={styles.skillStats}>
                     <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
