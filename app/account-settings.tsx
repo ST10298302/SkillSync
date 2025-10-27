@@ -30,24 +30,34 @@ export default function AccountSettings() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>();
-  const [name, setName] = useState(user?.user_metadata?.name || user?.email?.split('@')[0] || '');
+  const [name, setName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
-  // Load profile picture URL
+  // Load profile data
   React.useEffect(() => {
-    const loadProfilePicture = async () => {
+    const loadProfileData = async () => {
       if (user?.id) {
         try {
+          // Load profile picture URL
           const url = await SupabaseService.getProfilePictureUrl(user.id);
           setProfilePictureUrl(url || undefined);
+
+          // Load user profile from database
+          const userProfile = await SupabaseService.getUserProfile(user.id);
+          if (userProfile?.name) {
+            setName(userProfile.name);
+          } else {
+            setName(user?.email?.split('@')[0] || '');
+          }
         } catch (error) {
-          console.error('Error loading profile picture:', error);
+          console.error('Error loading profile data:', error);
+          setName(user?.email?.split('@')[0] || '');
         }
       }
     };
 
-    loadProfilePicture();
-  }, [user?.id]);
+    loadProfileData();
+  }, [user?.id, user?.email]);
 
   const handleSaveProfile = async () => {
     if (!user?.id) return;
@@ -60,7 +70,12 @@ export default function AccountSettings() {
       setIsEditing(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      Alert.alert('Success', 'Profile updated successfully!');
+      Alert.alert('Success', 'Profile updated successfully!', [
+        {
+          text: 'OK',
+          onPress: () => router.back()
+        }
+      ]);
     } catch (error) {
       console.error('Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile. Please try again.');
@@ -70,8 +85,21 @@ export default function AccountSettings() {
     }
   };
 
-  const handleCancelEdit = () => {
-    setName(user?.user_metadata?.name || user?.email?.split('@')[0] || '');
+  const handleCancelEdit = async () => {
+    // Reload name from database
+    if (user?.id) {
+      try {
+        const userProfile = await SupabaseService.getUserProfile(user.id);
+        if (userProfile?.name) {
+          setName(userProfile.name);
+        } else {
+          setName(user?.email?.split('@')[0] || '');
+        }
+      } catch (error) {
+        console.error('Error reloading profile:', error);
+        setName(user?.email?.split('@')[0] || '');
+      }
+    }
     setIsEditing(false);
   };
 

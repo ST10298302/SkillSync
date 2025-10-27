@@ -11,7 +11,6 @@ import {
     View,
 } from 'react-native';
 
-import Logo from '../../components/Logo';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
@@ -165,7 +164,8 @@ export default function NotificationsSettings() {
     subtitle, 
     value, 
     onToggle, 
-    icon 
+    icon,
+    isLast = false,
   }: {
     id: string;
     title: string;
@@ -173,8 +173,9 @@ export default function NotificationsSettings() {
     value: boolean;
     onToggle: () => void;
     icon: string;
+    isLast?: boolean;
   }) => (
-    <View key={id} style={styles.notificationItem}>
+    <View key={id} style={[styles.notificationItem, isLast && { borderBottomWidth: 0 }]}>
       <View style={styles.notificationIcon}>
         <Ionicons name={icon as any} size={24} color={themeColors.accent} />
       </View>
@@ -200,33 +201,38 @@ export default function NotificationsSettings() {
     },
     header: {
       paddingHorizontal: Spacing.lg,
-      paddingTop: Spacing.xl,
-      paddingBottom: Spacing.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: themeColors.border,
+      paddingTop: Spacing.xxl,
+      paddingBottom: Spacing.xl,
     },
     headerRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: Spacing.lg,
+      marginBottom: Spacing.md,
     },
     backButton: {
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       borderRadius: BorderRadius.round,
-      backgroundColor: themeColors.backgroundTertiary,
+      backgroundColor: themeColors.backgroundSecondary,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: Spacing.md,
+      shadowColor: themeColors.shadow.medium,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     headerTitle: {
-      ...Typography.h2,
+      ...Typography.h1,
       color: themeColors.text,
       fontWeight: '700',
     },
-    logoContainer: {
-      alignItems: 'center',
-      marginBottom: Spacing.lg,
+    headerSubtitle: {
+      ...Typography.body,
+      color: themeColors.textSecondary,
+      marginTop: Spacing.xs,
+      opacity: 0.8,
     },
     section: {
       paddingHorizontal: Spacing.lg,
@@ -239,22 +245,25 @@ export default function NotificationsSettings() {
       marginBottom: Spacing.md,
     },
     card: {
-      backgroundColor: themeColors.backgroundSecondary,
-      borderRadius: BorderRadius.lg,
-      padding: Spacing.lg,
+      backgroundColor: themeColors.background,
+      borderRadius: BorderRadius.xl,
+      overflow: 'hidden',
       marginBottom: Spacing.md,
       shadowColor: themeColors.shadow.medium,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
       shadowRadius: 8,
-      elevation: 3,
+      elevation: 6,
+      borderWidth: 1,
+      borderColor: themeColors.border,
     },
     notificationItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: Spacing.md,
+      paddingVertical: Spacing.lg,
+      paddingHorizontal: Spacing.lg,
       borderBottomWidth: 1,
-      borderBottomColor: themeColors.border,
+      borderBottomColor: themeColors.borderSecondary,
     },
     notificationIcon: {
       width: 48,
@@ -280,16 +289,16 @@ export default function NotificationsSettings() {
       lineHeight: 18,
     },
     infoSection: {
-      backgroundColor: themeColors.info + '10',
-      borderRadius: BorderRadius.md,
-      padding: Spacing.md,
-      marginTop: Spacing.lg,
+      backgroundColor: themeColors.backgroundSecondary,
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.lg,
+      borderLeftWidth: 3,
+      borderLeftColor: themeColors.info,
     },
     infoText: {
-      ...Typography.caption,
+      ...Typography.bodySmall,
       color: themeColors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 18,
+      lineHeight: 20,
     },
     customSwitch: {
       width: 50,
@@ -331,10 +340,10 @@ export default function NotificationsSettings() {
             >
               <Ionicons name="arrow-back" size={24} color={themeColors.text} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Notifications</Text>
-          </View>
-          <View style={styles.logoContainer}>
-            <Logo size={40} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.headerTitle}>Notifications</Text>
+              <Text style={styles.headerSubtitle}>Manage your notification preferences</Text>
+            </View>
           </View>
         </Animated.View>
 
@@ -373,6 +382,7 @@ export default function NotificationsSettings() {
               value={notifications.streakAlerts}
               onToggle={() => toggleSwitch('streakAlerts')}
               icon="flame-outline"
+              isLast={true}
             />
           </View>
         </Animated.View>
@@ -396,6 +406,7 @@ export default function NotificationsSettings() {
               value={notifications.marketingEmails}
               onToggle={() => toggleSwitch('marketingEmails')}
               icon="mail-outline"
+              isLast={true}
             />
           </View>
         </Animated.View>

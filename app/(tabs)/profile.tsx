@@ -622,15 +622,6 @@ export default function Profile() {
                 router.push('../settings/about' as any);
               }}
             />
-            <MenuItem
-              title={t('language')}
-              subtitle="Change the app language"
-              icon="language-outline"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to language settings
-              }}
-            />
           </View>
         </Animated.View>
 
