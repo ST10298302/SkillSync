@@ -14,12 +14,10 @@ import {
 
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
-import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function HelpSupport() {
   const router = useRouter();
-  const { t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
@@ -490,60 +488,30 @@ export default function HelpSupport() {
             >
               <Ionicons name="arrow-back" size={24} color={themeColors.text} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('helpSupport')}</Text>
-          </View>
-          <View style={styles.logoContainer}>
-            <Logo size={40} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.headerTitle}>Help & Support</Text>
+              <Text style={styles.headerSubtitle}>Get the help you need</Text>
+            </View>
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>{t('quickActions')}</Text>
+          <Text style={styles.sectionTitle}>Step-by-Step Tutorial</Text>
           
-          <View style={styles.quickActions}>
-            <TouchableOpacity 
-              style={styles.quickAction}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to getting started guide
-              }}
-            >
-              <View style={styles.quickActionIcon}>
-                <Ionicons name="play-outline" size={16} color={themeColors.accent} />
-              </View>
-              <Text style={styles.quickActionTitle}>{t('getStarted')}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.quickAction}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to tutorials
-              }}
-            >
-              <View style={styles.quickActionIcon}>
-                <Ionicons name="school-outline" size={16} color={themeColors.accent} />
-              </View>
-              <Text style={styles.quickActionTitle}>{t('tutorials')}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.quickAction}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Navigate to troubleshooting
-              }}
-            >
-              <View style={styles.quickActionIcon}>
-                <Ionicons name="construct-outline" size={16} color={themeColors.accent} />
-              </View>
-              <Text style={styles.quickActionTitle}>{t('troubleshoot')}</Text>
-            </TouchableOpacity>
+          <View style={styles.card}>
+            {tutorials.map((tutorial, index) => (
+              <TutorialItem
+                key={index}
+                tutorial={tutorial}
+                index={index}
+                isLast={index === tutorials.length - 1}
+              />
+            ))}
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>{t('contactUs')}</Text>
+          <Text style={styles.sectionTitle}>Contact Us</Text>
           
           <View style={styles.card}>
             {contactOptions.map((option, index) => (
@@ -560,7 +528,7 @@ export default function HelpSupport() {
         </Animated.View>
 
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>{t('frequentlyAskedQuestions')}</Text>
+          <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
           
           <View style={styles.card}>
             {faqs.map((faq, index) => (
@@ -578,7 +546,8 @@ export default function HelpSupport() {
         <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <View style={styles.infoSection}>
             <Text style={styles.infoText}>
-              {t('cantFindWhatLookingFor')} {t('typicallyRespondWithin24Hours')}
+              Can&apos;t find what you&apos;re looking for? Our support team is here to help! 
+              We typically respond within 24 hours during business days.
             </Text>
           </View>
         </Animated.View>
