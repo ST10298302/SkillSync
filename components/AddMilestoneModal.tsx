@@ -97,7 +97,6 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
             {Platform.OS === 'web' ? (
               <TextInput
                 style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
-                type="date"
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor={themeColors.textSecondary}
                 value={targetDate && !isNaN(targetDate.getTime()) ? targetDate.toISOString().split('T')[0] : ''}
