@@ -202,7 +202,7 @@ export default function BiometricSetup({
           </View>
           <Text style={styles.title}>Biometric Not Available</Text>
           <Text style={styles.subtitle}>
-            This device doesn't support biometric authentication or it's not set up.
+            This device doesn&apos;t support biometric authentication or it&apos;s not set up.
           </Text>
         </View>
         
@@ -230,7 +230,7 @@ export default function BiometricSetup({
       </View>
 
       <View style={styles.biometricInfo}>
-        <Text style={styles.biometricInfoTitle}>What you'll get:</Text>
+        <Text style={styles.biometricInfoTitle}>What you&apos;ll get:</Text>
         <Text style={styles.biometricInfoText}>
           • Quick access with {biometricType.toLowerCase()}{'\n'}
           • Enhanced security for your learning progress{'\n'}
