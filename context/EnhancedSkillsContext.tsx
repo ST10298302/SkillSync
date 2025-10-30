@@ -163,7 +163,10 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       // Get public skills (excluding user's own skills - they see them on their own page)
       const { data: publicSkillsData, error: publicError } = await supabase
         .from('skills')
-        .select('*')
+        .select(`
+          *,
+          skill_entries (*)
+        `)
         .eq('visibility', 'public')
         .neq('user_id', user.id) // Exclude user's own skills
         .order('created_at', { ascending: false });
@@ -177,7 +180,10 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       try {
         const { data: tutorSkills, error: tutorError } = await supabase
           .from('skills')
-          .select('*')
+          .select(`
+            *,
+            skill_entries (*)
+          `)
           .eq('visibility', 'tutor')
           .eq('tutor_id', user.id)
           .neq('user_id', user.id) // Exclude user's own skills
@@ -210,7 +216,10 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
           const skillIds = studentAssignments.map(a => a.skill_id);
           const { data: skills, error: skillsError } = await supabase
             .from('skills')
-            .select('*')
+            .select(`
+              *,
+              skill_entries (*)
+            `)
             .eq('visibility', 'students')
             .in('id', skillIds)
             .neq('user_id', user.id) // Exclude user's own skills
