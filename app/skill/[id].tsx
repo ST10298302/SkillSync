@@ -117,12 +117,26 @@ export default function EnhancedSkillDetail() {
     const loadSkill = async () => {
       if (!id) return;
       
+      console.log('[SkillDetail] Starting to load skill:', id);
+      
       // First check if skill is in context
       const contextSkill = skills.find(s => s.id === id);
       if (contextSkill) {
+        console.log('[SkillDetail] Skill found in context:', {
+          id: contextSkill.id,
+          name: contextSkill.name,
+          user_id: contextSkill.user_id,
+          visibility: contextSkill.visibility,
+          hasEntries: !!contextSkill.entries,
+          hasProgressUpdates: !!contextSkill.progressUpdates,
+          entriesCount: contextSkill.entries?.length || 0,
+          progressUpdatesCount: contextSkill.progressUpdates?.length || 0,
+        });
+        
         // Verify access even for context skills
         if (!currentUser) {
           if (contextSkill.visibility !== 'public') {
+            console.log('[SkillDetail] Access denied: Not logged in, skill is not public');
             setSkill(null);
             setLoadingSkill(false);
             return;
@@ -131,26 +145,115 @@ export default function EnhancedSkillDetail() {
           const isOwner = contextSkill.user_id === currentUser.id;
           
           if (contextSkill.visibility === 'private' && !isOwner) {
+            console.log('[SkillDetail] Access denied: Private skill, user is not owner');
             setSkill(null);
             setLoadingSkill(false);
             return;
           }
           
           if (contextSkill.visibility === 'tutor' && !isOwner && contextSkill.tutor_id !== currentUser.id) {
+            console.log('[SkillDetail] Access denied: Tutor skill, user is not owner or tutor');
             setSkill(null);
             setLoadingSkill(false);
             return;
           }
         }
         
-        setSkill(contextSkill);
+        // Even if skill is in context, we need to fetch entries and progress updates
+        // because context skills might not have them populated
+        console.log('[SkillDetail] Fetching entries and progress updates for context skill...');
+        try {
+          const { supabase } = await import('../../utils/supabase');
+          
+          // Fetch entries and progress updates through skills table join to bypass RLS
+          // This works because skills table RLS allows viewing public skills
+          console.log('[SkillDetail] Fetching skill with entries and progress updates via join for skill:', id);
+          const { data: skillWithData, error: skillDataError } = await supabase
+            .from('skills')
+            .select(`
+              *,
+              skill_entries (*),
+              progress_updates (*)
+            `)
+            .eq('id', id)
+            .single();
+
+          if (skillDataError) {
+            console.error('[SkillDetail] Error fetching skill with entries/progress:', skillDataError);
+            console.error('[SkillDetail] Error details:', {
+              code: skillDataError.code,
+              message: skillDataError.message,
+              details: skillDataError.details,
+              hint: skillDataError.hint,
+            });
+          }
+
+          const entriesData = (skillWithData as any)?.skill_entries || [];
+          const progressData = (skillWithData as any)?.progress_updates || [];
+
+          console.log('[SkillDetail] Entries fetched via join:', {
+            count: entriesData?.length || 0,
+            entries: entriesData?.map((e: any) => ({ id: e.id, content: e.content?.substring(0, 50), date: e.created_at })) || [],
+          });
+
+          console.log('[SkillDetail] Progress updates fetched via join:', {
+            count: progressData?.length || 0,
+            updates: progressData?.map((p: any) => ({ id: p.id, progress: p.progress, date: p.created_at })) || [],
+          });
+
+          // Merge context skill with fetched entries and progress updates
+          const mergedSkill = {
+            ...contextSkill,
+            progressUpdates: progressData?.map(p => ({
+              id: p.id,
+              skill_id: p.skill_id,
+              progress: p.progress,
+              created_at: p.created_at,
+              notes: p.notes,
+            })) || [],
+            entries: entriesData?.map(e => ({
+              id: e.id,
+              text: e.content,
+              date: e.created_at,
+              hours: e.hours,
+            })) || [],
+            description: contextSkill.description || '',
+            progress: contextSkill.progress || 0,
+            likes_count: contextSkill.likes_count || 0,
+            comments_count: contextSkill.comments_count || 0,
+            current_level: contextSkill.current_level || 'beginner',
+            user_id: contextSkill.user_id,
+            owner: null, // Will be fetched separately if needed
+          };
+          
+          console.log('[SkillDetail] Merged skill data:', {
+            id: mergedSkill.id,
+            name: mergedSkill.name,
+            entriesCount: mergedSkill.entries.length,
+            progressUpdatesCount: mergedSkill.progressUpdates.length,
+          });
+          
+          setSkill(mergedSkill);
+        } catch (error) {
+          console.error('[SkillDetail] Error loading entries/progress for context skill:', error);
+          // Fallback to context skill without entries/progress
+          setSkill({
+            ...contextSkill,
+            progressUpdates: [],
+            entries: [],
+          });
+        }
+        
         setLoadingSkill(false);
         return;
       }
 
       // If not in context, fetch from database
+      console.log('[SkillDetail] Skill not in context, fetching from database...');
       try {
         const { supabase } = await import('../../utils/supabase');
+        // Fetch skill with entries and progress updates via join to bypass RLS
+        // This works because skills table RLS allows viewing public skills
         const { data: skillData, error: skillError } = await supabase
           .from('skills')
           .select(`
@@ -160,7 +263,9 @@ export default function EnhancedSkillDetail() {
               name,
               email,
               profile_picture_url
-            )
+            ),
+            skill_entries (*),
+            progress_updates (*)
           `)
           .eq('id', id)
           .single();
@@ -241,30 +346,31 @@ export default function EnhancedSkillDetail() {
           }
         }
         
-        // Fetch entries and progress updates separately
-        const { data: entriesData } = await supabase
-          .from('skill_entries')
-          .select('*')
-          .eq('skill_id', id)
-          .order('created_at', { ascending: false });
+        // Extract entries and progress updates from the joined query
+        const entriesData = (skillData as any)?.skill_entries || [];
+        const progressData = (skillData as any)?.progress_updates || [];
 
-        const { data: progressData } = await supabase
-          .from('progress_updates')
-          .select('*')
-          .eq('skill_id', id)
-          .order('created_at', { ascending: false });
+        console.log('[SkillDetail] Entries fetched via join:', {
+          count: entriesData?.length || 0,
+          entries: entriesData?.map((e: any) => ({ id: e.id, content: e.content?.substring(0, 50), date: e.created_at })) || [],
+        });
+
+        console.log('[SkillDetail] Progress updates fetched via join:', {
+          count: progressData?.length || 0,
+          updates: progressData?.map((p: any) => ({ id: p.id, progress: p.progress, date: p.created_at })) || [],
+        });
 
         // Ensure skill has all required properties with defaults
-        setSkill({
+        const finalSkill = {
           ...skillData,
-          progressUpdates: progressData?.map(p => ({
+          progressUpdates: progressData?.map((p: any) => ({
             id: p.id,
             skill_id: p.skill_id,
             progress: p.progress,
             created_at: p.created_at,
             notes: p.notes,
           })) || [],
-          entries: entriesData?.map(e => ({
+          entries: entriesData?.map((e: any) => ({
             id: e.id,
             text: e.content,
             date: e.created_at,
@@ -277,7 +383,16 @@ export default function EnhancedSkillDetail() {
           current_level: skillData.current_level || 'beginner',
           user_id: skillData.user_id, // Include user_id for ownership checks
           owner: (skillData as any).users || null, // Include owner information
+        };
+        
+        console.log('[SkillDetail] Final skill data set:', {
+          id: finalSkill.id,
+          name: finalSkill.name,
+          entriesCount: finalSkill.entries.length,
+          progressUpdatesCount: finalSkill.progressUpdates.length,
         });
+        
+        setSkill(finalSkill);
       } catch (error) {
         console.error('Error loading skill:', error);
       } finally {
@@ -293,43 +408,61 @@ export default function EnhancedSkillDetail() {
     const loadData = async () => {
       // Don't load if no skill or skill ID
       if (!id || !skill) {
-        console.warn('Skipping enhanced data load: Missing skill or ID', { id, hasSkill: !!skill });
+        console.warn('[SkillDetail] Skipping enhanced data load: Missing skill or ID', { id, hasSkill: !!skill });
         return;
       }
       
       // Ensure id is valid UUID format
       if (typeof id !== 'string' || id === 'null' || id === 'undefined' || id.trim() === '') {
-        console.warn('Skipping enhanced data load: Invalid skill ID', id);
+        console.warn('[SkillDetail] Skipping enhanced data load: Invalid skill ID', id);
         return;
       }
       
       // Validate UUID format (basic check for 8-4-4-4-12 pattern)
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidPattern.test(id)) {
-        console.warn('Skipping enhanced data load: Invalid UUID format', id);
+        console.warn('[SkillDetail] Skipping enhanced data load: Invalid UUID format', id);
         return;
       }
       
+      console.log('[SkillDetail] Loading enhanced data for skill:', id);
       try {
+        console.log('[SkillDetail] Calling getMilestones for skill:', id);
+        await getMilestones(id);
+        console.log('[SkillDetail] Milestones loaded, current skillMilestones:', skillMilestones.length);
+        
         await Promise.all([
-          getMilestones(id),
           getResources(id),
           getArtifacts(id),
           getTechniques(id),
           getChallenges(id),
           getComments(id),
         ]);
+        
+        console.log('[SkillDetail] All enhanced data loaded successfully');
       } catch (error) {
-        console.error('Failed to load enhanced data:', error);
+        console.error('[SkillDetail] Failed to load enhanced data:', error);
         // Don't throw - allow UI to continue without enhanced data
       }
     };
     
     // Only run when skill is loaded
     if (skill) {
+      console.log('[SkillDetail] Skill loaded, triggering enhanced data load:', { skillId: skill.id, skillName: skill.name });
       loadData();
     }
   }, [skill, id]);
+
+  // Debug: Log when milestones change
+  useEffect(() => {
+    if (skill) {
+      console.log('[SkillDetail] skillMilestones changed:', {
+        skillId: skill.id,
+        milestonesCount: skillMilestones.length,
+        milestones: skillMilestones.map(m => ({ id: m.id, title: m.title, is_completed: m.is_completed })),
+      });
+    }
+  }, [skillMilestones, skill]);
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -758,18 +891,11 @@ export default function EnhancedSkillDetail() {
 
   return (
     <UniformLayout>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        {activeTab === 'comments' ? (
+          // Use View for comments tab to avoid nested ScrollView/FlatList
+          // CommentThread has its own KeyboardAvoidingView
+          <View style={styles.scrollView}>
             {/* Header */}
             <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
               <LinearGradient
@@ -786,78 +912,178 @@ export default function EnhancedSkillDetail() {
                     <Ionicons name="arrow-back" size={24} color={themeColors.text} />
                   </TouchableOpacity>
                                     <View style={styles.skillInfo}>
-                    <View style={styles.skillHeader}>
-                      <Text style={[styles.skillName, { color: themeColors.text }]}>{skill.name}</Text>
-                      <LevelBadge level={skill.current_level || 'beginner'} size="small" />
-                    </View>
-                    {skill.description && (
-                      <Text style={[styles.skillDescription, { color: themeColors.textSecondary }]}>{skill.description}</Text>
-                    )}
-                    {!isOwnSkill && skill.owner && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs }}>
-                        <Ionicons name="person-circle-outline" size={14} color={themeColors.textSecondary} />
-                        <Text style={{ ...Typography.bodySmall, color: themeColors.textSecondary, marginLeft: Spacing.xs }}>
-                          Created by {skill.owner.name || skill.owner.email || 'Unknown'}
-                        </Text>
+                      <View style={styles.skillHeader}>
+                        <Text style={[styles.skillName, { color: themeColors.text }]}>{skill.name}</Text>
+                        <LevelBadge level={skill.current_level || 'beginner'} size="small" />
                       </View>
-                    )}
-                    <View style={styles.skillStats}>
-                      <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
-                      <View style={styles.statItem}>
-                        <Ionicons name="chatbubble-outline" size={16} color={themeColors.textSecondary} />
-                        <Text style={[styles.statText, { color: themeColors.textSecondary }]}>
-                          {skillComments.filter(c => !c.parent_comment_id).length}
-                        </Text>
+                      {skill.description && (
+                        <Text style={[styles.skillDescription, { color: themeColors.textSecondary }]}>{skill.description}</Text>
+                      )}
+                      {!isOwnSkill && skill.owner && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs }}>
+                          <Ionicons name="person-circle-outline" size={14} color={themeColors.textSecondary} />
+                          <Text style={{ ...Typography.bodySmall, color: themeColors.textSecondary, marginLeft: Spacing.xs }}>
+                            Created by {skill.owner.name || skill.owner.email || 'Unknown'}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={styles.skillStats}>
+                        <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
+                        <View style={styles.statItem}>
+                          <Ionicons name="chatbubble-outline" size={16} color={themeColors.textSecondary} />
+                          <Text style={[styles.statText, { color: themeColors.textSecondary }]}>
+                            {skillComments.filter(c => !c.parent_comment_id).length}
+                          </Text>
+                        </View>
                       </View>
                     </View>
                   </View>
-                </View>
-              </LinearGradient>
-            </Animated.View>
+                </LinearGradient>
+              </Animated.View>
 
-            {/* Progress Section */}
-            <Animated.View style={[styles.progressSection, { opacity: fadeAnim }]}>
-              <LinearGradient
-                colors={themeColors.gradient.background as any}
-                style={[styles.progressCard, { borderColor: themeColors.border }]}
-              >
-                <View style={styles.progressHeader}>
-                  <Text style={[styles.progressTitle, { color: themeColors.text }]}>{t('currentProgress')}</Text>
-                  <Text style={[styles.progressValue, { color: themeColors.text }]}>{skill.progress}%</Text>
-                </View>
-                <ProgressBar progress={skill.progress} height={12} />
-              </LinearGradient>
-            </Animated.View>
+              {/* Progress Section */}
+              <Animated.View style={[styles.progressSection, { opacity: fadeAnim }]}>
+                <LinearGradient
+                  colors={themeColors.gradient.background as any}
+                  style={[styles.progressCard, { borderColor: themeColors.border }]}
+                >
+                  <View style={styles.progressHeader}>
+                    <Text style={[styles.progressTitle, { color: themeColors.text }]}>{t('currentProgress')}</Text>
+                    <Text style={[styles.progressValue, { color: themeColors.text }]}>{skill.progress}%</Text>
+                  </View>
+                  <ProgressBar progress={skill.progress} height={12} />
+                </LinearGradient>
+              </Animated.View>
 
-            {/* Tabs */}
-            <View style={styles.tabsContainer}>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.tabs}
-              >
-                {(['overview', 'milestones', 'resources', 'techniques', 'challenges', 'comments'] as TabType[]).map((tab) => (
-                  <TouchableOpacity
-                    key={tab}
-                    style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
-                    onPress={() => setActiveTab(tab)}
-                  >
-                    <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
-                      { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
-                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              {/* Tabs */}
+              <View style={styles.tabsContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.tabs}
+                >
+                  {(['overview', 'milestones', 'resources', 'techniques', 'challenges', 'comments'] as TabType[]).map((tab) => (
+                    <TouchableOpacity
+                      key={tab}
+                      style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
+                      onPress={() => setActiveTab(tab)}
+                    >
+                      <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
+                        { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Tab Content - Comments tab uses FlatList, so no ScrollView wrapper */}
+              <View style={[styles.tabContent, activeTab === 'comments' && styles.tabContentFlex]}>
+                {renderTabContent()}
+              </View>
             </View>
+          ) : (
+            // Use ScrollView for other tabs
+            <KeyboardAvoidingView
+              style={styles.keyboardView}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+            >
+              <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+              {/* Header */}
+              <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
+                <LinearGradient
+                  colors={themeColors.gradient.primary as any}
+                  style={styles.headerGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.headerContent}>
+                    <TouchableOpacity
+                      style={styles.backButton}
+                      onPress={() => router.back()}
+                    >
+                      <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+                    </TouchableOpacity>
+                                    <View style={styles.skillInfo}>
+                      <View style={styles.skillHeader}>
+                        <Text style={[styles.skillName, { color: themeColors.text }]}>{skill.name}</Text>
+                        <LevelBadge level={skill.current_level || 'beginner'} size="small" />
+                      </View>
+                      {skill.description && (
+                        <Text style={[styles.skillDescription, { color: themeColors.textSecondary }]}>{skill.description}</Text>
+                      )}
+                      {!isOwnSkill && skill.owner && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs }}>
+                          <Ionicons name="person-circle-outline" size={14} color={themeColors.textSecondary} />
+                          <Text style={{ ...Typography.bodySmall, color: themeColors.textSecondary, marginLeft: Spacing.xs }}>
+                            Created by {skill.owner.name || skill.owner.email || 'Unknown'}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={styles.skillStats}>
+                        <ReactionButton skillId={skill.id} reactionCount={skill.likes_count || 0} />
+                        <View style={styles.statItem}>
+                          <Ionicons name="chatbubble-outline" size={16} color={themeColors.textSecondary} />
+                          <Text style={[styles.statText, { color: themeColors.textSecondary }]}>
+                            {skillComments.filter(c => !c.parent_comment_id).length}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </Animated.View>
 
-            {/* Tab Content */}
-            <View style={styles.tabContent}>
-              {renderTabContent()}
-            </View>
-          </ScrollView>
+              {/* Progress Section */}
+              <Animated.View style={[styles.progressSection, { opacity: fadeAnim }]}>
+                <LinearGradient
+                  colors={themeColors.gradient.background as any}
+                  style={[styles.progressCard, { borderColor: themeColors.border }]}
+                >
+                  <View style={styles.progressHeader}>
+                    <Text style={[styles.progressTitle, { color: themeColors.text }]}>{t('currentProgress')}</Text>
+                    <Text style={[styles.progressValue, { color: themeColors.text }]}>{skill.progress}%</Text>
+                  </View>
+                  <ProgressBar progress={skill.progress} height={12} />
+                </LinearGradient>
+              </Animated.View>
+
+              {/* Tabs */}
+              <View style={styles.tabsContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.tabs}
+                >
+                  {(['overview', 'milestones', 'resources', 'techniques', 'challenges', 'comments'] as TabType[]).map((tab) => (
+                    <TouchableOpacity
+                      key={tab}
+                      style={[styles.tab, activeTab === tab && [styles.tabActive, { borderBottomColor: themeColors.accent }]]}
+                      onPress={() => setActiveTab(tab)}
+                    >
+                      <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive, 
+                        { color: activeTab === tab ? themeColors.accent : themeColors.textSecondary }]}>
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Tab Content */}
+              <View style={styles.tabContent}>
+                {renderTabContent()}
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+          )}
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
 
       {/* Modals - Only show if user owns the skill */}
       {isOwnSkill && (
@@ -982,6 +1208,7 @@ const styles = StyleSheet.create({
   tabText: { ...Typography.body },
   tabTextActive: { fontWeight: '600' },
   tabContent: { paddingHorizontal: Spacing.lg },
+  tabContentFlex: { flex: 1 },
   section: { marginVertical: 16 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
   sectionTitle: { ...Typography.h3 },

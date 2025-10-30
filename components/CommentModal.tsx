@@ -1,14 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useTheme } from '../context/ThemeContext';
-import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
 import { SocialService } from '../services/socialService';
-import { CommentThread } from './CommentThread';
 import { SkillComment } from '../utils/supabase-types';
+import { CommentThread } from './CommentThread';
 
 interface CommentModalProps {
   visible: boolean;
@@ -130,6 +129,7 @@ export default function CommentModal({ visible, onClose, skillId, onCommentAdded
                   skillId={skillId}
                   comments={comments}
                   onRefresh={loadComments}
+                  hideInput={true}
                 />
               )}
             </View>

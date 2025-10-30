@@ -1,25 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState, useEffect } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 import { useEnhancedSkills } from '../context/EnhancedSkillsContext';
 import { useTheme } from '../context/ThemeContext';
 import { SkillComment } from '../utils/supabase-types';
-import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
 
 interface CommentThreadProps {
   skillId: string;
   comments: SkillComment[];
   onRefresh?: () => void;
+  hideInput?: boolean; // Hide input when used in modal
 }
 
-export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadProps) => {
+export const CommentThread = ({ skillId, comments, onRefresh, hideInput = false }: CommentThreadProps) => {
   const { createComment } = useEnhancedSkills();
   const { resolvedTheme } = useTheme();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
+  const insets = useSafeAreaInsets();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+  const [submitting, setSubmitting] = useState(false);
 
   console.log('[CommentThread] Render: skillId=', skillId, 'comments count=', comments.length, 'comments=', comments);
 
@@ -34,10 +38,11 @@ export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadPro
   }, [comments]);
 
   const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || submitting) return;
 
     console.log('[CommentThread] handleSubmitComment: Creating comment for skillId:', skillId);
     try {
+      setSubmitting(true);
       await createComment(skillId, newComment, replyingTo || undefined);
       console.log('[CommentThread] handleSubmitComment: Comment created successfully');
       setNewComment('');
@@ -45,6 +50,8 @@ export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadPro
       onRefresh?.();
     } catch (error) {
       console.error('[CommentThread] handleSubmitComment: Failed to create comment:', error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -149,7 +156,11 @@ export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadPro
   }, [topLevelComments.length]);
   
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <Text style={[styles.title, { color: themeColors.text }]}>
         Comments ({topLevelComments.length})
       </Text>
@@ -159,8 +170,8 @@ export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadPro
         renderItem={renderComment}
         keyExtractor={(item) => item.id}
         style={styles.commentsList}
+        contentContainerStyle={styles.commentsListContent}
         scrollEnabled={true}
-        nestedScrollEnabled={true}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="chatbubbles-outline" size={48} color={themeColors.textSecondary} />
@@ -179,22 +190,66 @@ export const CommentThread = ({ skillId, comments, onRefresh }: CommentThreadPro
           </TouchableOpacity>
         </View>
       )}
-    </View>
+
+      {/* Comment Input - Hidden when used in modal */}
+      {!hideInput && (
+        <View style={[styles.inputSection, { 
+          backgroundColor: themeColors.background, 
+          borderTopColor: themeColors.border,
+          paddingBottom: Math.max(insets.bottom, Spacing.md)
+        }]}>
+          <View style={[styles.inputContainer, { 
+            backgroundColor: themeColors.backgroundSecondary,
+            borderColor: themeColors.border 
+          }]}>
+            <TextInput
+              style={[styles.input, { color: themeColors.text }]}
+              placeholder={replyingTo ? "Write a reply..." : "Write your comment..."}
+              placeholderTextColor={themeColors.textSecondary}
+              value={newComment}
+              onChangeText={setNewComment}
+              multiline
+              editable={!submitting}
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendButton, 
+                { backgroundColor: themeColors.accent }, 
+                (!newComment.trim() || submitting) && styles.sendButtonDisabled
+              ]}
+              onPress={handleSubmitComment}
+              disabled={!newComment.trim() || submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="send" size={20} color="#fff" />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: Spacing.lg,
   },
   title: {
     ...Typography.h3,
     fontWeight: '600',
     marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
   },
   commentsList: {
     flex: 1,
+  },
+  commentsListContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.md,
   },
   commentContainer: {
     borderRadius: BorderRadius.lg,
@@ -309,5 +364,38 @@ const styles = StyleSheet.create({
     ...Typography.body,
     marginTop: Spacing.sm,
     textAlign: 'center',
+  },
+  inputSection: {
+    borderTopWidth: 1,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.sm,
+    gap: Spacing.sm,
+    borderWidth: 1,
+    minHeight: 50,
+  },
+  input: {
+    flex: 1,
+    ...Typography.body,
+    padding: Spacing.sm,
+    maxHeight: 100,
+    minHeight: 40,
+    textAlignVertical: 'top',
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
   },
 });

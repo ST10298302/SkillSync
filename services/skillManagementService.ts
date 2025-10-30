@@ -343,13 +343,24 @@ export class SkillManagementService {
    * Get all milestones for a skill
    */
   static async getMilestones(skillId: string): Promise<SkillMilestone[]> {
+    console.log('[SkillManagementService] getMilestones: Querying database for skill:', skillId);
     const { data, error } = await supabase
       .from('skill_milestones')
       .select('*')
       .eq('skill_id', skillId)
       .order('order_index', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('[SkillManagementService] getMilestones: Database error:', error);
+      throw error;
+    }
+    
+    console.log('[SkillManagementService] getMilestones: Query result:', {
+      skillId,
+      count: data?.length || 0,
+      milestones: data?.map(m => ({ id: m.id, title: m.title, is_completed: m.is_completed })) || [],
+    });
+    
     return data || [];
   }
 

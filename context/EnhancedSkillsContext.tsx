@@ -332,14 +332,20 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
   // Milestone operations
   const getMilestones = async (skillId: string) => {
     if (!skillId || typeof skillId !== 'string' || skillId === 'null') {
-      console.warn('getMilestones: Invalid skillId', skillId);
+      console.warn('[EnhancedSkillsContext] getMilestones: Invalid skillId', skillId);
       return;
     }
+    console.log('[EnhancedSkillsContext] getMilestones: Fetching milestones for skill:', skillId);
     try {
       const data = await SkillManagementService.getMilestones(skillId);
+      console.log('[EnhancedSkillsContext] getMilestones: Successfully fetched milestones:', {
+        skillId,
+        count: data.length,
+        milestones: data.map(m => ({ id: m.id, title: m.title, is_completed: m.is_completed })),
+      });
       setMilestones(data);
     } catch (error) {
-      console.error('Failed to load milestones:', error);
+      console.error('[EnhancedSkillsContext] getMilestones: Failed to load milestones:', error);
       setMilestones([]);
     }
   };
