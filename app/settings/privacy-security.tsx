@@ -188,7 +188,7 @@ export default function PrivacySecuritySettings() {
             { 
               text: 'Disable', 
               style: 'destructive',
-              onPress: async () => {
+              onPress: () => { void (async () => {
                 try {
                   await PinService.disablePin();
                   await SupabaseService.updateSecuritySettings(user.id, {
@@ -210,7 +210,7 @@ export default function PrivacySecuritySettings() {
                   console.error('Error disabling PIN:', error);
                   Alert.alert('Error', 'Failed to disable PIN protection. Please try again.');
                 }
-              }
+              })(); }
             }
           ]
         );
@@ -270,7 +270,7 @@ export default function PrivacySecuritySettings() {
             { 
               text: 'Disable', 
               style: 'destructive',
-              onPress: async () => {
+              onPress: () => { void (async () => {
                 try {
                   await BiometricService.disableBiometric();
                   setSecuritySettings(prev => ({
@@ -286,7 +286,7 @@ export default function PrivacySecuritySettings() {
                   console.error('Error disabling biometric:', error);
                   Alert.alert('Error', 'Failed to disable biometric authentication. Please try again.');
                 }
-              }
+              })(); }
             }
           ]
         );
@@ -404,7 +404,7 @@ export default function PrivacySecuritySettings() {
         { 
           text: 'Delete', 
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => { void (async () => {
             if (!user?.id) return;
             
             try {
@@ -430,7 +430,7 @@ export default function PrivacySecuritySettings() {
             } finally {
               setLoading(false);
             }
-          }
+          })(); }
         },
       ]
     );

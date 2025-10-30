@@ -113,7 +113,7 @@ export default function Profile() {
         { 
           text: t('signOut'), 
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => { void (async () => {
             try {
               setIsLoading(true);
               await signOut();
@@ -129,7 +129,7 @@ export default function Profile() {
             } finally {
               setIsLoading(false);
             }
-          }
+          })(); }
         },
       ]
     );

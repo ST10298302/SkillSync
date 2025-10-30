@@ -9,25 +9,25 @@ const isBrowser = typeof window !== 'undefined';
 
 // Create a custom storage adapter that only works in browser
 const customStorage = isBrowser ? {
-  getItem: (key: string) => {
+  getItem: async (key: string) => {
     try {
-      return AsyncStorage.getItem(key);
+      return await AsyncStorage.getItem(key);
     } catch {
-      return Promise.resolve(null);
+      return null;
     }
   },
-  setItem: (key: string, value: string) => {
+  setItem: async (key: string, value: string) => {
     try {
-      return AsyncStorage.setItem(key, value);
+      await AsyncStorage.setItem(key, value);
     } catch {
-      return Promise.resolve();
+      // ignore
     }
   },
-  removeItem: (key: string) => {
+  removeItem: async (key: string) => {
     try {
-      return AsyncStorage.removeItem(key);
+      await AsyncStorage.removeItem(key);
     } catch {
-      return Promise.resolve();
+      // ignore
     }
   }
 } : undefined;

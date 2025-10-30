@@ -180,7 +180,7 @@ export default function NewSkill() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                {errors.general && (
+                {!!errors.general && (
                   <View style={[styles.generalErrorContainer, { backgroundColor: themeColors.error + '10' }]}>
                     <Ionicons name="alert-circle" size={20} color={themeColors.error} />
                     <Text style={[styles.generalErrorText, { color: themeColors.error }]}>{errors.general}</Text>
@@ -206,7 +206,7 @@ export default function NewSkill() {
                       blurOnSubmit={false}
                     />
                   </View>
-                  {errors.name && (
+                  {!!errors.name && (
                     <View style={styles.errorContainer}>
                       <Ionicons name="alert-circle" size={16} color={themeColors.error} />
                       <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.name}</Text>
@@ -240,7 +240,7 @@ export default function NewSkill() {
                        {description.length}/500 characters
                      </Text>
                    </View>
-                   {errors.description && (
+                   {!!errors.description && (
                      <View style={styles.errorContainer}>
                        <Ionicons name="alert-circle" size={16} color={themeColors.error} />
                        <Text style={[styles.errorText, { color: themeColors.error }]}>{errors.description}</Text>
