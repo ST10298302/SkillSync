@@ -196,7 +196,8 @@ export class SupabaseService {
       const binaryString = atob(base64);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+        const cp = binaryString.codePointAt(i) ?? 0;
+        bytes[i] = cp & 0xff;
       }
 
       // Upload to Supabase Storage

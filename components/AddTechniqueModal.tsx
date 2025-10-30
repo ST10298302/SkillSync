@@ -57,7 +57,7 @@ export const AddTechniqueModal = ({ visible, onClose, skillId, onSuccess, editin
           technique_name: techniqueName.trim(),
           description: description.trim() || undefined,
           practice_hours: hours,
-          mastery_level: parseInt(masteryLevel) || 0,
+          mastery_level: Number.parseInt(masteryLevel) || 0,
           notes: notes.trim() || undefined,
         });
       } else {
@@ -67,7 +67,7 @@ export const AddTechniqueModal = ({ visible, onClose, skillId, onSuccess, editin
           technique_name: techniqueName.trim(),
           description: description.trim() || undefined,
           practice_hours: hours,
-          mastery_level: parseInt(masteryLevel) || 0,
+          mastery_level: Number.parseInt(masteryLevel) || 0,
           notes: notes.trim() || undefined,
         });
 

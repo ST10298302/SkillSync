@@ -53,6 +53,7 @@ jest.mock('expo-secure-store', () => ({
 }));
 
 // Mock expo-linear-gradient
+/* eslint-disable react/prop-types */
 jest.mock('expo-linear-gradient', () => {
   const React = require('react');
   const { View } = require('react-native');
@@ -60,6 +61,7 @@ jest.mock('expo-linear-gradient', () => {
     LinearGradient: ({ children, ...props }) => React.createElement(View, props, children),
   };
 });
+/* eslint-enable react/prop-types */
 
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
