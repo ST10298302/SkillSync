@@ -160,30 +160,39 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       const { supabase } = await import('../utils/supabase');
       console.log('Fetching public skills, current user:', user.id);
       
-      // Get public skills
+      // Get public skills (excluding user's own skills - they see them on their own page)
       const { data: publicSkillsData, error: publicError } = await supabase
         .from('skills')
         .select('*')
         .eq('visibility', 'public')
+        .neq('user_id', user.id) // Exclude user's own skills
         .order('created_at', { ascending: false });
       
       if (publicError) {
         console.error('Error fetching public skills:', publicError);
       }
 
-      // Get skills where user is the assigned tutor
-      const { data: tutorSkillsData, error: tutorError } = await supabase
-        .from('skills')
-        .select('*')
-        .eq('visibility', 'tutor')
-        .eq('tutor_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (tutorError && tutorError.code !== '42703' && tutorError.code !== 'PGRST204') {
-        console.error('Error fetching tutor skills:', tutorError);
+      // Get skills where user is the assigned tutor (excluding user's own skills)
+      let tutorSkillsData: any[] = [];
+      try {
+        const { data: tutorSkills, error: tutorError } = await supabase
+          .from('skills')
+          .select('*')
+          .eq('visibility', 'tutor')
+          .eq('tutor_id', user.id)
+          .neq('user_id', user.id) // Exclude user's own skills
+          .order('created_at', { ascending: false });
+        
+        if (tutorError && tutorError.code !== '42703' && tutorError.code !== 'PGRST204') {
+          console.error('Error fetching tutor skills:', tutorError);
+        } else {
+          tutorSkillsData = tutorSkills || [];
+        }
+      } catch (err) {
+        console.warn('Error fetching tutor skills:', err);
       }
 
-      // Get skills where user is an assigned student
+      // Get skills where user is an assigned student (excluding user's own skills)
       let studentSkillsData: any[] = [];
       try {
         const { data: studentAssignments, error: studentError } = await supabase
@@ -204,6 +213,7 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
             .select('*')
             .eq('visibility', 'students')
             .in('id', skillIds)
+            .neq('user_id', user.id) // Exclude user's own skills
             .order('created_at', { ascending: false });
           
           if (skillsError) {
@@ -232,6 +242,11 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       console.log(`  - Public: ${publicSkillsData?.length || 0}`);
       console.log(`  - Tutor: ${tutorSkillsData?.length || 0}`);
       console.log(`  - Student: ${studentSkillsData?.length || 0}`);
+      
+      // Log visibility values for debugging
+      uniqueSkills.forEach((skill: any) => {
+        console.log(`Skill "${skill.name}": visibility="${skill.visibility}", user_id="${skill.user_id}", tutor_id="${skill.tutor_id || 'null'}"`);
+      });
       
       if (!uniqueSkills || uniqueSkills.length === 0) {
         return [];

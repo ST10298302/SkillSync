@@ -75,68 +75,34 @@ export default function CommunityScreen() {
       
       console.log('Total public skills found:', skills.length);
       console.log('User ID:', user?.id);
-      console.log('User skills IDs:', userSkills.map(s => s.id));
       
-      // Log owner information
+      // Log visibility for debugging
       skills.forEach((skill, index) => {
-        console.log(`Skill ${index + 1} owner:`, (skill as any).owner);
+        console.log(`Skill ${index + 1}: "${skill.name}" - visibility="${skill.visibility}", user_id="${skill.user_id}", tutor_id="${skill.tutor_id || 'null'}"`);
       });
       
-      // Filter out user's own skills by user_id, not just skill id
-      // Also filter out skills that shouldn't be visible to other users
+      // Additional filtering is not needed since getPublicSkills already filters correctly
+      // But we'll keep a safety check to ensure no own skills slip through
       if (user) {
-        // Check student assignments for all skills at once to avoid multiple queries
-        const skillsWithStudentVisibility = skills.filter(s => s?.visibility === 'students');
-        const skillIdsForStudentCheck = skillsWithStudentVisibility.map(s => s.id);
-        let studentAccessMap: Record<string, boolean> = {};
-        
-        if (skillIdsForStudentCheck.length > 0) {
-          try {
-            const { supabase } = await import('../../utils/supabase');
-            const { data: studentAssignments } = await supabase
-              .from('skill_students')
-              .select('skill_id')
-              .eq('student_id', user.id)
-              .in('skill_id', skillIdsForStudentCheck);
-            
-            if (studentAssignments) {
-              studentAssignments.forEach(assignment => {
-                studentAccessMap[assignment.skill_id] = true;
-              });
-            }
-          } catch (err) {
-            console.warn('Error checking student access:', err);
-          }
-        }
-        
         skills = skills.filter(skill => {
           if (!skill) return false;
           
-          // Always hide user's own skills (they can see them on their own page)
+          // Safety check: always hide user's own skills (they can see them on their own page)
           if (skill.user_id === user.id) {
+            console.warn(`Filtered out own skill: ${skill.name}`);
             return false;
           }
           
-          // For tutor visibility skills, only show if current user is the assigned tutor
-          if (skill.visibility === 'tutor') {
-            return skill.tutor_id === user.id;
-          }
+          // Verify visibility matches what should be shown
+          // Public skills are visible to everyone (already filtered by getPublicSkills)
+          // Tutor visibility skills should only show if current user is the assigned tutor (already filtered)
+          // Student visibility skills should only show if current user is assigned (already filtered)
+          // Private skills should never show (already filtered)
           
-          // For student visibility skills, only show if current user is assigned as a student
-          if (skill.visibility === 'students') {
-            return studentAccessMap[skill.id] === true;
-          }
-          
-          // Private skills should never show on community page
-          if (skill.visibility === 'private') {
-            return false;
-          }
-          
-          // Public skills are visible to everyone
-          return skill.visibility === 'public';
+          return true;
         });
       } else {
-        // No user logged in, only show public skills
+        // No user logged in, only show public skills (already filtered by getPublicSkills)
         skills = skills.filter(skill => skill && skill.visibility === 'public');
       }
       
