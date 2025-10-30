@@ -3,16 +3,16 @@
 
 import { supabase } from '../utils/supabase';
 import {
-    Achievement,
-    AchievementCategory,
-    UserAchievement
+  Achievement,
+  AchievementCategory,
+  UserAchievement
 } from '../utils/supabase-types';
 
 export class AchievementService {
   // ============================================
   // ACHIEVEMENT MANAGEMENT
   // ============================================
-
+//code push
   /**
    * Get all available achievements
    */
