@@ -128,8 +128,8 @@ export const AddArtifactModal = ({ visible, onClose, skillId }: AddArtifactModal
         'Choose an option',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Take Photo', onPress: takePhoto },
-          { text: 'Choose from Library', onPress: pickImage },
+          { text: 'Take Photo', onPress: () => { void takePhoto(); } },
+          { text: 'Choose from Library', onPress: () => { void pickImage(); } },
         ]
       );
     }

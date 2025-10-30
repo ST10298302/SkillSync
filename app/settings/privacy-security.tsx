@@ -743,15 +743,15 @@ export default function PrivacySecuritySettings() {
                     { text: 'Cancel', style: 'cancel' },
                     { 
                       text: 'Public', 
-                      onPress: () => updateProfileVisibility('public')
+                      onPress: () => { void updateProfileVisibility('public'); }
                     },
                     { 
                       text: 'Private', 
-                      onPress: () => updateProfileVisibility('private')
+                      onPress: () => { void updateProfileVisibility('private'); }
                     },
                     { 
                       text: 'Friends Only', 
-                      onPress: () => updateProfileVisibility('friends')
+                      onPress: () => { void updateProfileVisibility('friends'); }
                     },
                   ]
                 );
@@ -843,27 +843,27 @@ export default function PrivacySecuritySettings() {
                     { text: 'Cancel', style: 'cancel' },
                     { 
                       text: '1 minute', 
-                      onPress: () => updateSessionTimeout('1min')
+                      onPress: () => { void updateSessionTimeout('1min'); }
                     },
                     { 
                       text: '5 minutes', 
-                      onPress: () => updateSessionTimeout('5min')
+                      onPress: () => { void updateSessionTimeout('5min'); }
                     },
                     { 
                       text: '15 minutes', 
-                      onPress: () => updateSessionTimeout('15min')
+                      onPress: () => { void updateSessionTimeout('15min'); }
                     },
                     { 
                       text: '30 minutes', 
-                      onPress: () => updateSessionTimeout('30min')
+                      onPress: () => { void updateSessionTimeout('30min'); }
                     },
                     { 
                       text: '1 hour', 
-                      onPress: () => updateSessionTimeout('1hour')
+                      onPress: () => { void updateSessionTimeout('1hour'); }
                     },
                     { 
                       text: 'Never', 
-                      onPress: () => updateSessionTimeout('never')
+                      onPress: () => { void updateSessionTimeout('never'); }
                     },
                   ]
                 );

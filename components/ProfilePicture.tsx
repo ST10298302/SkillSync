@@ -200,9 +200,9 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
       'Choose an option',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Take Photo', onPress: takePhoto },
-        { text: 'Choose from Library', onPress: pickImage },
-        ...(localImageUrl ? [{ text: 'Remove Picture', style: 'destructive' as const, onPress: removeImage }] : []),
+        { text: 'Take Photo', onPress: () => { void takePhoto(); } },
+        { text: 'Choose from Library', onPress: () => { void pickImage(); } },
+        ...(localImageUrl ? [{ text: 'Remove Picture', style: 'destructive' as const, onPress: () => { void removeImage(); } }] : []),
       ]
     );
   };
