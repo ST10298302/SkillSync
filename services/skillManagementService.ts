@@ -30,6 +30,7 @@ export class SkillManagementService {
     visibility?: SkillVisibility;
     estimated_hours?: number;
     category_id?: string;
+    tutor_id?: string;
   }): Promise<Skill> {
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) throw new Error('User not authenticated');
@@ -44,6 +45,7 @@ export class SkillManagementService {
         visibility: skillData.visibility || SkillVisibility.PRIVATE,
         estimated_hours: skillData.estimated_hours,
         category_id: skillData.category_id,
+        tutor_id: skillData.tutor_id || null,
         total_hours: 0,
         streak: 0,
         current_level: 'beginner' as any,
@@ -56,8 +58,47 @@ export class SkillManagementService {
   }
 
   /**
-   * Update a skill
+   * Assign students to a skill (for STUDENTS visibility)
    */
+  static async assignStudentsToSkill(skillId: string, studentIds: string[]): Promise<void> {
+    // First, remove existing student assignments for this skill
+    const { error: deleteError } = await supabase
+      .from('skill_students')
+      .delete()
+      .eq('skill_id', skillId);
+
+    if (deleteError) {
+      console.error('Error removing existing student assignments:', deleteError);
+      // Continue anyway
+    }
+
+    // Insert new student assignments
+    if (studentIds.length > 0) {
+      const assignments = studentIds.map(studentId => ({
+        skill_id: skillId,
+        student_id: studentId,
+      }));
+
+      const { error } = await supabase
+        .from('skill_students')
+        .insert(assignments);
+
+      if (error) throw error;
+    }
+  }
+
+  /**
+   * Get students assigned to a skill
+   */
+  static async getSkillStudents(skillId: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('skill_students')
+      .select('student_id')
+      .eq('skill_id', skillId);
+
+    if (error) throw error;
+    return (data || []).map(row => row.student_id);
+  }
   static async updateSkill(skillId: string, updates: {
     name?: string;
     description?: string;

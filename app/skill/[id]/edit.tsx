@@ -6,7 +6,9 @@ import React, { useRef, useState } from 'react';
 import {
     Alert,
     Animated,
+    FlatList,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
     StyleSheet,
@@ -21,6 +23,8 @@ import UniformLayout from '../../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../../constants/Colors';
 import { useSkills } from '../../../context/SkillsContext';
 import { useTheme } from '../../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext';
+import { SocialService } from '../../../services/socialService';
 import { supabase } from '../../../utils/supabase';
 import { SkillCategory, SkillVisibility } from '../../../utils/supabase-types';
 
@@ -32,6 +36,7 @@ export default function EditSkill() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { skills, updateSkill } = useSkills();
   const { resolvedTheme } = useTheme();
+  const { user } = useAuth();
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
@@ -42,6 +47,10 @@ export default function EditSkill() {
   const [description, setDescription] = useState(skill?.description || '');
   const [visibility, setVisibility] = useState<SkillVisibility>(SkillVisibility.PRIVATE);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
+  const [followedUsers, setFollowedUsers] = useState<any[]>([]);
+  const [loadingFollowedUsers, setLoadingFollowedUsers] = useState(false);
+  const [showTutorPicker, setShowTutorPicker] = useState(false);
   const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
@@ -102,7 +111,7 @@ export default function EditSkill() {
     try {
       const { data, error } = await supabase
         .from('skills')
-        .select('visibility, category_id')
+        .select('visibility, category_id, tutor_id')
         .eq('id', id)
         .single();
       
@@ -111,9 +120,50 @@ export default function EditSkill() {
       if (data) {
         setVisibility(data.visibility || SkillVisibility.PRIVATE);
         setCategoryId(data.category_id || null);
+        setSelectedTutorId(data.tutor_id || null);
       }
     } catch (error) {
       console.error('Failed to load skill details:', error);
+    }
+  };
+
+  // Load followed users when "My Tutor" visibility is selected
+  React.useEffect(() => {
+    if (visibility === SkillVisibility.TUTOR && user) {
+      loadFollowedUsers();
+    } else {
+      setFollowedUsers([]);
+    }
+  }, [visibility, user]);
+
+  const loadFollowedUsers = async () => {
+    if (!user) return;
+    
+    setLoadingFollowedUsers(true);
+    try {
+      const follows = await SocialService.getFollowing(user.id);
+      const userIds = follows.map(f => f.following_id);
+      
+      if (userIds.length > 0) {
+        const { data: users, error } = await supabase
+          .from('users')
+          .select('id, name, email, profile_picture_url')
+          .in('id', userIds);
+        
+        if (error) {
+          console.error('Error fetching followed users:', error);
+          setFollowedUsers([]);
+        } else {
+          setFollowedUsers(users || []);
+        }
+      } else {
+        setFollowedUsers([]);
+      }
+    } catch (error) {
+      console.error('Failed to load followed users:', error);
+      setFollowedUsers([]);
+    } finally {
+      setLoadingFollowedUsers(false);
     }
   };
 
@@ -151,8 +201,21 @@ export default function EditSkill() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleVisibilityChange = (newVisibility: SkillVisibility) => {
+    setVisibility(newVisibility);
+    if (newVisibility !== SkillVisibility.TUTOR) {
+      setSelectedTutorId(null);
+    }
+  };
+
   const handleUpdateSkill = async () => {
     if (!validateForm()) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
+    if (visibility === SkillVisibility.TUTOR && !selectedTutorId) {
+      setErrors({ general: 'Please select a tutor for this skill' });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
@@ -165,12 +228,13 @@ export default function EditSkill() {
         description: description.trim(),
       });
       
-      // Update visibility and category directly in Supabase
+      // Update visibility, category, and tutor_id directly in Supabase
       const { error } = await supabase
         .from('skills')
         .update({
           visibility,
           category_id: categoryId || null,
+          tutor_id: visibility === SkillVisibility.TUTOR ? selectedTutorId : null,
         })
         .eq('id', id);
       
@@ -371,37 +435,90 @@ export default function EditSkill() {
                   <Text style={[styles.description, { color: themeColors.textSecondary }]}>
                     Who can see this skill?
                   </Text>
-                  <View style={[styles.visibilityOptions, { backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}>
-                    {[
-                      { value: SkillVisibility.PRIVATE, label: 'Private', icon: 'lock-closed' },
-                      { value: SkillVisibility.PUBLIC, label: 'Public', icon: 'globe' },
-                      { value: SkillVisibility.STUDENTS, label: 'My Students', icon: 'people' },
-                      { value: SkillVisibility.TUTOR, label: 'My Tutor', icon: 'school' },
-                    ].map((option) => (
-                      <TouchableOpacity
-                        key={option.value}
-                        style={[
-                          styles.visibilityOption,
-                          visibility === option.value && [styles.visibilityOptionActive, { backgroundColor: themeColors.background, borderColor: themeColors.accent }],
-                        ]}
-                        onPress={() => setVisibility(option.value)}
-                      >
-                        <Ionicons
-                          name={option.icon as any}
-                          size={20}
-                          color={visibility === option.value ? themeColors.accent : themeColors.textSecondary}
-                        />
-                        <Text
+                  <View style={[styles.visibilityOptionsContainer, { backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}>
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.visibilityOptions}
+                    >
+                      {[
+                        { value: SkillVisibility.PRIVATE, label: 'Private', icon: 'lock-closed' },
+                        { value: SkillVisibility.PUBLIC, label: 'Public', icon: 'globe' },
+                        { value: SkillVisibility.STUDENTS, label: 'My Students', icon: 'people' },
+                        { value: SkillVisibility.TUTOR, label: 'My Tutor', icon: 'school' },
+                      ].map((option) => (
+                        <TouchableOpacity
+                          key={option.value}
                           style={[
-                            styles.visibilityLabel,
-                            { color: visibility === option.value ? themeColors.accent : themeColors.textSecondary },
+                            styles.visibilityOption,
+                            visibility === option.value && [styles.visibilityOptionActive, { backgroundColor: themeColors.background, borderColor: themeColors.accent }],
                           ]}
+                          onPress={() => handleVisibilityChange(option.value)}
                         >
-                          {option.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                          <Ionicons
+                            name={option.icon as any}
+                            size={18}
+                            color={visibility === option.value ? themeColors.accent : themeColors.textSecondary}
+                          />
+                          <Text
+                            style={[
+                              styles.visibilityLabel,
+                              { color: visibility === option.value ? themeColors.accent : themeColors.textSecondary },
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
                   </View>
+                  
+                  {/* Tutor Selection - Show when "My Tutor" is selected */}
+                  {visibility === SkillVisibility.TUTOR && (
+                    <View style={styles.tutorSection}>
+                      {loadingFollowedUsers ? (
+                        <View style={styles.tutorLoadingContainer}>
+                          <Text style={[styles.tutorLabel, { color: themeColors.textSecondary }]}>
+                            Loading tutors...
+                          </Text>
+                        </View>
+                      ) : followedUsers.length === 0 ? (
+                        <View style={styles.tutorEmptyContainer}>
+                          <Ionicons name="people-outline" size={24} color={themeColors.textSecondary} />
+                          <Text style={[styles.tutorEmptyText, { color: themeColors.textSecondary }]}>
+                            No followed users. Follow users from the community page first.
+                          </Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={[styles.tutorSelector, { 
+                            backgroundColor: themeColors.backgroundSecondary,
+                            borderColor: themeColors.border 
+                          }]}
+                          onPress={() => setShowTutorPicker(true)}
+                        >
+                          {selectedTutorId ? (
+                            <View style={styles.selectedTutor}>
+                              <Text style={[styles.selectedTutorText, { color: themeColors.text }]}>
+                                {followedUsers.find(u => u.id === selectedTutorId)?.name || 
+                                 followedUsers.find(u => u.id === selectedTutorId)?.email || 
+                                 'Selected Tutor'}
+                              </Text>
+                              <Ionicons name="checkmark-circle" size={20} color={themeColors.accent} />
+                            </View>
+                          ) : (
+                            <View style={styles.selectTutorPrompt}>
+                              <Ionicons name="school-outline" size={20} color={themeColors.textSecondary} />
+                              <Text style={[styles.selectTutorText, { color: themeColors.textSecondary }]}>
+                                Select a tutor
+                              </Text>
+                              <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
                 </View>
 
                                 {/* Action Buttons */}
@@ -437,6 +554,73 @@ export default function EditSkill() {
           </ScrollView>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
+
+      {/* Tutor Picker Modal */}
+      <Modal
+        visible={showTutorPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowTutorPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: themeColors.background }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeColors.border }]}>
+              <Text style={[styles.modalTitle, { color: themeColors.text }]}>Select Tutor</Text>
+              <TouchableOpacity onPress={() => setShowTutorPicker(false)}>
+                <Ionicons name="close" size={24} color={themeColors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={followedUsers}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.tutorOption,
+                    { backgroundColor: themeColors.backgroundSecondary },
+                    selectedTutorId === item.id && { backgroundColor: themeColors.accent + '20' }
+                  ]}
+                  onPress={() => {
+                    setSelectedTutorId(item.id);
+                    setShowTutorPicker(false);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                >
+                  <View style={styles.tutorOptionContent}>
+                    <View style={[styles.tutorAvatar, { backgroundColor: themeColors.accent }]}>
+                      <Text style={styles.tutorAvatarText}>
+                        {(item.name || item.email || 'U').charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={styles.tutorInfo}>
+                      <Text style={[styles.tutorName, { color: themeColors.text }]}>
+                        {item.name || item.email || 'Unknown User'}
+                      </Text>
+                      {item.email && item.name && (
+                        <Text style={[styles.tutorEmail, { color: themeColors.textSecondary }]}>
+                          {item.email}
+                        </Text>
+                      )}
+                    </View>
+                    {selectedTutorId === item.id && (
+                      <Ionicons name="checkmark-circle" size={24} color={themeColors.accent} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <View style={styles.emptyTutorList}>
+                  <Ionicons name="people-outline" size={48} color={themeColors.textSecondary} />
+                  <Text style={[styles.emptyTutorText, { color: themeColors.textSecondary }]}>
+                    No followed users available
+                  </Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
     </UniformLayout>
   );
 }
@@ -618,19 +802,27 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     marginBottom: Spacing.sm,
   },
-  visibilityOptions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  visibilityOptionsContainer: {
     borderRadius: BorderRadius.md,
     borderWidth: 1,
-    padding: Spacing.sm,
+    padding: Spacing.xs,
+    maxHeight: 90,
+  },
+  visibilityOptions: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.xs,
   },
   visibilityOption: {
-    flexDirection: 'row',
+    minWidth: 90,
+    width: 90,
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.xs,
     borderRadius: BorderRadius.md,
+    gap: Spacing.xs / 2,
   },
   visibilityOptionActive: {
     borderWidth: 1,
@@ -655,5 +847,115 @@ const styles = StyleSheet.create({
   helperText: {
     ...Typography.caption,
     fontStyle: 'italic',
+  },
+  tutorSection: {
+    marginTop: Spacing.md,
+  },
+  tutorLoadingContainer: {
+    padding: Spacing.md,
+    alignItems: 'center',
+  },
+  tutorLabel: {
+    ...Typography.bodySmall,
+  },
+  tutorEmptyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  tutorEmptyText: {
+    ...Typography.bodySmall,
+    flex: 1,
+  },
+  tutorSelector: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  selectedTutor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectedTutorText: {
+    ...Typography.body,
+    fontWeight: '600',
+  },
+  selectTutorPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectTutorText: {
+    ...Typography.body,
+    flex: 1,
+    marginLeft: Spacing.sm,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    maxHeight: '70%',
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    ...Typography.h3,
+    fontWeight: '600',
+  },
+  tutorOption: {
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  tutorOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tutorAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  tutorAvatarText: {
+    ...Typography.h3,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  tutorInfo: {
+    flex: 1,
+  },
+  tutorName: {
+    ...Typography.body,
+    fontWeight: '600',
+    marginBottom: Spacing.xs / 2,
+  },
+  tutorEmail: {
+    ...Typography.caption,
+  },
+  emptyTutorList: {
+    padding: Spacing.xl,
+    alignItems: 'center',
+  },
+  emptyTutorText: {
+    ...Typography.body,
+    marginTop: Spacing.md,
+    textAlign: 'center',
   },
 });

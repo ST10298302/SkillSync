@@ -12,7 +12,7 @@ interface ReactionButtonProps {
   skillId: string;
   initialReaction?: ReactionType;
   reactionCount: number;
-  onReactionChange?: () => void;
+  onReactionChange?: (increment: number) => void;
 }
 
 const reactionTypes = [
@@ -30,17 +30,22 @@ export const ReactionButton = ({ skillId, initialReaction, reactionCount, onReac
 
   const handleReactionPress = async (reactionType: ReactionType) => {
     try {
-      if (currentReaction === reactionType) {
+      const wasRemoving = currentReaction === reactionType;
+      const wasAdding = !currentReaction;
+      
+      if (wasRemoving) {
         // Remove reaction
         await removeReaction(skillId);
         setCurrentReaction(undefined);
+        onReactionChange?.(-1); // Decrement count
       } else {
         // Add or change reaction
         await addReaction(skillId, reactionType);
         setCurrentReaction(reactionType);
+        // If there was no reaction before, increment by 1; if changing, count stays same
+        onReactionChange?.(wasAdding ? 1 : 0);
       }
       setShowPicker(false);
-      onReactionChange?.();
     } catch (error) {
       console.error('Failed to update reaction:', error);
     }

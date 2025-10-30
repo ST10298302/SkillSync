@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -17,6 +18,7 @@ import {
 import CommentModal from '../../components/CommentModal';
 import { ReactionButton } from '../../components/ReactionButton';
 import SkillCard from '../../components/SkillCard';
+import { Toast } from '../../components/Toast';
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
@@ -51,6 +53,11 @@ export default function CommunityScreen() {
   const [followingStatus, setFollowingStatus] = useState<Record<string, boolean>>({});
   const [selectedSkillForComment, setSelectedSkillForComment] = useState<Skill | null>(null);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
+  // Track reaction counts per skill to avoid reloading
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     loadPublicSkills();
@@ -84,6 +91,15 @@ export default function CommunityScreen() {
       
       setPublicSkills(skills);
       setFilteredSkills(skills);
+      
+      // Initialize reaction counts from loaded skills
+      const counts: Record<string, number> = {};
+      skills.forEach(skill => {
+        if (skill && skill.id) {
+          counts[skill.id] = skill.likes_count || 0;
+        }
+      });
+      setReactionCounts(prev => ({ ...prev, ...counts }));
       
       // Check following status for each skill owner
       if (user) {
@@ -182,16 +198,26 @@ export default function CommunityScreen() {
     setRefreshing(false);
   };
 
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+  };
+
   const handleFollowUser = async (userId: string, userName?: string) => {
     try {
       await SocialService.followUser(userId);
       setFollowingStatus(prev => ({ ...prev, [userId]: true }));
       // Reload followed users to show newly followed
       await loadFollowedUsers();
-      // Show success message
+      // Show success toast
+      showToast('You are now following this user', 'success');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Failed to follow user:', error);
-      // Show error message
+      // Show error toast
+      showToast('Failed to follow user. Please try again.', 'error');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
@@ -201,11 +227,23 @@ export default function CommunityScreen() {
       setFollowingStatus(prev => ({ ...prev, [userId]: false }));
       // Reload followed users to remove unfollowed user
       await loadFollowedUsers();
-      // Show success message
+      // Show success toast
+      showToast('You have unfollowed this user', 'success');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Failed to unfollow user:', error);
-      // Show error message
+      // Show error toast
+      showToast('Failed to unfollow user. Please try again.', 'error');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
+  };
+
+  const handleReactionChange = (skillId: string, increment: number) => {
+    // Update the reaction count locally without reloading
+    setReactionCounts(prev => ({
+      ...prev,
+      [skillId]: Math.max(0, (prev[skillId] || 0) + increment)
+    }));
   };
 
   const handleAddSkillToCollection = async (skill: Skill) => {
@@ -273,8 +311,8 @@ export default function CommunityScreen() {
               <ReactionButton
                 skillId={skill.id}
                 initialReaction={undefined}
-                reactionCount={skill.likes_count || 0}
-                onReactionChange={() => loadPublicSkills()}
+                reactionCount={reactionCounts[skill.id] ?? skill.likes_count ?? 0}
+                onReactionChange={(increment) => handleReactionChange(skill.id, increment)}
               />
             </View>
             <View style={styles.skillActionsRow}>
@@ -286,7 +324,7 @@ export default function CommunityScreen() {
                 }
               >
                 <Ionicons
-                  name={isFollowingOwner ? 'person-check' as any : 'person-add' as any}
+                  name={isFollowingOwner ? 'people-circle' : 'person-add'}
                   size={16}
                   color={themeColors.text}
                 />
@@ -456,6 +494,14 @@ export default function CommunityScreen() {
           )}
         </>
       )}
+      
+      {/* Toast Notification */}
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+        onHide={() => setToastVisible(false)}
+      />
       
       {/* Comment Modal */}
       {selectedSkillForComment && (
