@@ -12,7 +12,7 @@ export const TRANSLATIONS = {
     welcomeBack: 'Welcome Back',
     signInToContinue: 'Sign in to continue your learning journey',
     email: 'Email',
-    password: 'Password',
+    password: 'Password', // NOSONAR - UI label, not a secret
     signIn: 'Sign In',
     signingIn: 'Signing in...',
     dontHaveAccount: "Don't have an account?",
@@ -268,7 +268,7 @@ export const TRANSLATIONS = {
     welcomeBack: 'Bienvenido de vuelta',
     signInToContinue: 'Inicia sesión para continuar tu viaje de aprendizaje',
     email: 'Correo electrónico',
-    password: 'Contraseña',
+    password: 'Contraseña', // NOSONAR - UI label, not a secret
     signIn: 'Iniciar sesión',
     signingIn: 'Iniciando sesión...',
     dontHaveAccount: '¿No tienes una cuenta?',
@@ -524,7 +524,7 @@ export const TRANSLATIONS = {
     welcomeBack: 'Bon retour',
     signInToContinue: 'Connectez-vous pour continuer votre parcours d\'apprentissage',
     email: 'E-mail',
-    password: 'Mot de passe',
+    password: 'Mot de passe', // NOSONAR - UI label, not a secret
     signIn: 'Se connecter',
     signingIn: 'Connexion...',
     dontHaveAccount: 'Vous n\'avez pas de compte ?',
@@ -780,7 +780,7 @@ export const TRANSLATIONS = {
     welcomeBack: 'Willkommen zurück',
     signInToContinue: 'Melden Sie sich an, um Ihre Lernreise fortzusetzen',
     email: 'E-Mail',
-    password: 'Passwort',
+    password: 'Passwort', // NOSONAR - UI label, not a secret
     signIn: 'Anmelden',
     signingIn: 'Anmeldung...',
     dontHaveAccount: 'Haben Sie kein Konto?',
@@ -1036,7 +1036,7 @@ export const TRANSLATIONS = {
     welcomeBack: '欢迎回来',
     signInToContinue: '登录以继续您的学习之旅',
     email: '电子邮件',
-    password: '密码',
+    password: '密码', // NOSONAR - UI label, not a secret
     signIn: '登录',
     signingIn: '登录中...',
     dontHaveAccount: '没有账户？',
