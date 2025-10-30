@@ -62,7 +62,7 @@ export class SupabaseService {
   }
 
   static async createSkill(skill: { name: string; description?: string; progress: number; user_id: string; total_hours: number; streak: number }) {
-    const id = `s_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const id = `s_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; // NOSONAR - test mock identifier
     const created_at = new Date().toISOString();
     const row: SupabaseSkillRow = {
       id,
@@ -98,7 +98,7 @@ export class SupabaseService {
 
   // Entries
   static async createSkillEntry(entry: { skill_id: string; content: string; hours: number }) {
-    const id = `e_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const id = `e_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; // NOSONAR - test mock identifier
     const created_at = new Date().toISOString();
     const rec = { id, content: entry.content, hours: entry.hours, created_at };
     const arr = memory.entriesBySkill.get(entry.skill_id) || [];
@@ -119,7 +119,7 @@ export class SupabaseService {
   }
 
   static async createProgressUpdate(update: { skill_id: string; progress: number; notes?: string }) {
-    const id = `p_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const id = `p_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; // NOSONAR - test mock identifier
     const created_at = new Date().toISOString();
     const rec = { id, progress: update.progress, created_at, notes: update.notes };
     const arr = memory.progressBySkill.get(update.skill_id) || [];
