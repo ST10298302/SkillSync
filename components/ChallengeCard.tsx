@@ -24,7 +24,7 @@ export const ChallengeCard = ({ challenge, onUpdate, onDelete, canEdit = false }
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => { void (async () => {
             try {
               await ChallengeService.deleteChallenge(challenge.id);
               onDelete?.();
@@ -32,7 +32,7 @@ export const ChallengeCard = ({ challenge, onUpdate, onDelete, canEdit = false }
               console.error('Failed to delete challenge:', error);
               Alert.alert('Error', 'Failed to delete challenge');
             }
-          },
+          })(); },
         },
       ]
     );

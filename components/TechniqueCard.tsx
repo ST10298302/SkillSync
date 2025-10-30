@@ -24,7 +24,7 @@ export const TechniqueCard = ({ technique, onUpdate, onDelete, canEdit = false }
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => { void (async () => {
             try {
               await TechniqueService.deleteTechnique(technique.id);
               onDelete?.();
@@ -32,7 +32,7 @@ export const TechniqueCard = ({ technique, onUpdate, onDelete, canEdit = false }
               console.error('Failed to delete technique:', error);
               Alert.alert('Error', 'Failed to delete technique');
             }
-          },
+          })(); },
         },
       ]
     );
