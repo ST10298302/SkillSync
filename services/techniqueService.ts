@@ -15,7 +15,7 @@ export class TechniqueService {
     if (error) throw error;
     return data || [];
   }
-//create technique
+//create techniqu
   /**
    * Create a new technique
    */
