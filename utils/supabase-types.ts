@@ -114,6 +114,7 @@ export interface Skill {
   likes_count: number;
   comments_count: number;
   current_level: SkillLevelType;
+  tutor_id?: string; // ID of assigned tutor
   
   // Related data (populated via joins)
   category?: SkillCategory;

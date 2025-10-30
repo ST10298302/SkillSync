@@ -37,6 +37,8 @@ export interface Skill {
   current_level?: string;
   user_id?: string; // Add user_id to track skill ownership
   completed_levels?: string[]; // Track which levels have been completed
+  visibility?: 'public' | 'private' | 'students' | 'tutor'; // Visibility setting
+  tutor_id?: string; // ID of assigned tutor
 }
 
 interface SkillsContextProps {
