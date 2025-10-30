@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -145,7 +145,24 @@
 <a name='L80'></a><a href='#L80'>80</a>
 <a name='L81'></a><a href='#L81'>81</a>
 <a name='L82'></a><a href='#L82'>82</a>
-<a name='L83'></a><a href='#L83'>83</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -167,19 +184,36 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -238,25 +272,25 @@ const isBrowser = <span class="cstat-no" title="statement not covered" >typeof w
 &nbsp;
 // Create a custom storage adapter that only works in browser
 const customStorage = <span class="cstat-no" title="statement not covered" >isBrowser ? {</span>
-  getItem: <span class="fstat-no" title="function not covered" >(k</span>ey: string) =&gt; {
+  getItem: <span class="fstat-no" title="function not covered" >as</span>ync (key: string) =&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      return AsyncStorage.getItem(key);</span>
+<span class="cstat-no" title="statement not covered" >      return await AsyncStorage.getItem(key);</span>
     } catch {
-<span class="cstat-no" title="statement not covered" >      return Promise.resolve(null);</span>
+<span class="cstat-no" title="statement not covered" >      return null;</span>
     }
   },
-  setItem: <span class="fstat-no" title="function not covered" >(k</span>ey: string, value: string) =&gt; {
+  setItem: <span class="fstat-no" title="function not covered" >as</span>ync (key: string, value: string) =&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      return AsyncStorage.setItem(key, value);</span>
+<span class="cstat-no" title="statement not covered" >      await AsyncStorage.setItem(key, value);</span>
     } catch {
-<span class="cstat-no" title="statement not covered" >      return Promise.resolve();</span>
+      // ignore
     }
   },
-  removeItem: <span class="fstat-no" title="function not covered" >(k</span>ey: string) =&gt; {
+  removeItem: <span class="fstat-no" title="function not covered" >as</span>ync (key: string) =&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      return AsyncStorage.removeItem(key);</span>
+<span class="cstat-no" title="statement not covered" >      await AsyncStorage.removeItem(key);</span>
     } catch {
-<span class="cstat-no" title="statement not covered" >      return Promise.resolve();</span>
+      // ignore
     }
   }
 } : undefined;
@@ -309,6 +343,23 @@ export interface User {
   profile_picture_url?: string;
   created_at: string;
   updated_at: string;
+  // Privacy settings
+  profile_visibility?: 'public' | 'private' | 'friends';
+  show_progress?: boolean;
+  show_streaks?: boolean;
+  allow_analytics?: boolean;
+  // Security settings
+  biometric_auth?: boolean;
+  require_pin?: boolean;
+  auto_lock?: boolean;
+  session_timeout?: '1min' | '5min' | '15min' | '30min' | '1hour' | 'never';
+  // Notification settings
+  daily_reminders?: boolean;
+  weekly_reports?: boolean;
+  skill_completions?: boolean;
+  streak_alerts?: boolean;
+  tips_and_tricks?: boolean;
+  marketing_emails?: boolean;
 } </pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -316,7 +367,7 @@ export interface User {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-13T11:06:56.396Z
+                at 2025-10-30T13:10:28.730Z
             </div>
         <script src="../prettify.js"></script>
         <script>

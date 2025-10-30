@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/255</span>
+                <span class='fraction'>0/251</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/118</span>
+                <span class='fraction'>0/116</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/230</span>
+                <span class='fraction'>0/227</span>
             </div>
         
             
@@ -814,11 +814,7 @@
 <a name='L749'></a><a href='#L749'>749</a>
 <a name='L750'></a><a href='#L750'>750</a>
 <a name='L751'></a><a href='#L751'>751</a>
-<a name='L752'></a><a href='#L752'>752</a>
-<a name='L753'></a><a href='#L753'>753</a>
-<a name='L754'></a><a href='#L754'>754</a>
-<a name='L755'></a><a href='#L755'>755</a>
-<a name='L756'></a><a href='#L756'>756</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L752'></a><a href='#L752'>752</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1236,7 +1232,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1244,11 +1239,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1573,7 +1565,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as FileSystem from 'expo-file-system';
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as FileSystem from 'expo-file-system/legacy';
 import { ProgressUpdate, Skill, SkillEntry, supabase, User } from '../utils/supabase';
 &nbsp;
 // Cache interface for storing query results
@@ -1987,11 +1979,10 @@ export class OptimizedSupabaseService {
       const shouldCompress = <span class="cstat-no" title="statement not covered" >fileInfo.size &amp;&amp; fileInfo.size &gt; 1024 * 1024;</span> // 1MB threshold
       
       let base64: string;
-      // Read file as base64 (Expo SDK 54 exports constants separately)
-      const encoding: any = <span class="cstat-no" title="statement not covered" >(FileSystem as any).EncodingType</span>
-        ? (FileSystem as any).EncodingType.Base64
-        : 'base64';
-<span class="cstat-no" title="statement not covered" >      base64 = await FileSystem.readAsStringAsync(imageUri, { encoding });</span>
+      // Read file as base64 using legacy API
+<span class="cstat-no" title="statement not covered" >      base64 = await FileSystem.readAsStringAsync(imageUri, { </span>
+        encoding: FileSystem.EncodingType.Base64
+      });
 &nbsp;
       // Generate unique filename
       const fileExt = <span class="cstat-no" title="statement not covered" >imageUri.split('.').pop()?.toLowerCase() || 'jpg';</span>
@@ -1999,11 +1990,8 @@ export class OptimizedSupabaseService {
       const filePath = <span class="cstat-no" title="statement not covered" >`${userId}/${fileName}`;</span>
 &nbsp;
       // Convert base64 to Uint8Array for direct upload
-      const binaryString = <span class="cstat-no" title="statement not covered" >atob(base64);</span>
-      const bytes = <span class="cstat-no" title="statement not covered" >new Uint8Array(binaryString.length);</span>
-<span class="cstat-no" title="statement not covered" >      for (let i = <span class="cstat-no" title="statement not covered" >0;</span> i &lt; binaryString.length; i++) {</span>
-<span class="cstat-no" title="statement not covered" >        bytes[i] = binaryString.charCodeAt(i);</span>
-      }
+      const { base64ToUint8Array } = <span class="cstat-no" title="statement not covered" >await import('../utils/base64');</span>
+      const bytes = <span class="cstat-no" title="statement not covered" >base64ToUint8Array(base64);</span>
 &nbsp;
       // Upload to Supabase Storage with optimized settings
       const { data, error } = <span class="cstat-no" title="statement not covered" >await supabase.storage</span>
@@ -2335,7 +2323,7 @@ export class OptimizedSupabaseService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-13T11:06:56.396Z
+                at 2025-10-30T13:10:28.730Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -91,7 +91,7 @@ export const ReactionButton = ({ skillId, initialReaction, reactionCount, onReac
                     styles.reactionOption,
                     currentReaction === reaction.type && styles.reactionOptionActive,
                   ]}
-                  onPress={() => handleReactionPress(reaction.type)}
+                  onPress={() => { void handleReactionPress(reaction.type); }}
                 >
                   <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
                   <Text style={[
