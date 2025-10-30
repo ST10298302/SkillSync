@@ -4,27 +4,27 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
-  Animated,
-  FlatList,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    Alert,
+    Animated,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 
 import UniformLayout from '../../components/UniformLayout';
 import { BorderRadius, Colors, Spacing, Typography } from '../../constants/Colors';
+import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSkills } from '../../context/SkillsContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
 import { SkillManagementService } from '../../services/skillManagementService';
 import { SocialService } from '../../services/socialService';
 import { SkillVisibility } from '../../utils/supabase-types';
@@ -168,7 +168,8 @@ export default function NewSkill() {
 
     setIsLoading(true);
     try {
-      // Create skill with visibility and tutor_id using SkillManagementService
+      // Create skill with visibility using SkillManagementService
+      // Note: tutor_id will be added if the column exists in the database
       const newSkill = await SkillManagementService.createSkill({
         name: name.trim(),
         description: description.trim() || undefined,

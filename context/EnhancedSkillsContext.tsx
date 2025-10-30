@@ -160,26 +160,85 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       const { supabase } = await import('../utils/supabase');
       console.log('Fetching public skills, current user:', user.id);
       
-      // First, get the skills
-      const { data: skillsData, error: skillsError } = await supabase
+      // Get public skills
+      const { data: publicSkillsData, error: publicError } = await supabase
         .from('skills')
         .select('*')
         .eq('visibility', 'public')
         .order('created_at', { ascending: false });
       
-      if (skillsError) {
-        console.error('Error fetching public skills:', skillsError);
-        throw skillsError;
+      if (publicError) {
+        console.error('Error fetching public skills:', publicError);
       }
+
+      // Get skills where user is the assigned tutor
+      const { data: tutorSkillsData, error: tutorError } = await supabase
+        .from('skills')
+        .select('*')
+        .eq('visibility', 'tutor')
+        .eq('tutor_id', user.id)
+        .order('created_at', { ascending: false });
       
-      console.log('Skills fetched:', skillsData?.length);
+      if (tutorError && tutorError.code !== '42703' && tutorError.code !== 'PGRST204') {
+        console.error('Error fetching tutor skills:', tutorError);
+      }
+
+      // Get skills where user is an assigned student
+      let studentSkillsData: any[] = [];
+      try {
+        const { data: studentAssignments, error: studentError } = await supabase
+          .from('skill_students')
+          .select('skill_id')
+          .eq('student_id', user.id);
+
+        if (studentError) {
+          if (studentError.code === '42P01' || studentError.code === 'PGRST204') {
+            console.warn('skill_students table does not exist');
+          } else {
+            console.error('Error fetching student assignments:', studentError);
+          }
+        } else if (studentAssignments && studentAssignments.length > 0) {
+          const skillIds = studentAssignments.map(a => a.skill_id);
+          const { data: skills, error: skillsError } = await supabase
+            .from('skills')
+            .select('*')
+            .eq('visibility', 'students')
+            .in('id', skillIds)
+            .order('created_at', { ascending: false });
+          
+          if (skillsError) {
+            console.error('Error fetching student skills:', skillsError);
+          } else {
+            studentSkillsData = skills || [];
+          }
+        }
+      } catch (err) {
+        console.warn('Error processing student skills:', err);
+      }
+
+      // Combine all skills
+      const allSkills = [
+        ...(publicSkillsData || []),
+        ...(tutorSkillsData || []),
+        ...(studentSkillsData || [])
+      ];
+
+      // Remove duplicates (in case a skill appears in multiple queries)
+      const uniqueSkills = Array.from(
+        new Map(allSkills.map(skill => [skill.id, skill])).values()
+      );
+
+      console.log('Skills fetched:', uniqueSkills.length);
+      console.log(`  - Public: ${publicSkillsData?.length || 0}`);
+      console.log(`  - Tutor: ${tutorSkillsData?.length || 0}`);
+      console.log(`  - Student: ${studentSkillsData?.length || 0}`);
       
-      if (!skillsData || skillsData.length === 0) {
+      if (!uniqueSkills || uniqueSkills.length === 0) {
         return [];
       }
       
       // Get unique user IDs
-      const userIds = [...new Set(skillsData.map(skill => skill.user_id))];
+      const userIds = [...new Set(uniqueSkills.map(skill => skill.user_id))];
       console.log('Unique user IDs:', userIds);
       
       // Fetch all users in one query
@@ -199,19 +258,20 @@ export const EnhancedSkillsProvider = ({ children }: { children: ReactNode }) =>
       const userMap = new Map(usersData?.map(u => [u.id, u]) || []);
       
       // Log each skill's owner info
-      (skillsData || []).forEach((skill: any, index: number) => {
+      (uniqueSkills || []).forEach((skill: any, index: number) => {
         const owner = userMap.get(skill.user_id);
         console.log(`Skill ${index + 1} detailed:`, {
           name: skill.name,
           user_id: skill.user_id,
           visibility: skill.visibility,
+          tutor_id: skill.tutor_id,
           owner: owner,
           hasOwner: !!owner
         });
       });
       
       // Map the database results to Skill type with default values and owner info
-      return (skillsData || []).map((skill: any) => ({
+      return (uniqueSkills || []).map((skill: any) => ({
         ...skill,
         progress: skill.progress || 0,
         likes_count: skill.likes_count || 0,

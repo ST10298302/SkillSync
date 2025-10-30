@@ -26,6 +26,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import { useAuth } from '../../../context/AuthContext';
 import { SocialService } from '../../../services/socialService';
 import { supabase } from '../../../utils/supabase';
+import { SkillManagementService } from '../../../services/skillManagementService';
 import { SkillCategory, SkillVisibility } from '../../../utils/supabase-types';
 
 /**
@@ -48,9 +49,11 @@ export default function EditSkill() {
   const [visibility, setVisibility] = useState<SkillVisibility>(SkillVisibility.PRIVATE);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [followedUsers, setFollowedUsers] = useState<any[]>([]);
   const [loadingFollowedUsers, setLoadingFollowedUsers] = useState(false);
   const [showTutorPicker, setShowTutorPicker] = useState(false);
+  const [showStudentPicker, setShowStudentPicker] = useState(false);
   const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
@@ -111,7 +114,7 @@ export default function EditSkill() {
     try {
       const { data, error } = await supabase
         .from('skills')
-        .select('visibility, category_id, tutor_id')
+        .select('visibility, category_id')
         .eq('id', id)
         .single();
       
@@ -120,16 +123,37 @@ export default function EditSkill() {
       if (data) {
         setVisibility(data.visibility || SkillVisibility.PRIVATE);
         setCategoryId(data.category_id || null);
-        setSelectedTutorId(data.tutor_id || null);
+        
+        // Load tutor_id separately if it exists (will be null if column doesn't exist)
+        try {
+          const { data: tutorData } = await supabase
+            .from('skills')
+            .select('tutor_id')
+            .eq('id', id)
+            .single();
+          setSelectedTutorId(tutorData?.tutor_id || null);
+        } catch {
+          // Column doesn't exist, set to null
+          setSelectedTutorId(null);
+        }
+        
+        // Load student assignments
+        try {
+          const studentIds = await SkillManagementService.getSkillStudents(id);
+          setSelectedStudentIds(studentIds);
+        } catch {
+          // Table might not exist yet, set to empty array
+          setSelectedStudentIds([]);
+        }
       }
     } catch (error) {
       console.error('Failed to load skill details:', error);
     }
   };
 
-  // Load followed users when "My Tutor" visibility is selected
+  // Load followed users when "My Tutor" or "My Students" visibility is selected
   React.useEffect(() => {
-    if (visibility === SkillVisibility.TUTOR && user) {
+    if ((visibility === SkillVisibility.TUTOR || visibility === SkillVisibility.STUDENTS) && user) {
       loadFollowedUsers();
     } else {
       setFollowedUsers([]);
@@ -206,6 +230,9 @@ export default function EditSkill() {
     if (newVisibility !== SkillVisibility.TUTOR) {
       setSelectedTutorId(null);
     }
+    if (newVisibility !== SkillVisibility.STUDENTS) {
+      setSelectedStudentIds([]);
+    }
   };
 
   const handleUpdateSkill = async () => {
@@ -220,6 +247,12 @@ export default function EditSkill() {
       return;
     }
 
+    if (visibility === SkillVisibility.STUDENTS && selectedStudentIds.length === 0) {
+      setErrors({ general: 'Please select at least one student for this skill' });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Update basic fields via context
@@ -229,16 +262,41 @@ export default function EditSkill() {
       });
       
       // Update visibility, category, and tutor_id directly in Supabase
+      const updateData: any = {
+        visibility,
+        category_id: categoryId || null,
+      };
+      
+      // Only try to update tutor_id if the column exists
+      if (visibility === SkillVisibility.TUTOR && selectedTutorId) {
+        try {
+          const { error: tutorError } = await supabase
+            .from('skills')
+            .update({ tutor_id: selectedTutorId })
+            .eq('id', id);
+          if (tutorError && tutorError.code !== '42703') { // Ignore "column doesn't exist" error
+            throw tutorError;
+          }
+        } catch (err) {
+          console.warn('tutor_id column may not exist:', err);
+        }
+      }
+      
       const { error } = await supabase
         .from('skills')
-        .update({
-          visibility,
-          category_id: categoryId || null,
-          tutor_id: visibility === SkillVisibility.TUTOR ? selectedTutorId : null,
-        })
+        .update(updateData)
         .eq('id', id);
       
       if (error) throw error;
+      
+      // Update student assignments if "My Students" visibility is selected
+      if (visibility === SkillVisibility.STUDENTS) {
+        try {
+          await SkillManagementService.assignStudentsToSkill(id, selectedStudentIds);
+        } catch (err) {
+          console.warn('Failed to update student assignments:', err);
+        }
+      }
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
@@ -473,6 +531,51 @@ export default function EditSkill() {
                     </ScrollView>
                   </View>
                   
+                  {/* Student Selection - Show when "My Students" is selected */}
+                  {visibility === SkillVisibility.STUDENTS && (
+                    <View style={styles.studentSection}>
+                      {loadingFollowedUsers ? (
+                        <View style={styles.studentLoadingContainer}>
+                          <Text style={[styles.studentLabel, { color: themeColors.textSecondary }]}>
+                            Loading students...
+                          </Text>
+                        </View>
+                      ) : followedUsers.length === 0 ? (
+                        <View style={styles.studentEmptyContainer}>
+                          <Ionicons name="people-outline" size={24} color={themeColors.textSecondary} />
+                          <Text style={[styles.studentEmptyText, { color: themeColors.textSecondary }]}>
+                            No followed users. Follow users from the community page first.
+                          </Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={[styles.studentSelector, { 
+                            backgroundColor: themeColors.backgroundSecondary,
+                            borderColor: themeColors.border 
+                          }]}
+                          onPress={() => setShowStudentPicker(true)}
+                        >
+                          {selectedStudentIds.length > 0 ? (
+                            <View style={styles.selectedStudents}>
+                              <Text style={[styles.selectedStudentsText, { color: themeColors.text }]}>
+                                {selectedStudentIds.length} {selectedStudentIds.length === 1 ? 'student' : 'students'} selected
+                              </Text>
+                              <Ionicons name="checkmark-circle" size={20} color={themeColors.accent} />
+                            </View>
+                          ) : (
+                            <View style={styles.selectStudentPrompt}>
+                              <Ionicons name="people-outline" size={20} color={themeColors.textSecondary} />
+                              <Text style={[styles.selectStudentText, { color: themeColors.textSecondary }]}>
+                                Select students
+                              </Text>
+                              <Ionicons name="chevron-forward" size={20} color={themeColors.textSecondary} />
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
+                  
                   {/* Tutor Selection - Show when "My Tutor" is selected */}
                   {visibility === SkillVisibility.TUTOR && (
                     <View style={styles.tutorSection}>
@@ -554,6 +657,98 @@ export default function EditSkill() {
           </ScrollView>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
+
+      {/* Student Picker Modal */}
+      <Modal
+        visible={showStudentPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowStudentPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: themeColors.background }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeColors.border }]}>
+              <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+                Select Students ({selectedStudentIds.length} selected)
+              </Text>
+              <TouchableOpacity onPress={() => setShowStudentPicker(false)}>
+                <Ionicons name="close" size={24} color={themeColors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={followedUsers}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                const isSelected = selectedStudentIds.includes(item.id);
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.studentOption,
+                      { backgroundColor: themeColors.backgroundSecondary },
+                      isSelected && { backgroundColor: themeColors.accent + '20' }
+                    ]}
+                    onPress={() => {
+                      if (isSelected) {
+                        setSelectedStudentIds(prev => prev.filter(id => id !== item.id));
+                      } else {
+                        setSelectedStudentIds(prev => [...prev, item.id]);
+                      }
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                  >
+                    <View style={styles.studentOptionContent}>
+                      <View style={[styles.studentCheckbox, { 
+                        backgroundColor: isSelected ? themeColors.accent : 'transparent',
+                        borderColor: isSelected ? themeColors.accent : themeColors.border 
+                      }]}>
+                        {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
+                      </View>
+                      <View style={[styles.studentAvatar, { backgroundColor: themeColors.accent }]}>
+                        <Text style={styles.studentAvatarText}>
+                          {(item.name || item.email || 'U').charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                      <View style={styles.studentInfo}>
+                        <Text style={[styles.studentName, { color: themeColors.text }]}>
+                          {item.name || item.email || 'Unknown User'}
+                        </Text>
+                        {item.email && item.name && (
+                          <Text style={[styles.studentEmail, { color: themeColors.textSecondary }]}>
+                            {item.email}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+              ListEmptyComponent={
+                <View style={styles.emptyStudentList}>
+                  <Ionicons name="people-outline" size={48} color={themeColors.textSecondary} />
+                  <Text style={[styles.emptyStudentText, { color: themeColors.textSecondary }]}>
+                    No followed users available
+                  </Text>
+                </View>
+              }
+            />
+            
+            <View style={[styles.modalFooter, { borderTopColor: themeColors.border }]}>
+              <TouchableOpacity
+                style={[styles.modalDoneButton, { backgroundColor: themeColors.accent }]}
+                onPress={() => {
+                  setShowStudentPicker(false);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                }}
+              >
+                <Text style={[styles.modalDoneButtonText, { color: themeColors.text }]}>
+                  Done ({selectedStudentIds.length} selected)
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Tutor Picker Modal */}
       <Modal
@@ -957,5 +1152,115 @@ const styles = StyleSheet.create({
     ...Typography.body,
     marginTop: Spacing.md,
     textAlign: 'center',
+  },
+  studentSection: {
+    marginTop: Spacing.md,
+  },
+  studentLoadingContainer: {
+    padding: Spacing.md,
+    alignItems: 'center',
+  },
+  studentLabel: {
+    ...Typography.bodySmall,
+  },
+  studentEmptyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  studentEmptyText: {
+    ...Typography.bodySmall,
+    flex: 1,
+  },
+  studentSelector: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  selectedStudents: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectedStudentsText: {
+    ...Typography.body,
+    fontWeight: '600',
+  },
+  selectStudentPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectStudentText: {
+    ...Typography.body,
+    flex: 1,
+    marginLeft: Spacing.sm,
+  },
+  studentOption: {
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  studentOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  studentCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  studentAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  studentAvatarText: {
+    ...Typography.h3,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  studentInfo: {
+    flex: 1,
+  },
+  studentName: {
+    ...Typography.body,
+    fontWeight: '600',
+    marginBottom: Spacing.xs / 2,
+  },
+  studentEmail: {
+    ...Typography.caption,
+  },
+  emptyStudentList: {
+    padding: Spacing.xl,
+    alignItems: 'center',
+  },
+  emptyStudentText: {
+    ...Typography.body,
+    marginTop: Spacing.md,
+    textAlign: 'center',
+  },
+  modalFooter: {
+    borderTopWidth: 1,
+    padding: Spacing.md,
+  },
+  modalDoneButton: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+  },
+  modalDoneButtonText: {
+    ...Typography.body,
+    fontWeight: '600',
   },
 });

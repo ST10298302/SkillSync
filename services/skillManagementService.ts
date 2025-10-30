@@ -3,17 +3,17 @@
 
 import { supabase } from '../utils/supabase';
 import {
-    CreateMilestoneRequest,
-    CreateResourceRequest,
-    Skill,
-    SkillDependency,
-    SkillInsight,
-    SkillLevel,
-    SkillLevelType,
-    SkillMilestone,
-    SkillProgress,
-    SkillResource,
-    SkillVisibility
+  CreateMilestoneRequest,
+  CreateResourceRequest,
+  Skill,
+  SkillDependency,
+  SkillInsight,
+  SkillLevel,
+  SkillLevelType,
+  SkillMilestone,
+  SkillProgress,
+  SkillResource,
+  SkillVisibility
 } from '../utils/supabase-types';
 
 export class SkillManagementService {
@@ -35,26 +35,75 @@ export class SkillManagementService {
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
-      .from('skills')
-      .insert({
-        name: skillData.name,
-        description: skillData.description,
-        user_id: user.id,
-        progress: 0,
-        visibility: skillData.visibility || SkillVisibility.PRIVATE,
-        estimated_hours: skillData.estimated_hours,
-        category_id: skillData.category_id,
-        tutor_id: skillData.tutor_id || null,
-        total_hours: 0,
-        streak: 0,
-        current_level: 'beginner' as any,
-      })
-      .select()
-      .single();
+    const insertData: any = {
+      name: skillData.name,
+      description: skillData.description,
+      user_id: user.id,
+      progress: 0,
+      visibility: skillData.visibility || SkillVisibility.PRIVATE,
+      estimated_hours: skillData.estimated_hours,
+      category_id: skillData.category_id,
+      total_hours: 0,
+      streak: 0,
+      current_level: 'beginner' as any,
+    };
 
-    if (error) throw error;
-    return data;
+    // Try to insert the skill
+    // If tutor_id is provided, try including it, but gracefully handle if column doesn't exist
+    try {
+      if (skillData.tutor_id) {
+        // First try with tutor_id
+        const result = await supabase
+          .from('skills')
+          .insert({
+            ...insertData,
+            tutor_id: skillData.tutor_id,
+          })
+          .select()
+          .single();
+
+        // If column doesn't exist (error codes: 42703 = PostgreSQL, PGRST204 = PostgREST)
+        if (result.error && (result.error.code === '42703' || result.error.code === 'PGRST204')) {
+          console.warn('tutor_id column does not exist, creating skill without it');
+          // Try without tutor_id
+          const resultWithoutTutor = await supabase
+            .from('skills')
+            .insert(insertData)
+            .select()
+            .single();
+          
+          if (resultWithoutTutor.error) throw resultWithoutTutor.error;
+          return resultWithoutTutor.data as Skill;
+        }
+
+        if (result.error) throw result.error;
+        return result.data as Skill;
+      } else {
+        // No tutor_id, just insert normally
+        const result = await supabase
+          .from('skills')
+          .insert(insertData)
+          .select()
+          .single();
+        
+        if (result.error) throw result.error;
+        return result.data as Skill;
+      }
+    } catch (err: any) {
+      // If column doesn't exist error, try without tutor_id
+      if (err.code === '42703' || err.code === 'PGRST204' || err.message?.includes('tutor_id')) {
+        console.warn('tutor_id column does not exist, creating skill without it');
+        const result = await supabase
+          .from('skills')
+          .insert(insertData)
+          .select()
+          .single();
+        
+        if (result.error) throw result.error;
+        return result.data as Skill;
+      }
+      throw err;
+    }
   }
 
   /**
@@ -68,8 +117,13 @@ export class SkillManagementService {
       .eq('skill_id', skillId);
 
     if (deleteError) {
+      // If table doesn't exist (error code 42P01 = table does not exist, PGRST204 = column/table not found)
+      if (deleteError.code === '42P01' || deleteError.code === 'PGRST204' || deleteError.message?.includes('skill_students')) {
+        console.warn('skill_students table does not exist, skipping student assignments');
+        return;
+      }
       console.error('Error removing existing student assignments:', deleteError);
-      // Continue anyway
+      // Continue anyway for other errors
     }
 
     // Insert new student assignments
@@ -83,7 +137,14 @@ export class SkillManagementService {
         .from('skill_students')
         .insert(assignments);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just log a warning
+        if (error.code === '42P01' || error.code === 'PGRST204' || error.message?.includes('skill_students')) {
+          console.warn('skill_students table does not exist, skipping student assignments');
+          return;
+        }
+        throw error;
+      }
     }
   }
 
@@ -91,13 +152,29 @@ export class SkillManagementService {
    * Get students assigned to a skill
    */
   static async getSkillStudents(skillId: string): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('skill_students')
-      .select('student_id')
-      .eq('skill_id', skillId);
+    try {
+      const { data, error } = await supabase
+        .from('skill_students')
+        .select('student_id')
+        .eq('skill_id', skillId);
 
-    if (error) throw error;
-    return (data || []).map(row => row.student_id);
+      if (error) {
+        // If table doesn't exist, return empty array
+        if (error.code === '42P01' || error.code === 'PGRST204' || error.message?.includes('skill_students')) {
+          console.warn('skill_students table does not exist, returning empty array');
+          return [];
+        }
+        throw error;
+      }
+      return (data || []).map(row => row.student_id);
+    } catch (err: any) {
+      // If table doesn't exist, return empty array
+      if (err.code === '42P01' || err.code === 'PGRST204' || err.message?.includes('skill_students')) {
+        console.warn('skill_students table does not exist, returning empty array');
+        return [];
+      }
+      throw err;
+    }
   }
   static async updateSkill(skillId: string, updates: {
     name?: string;
