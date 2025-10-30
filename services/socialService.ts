@@ -25,13 +25,24 @@ export class SocialService {
     const { data, error } = await supabase
       .from('skill_comments')
       .select('*')
-      .eq('skill_id', skillId)
-      .is('parent_comment_id', null) // Only top-level comments
-      .order('created_at', { ascending: false });
+      .eq('skill_id', skillId);
 
     if (error) {
       console.error('Error fetching comments:', error);
       throw error;
+    }
+
+    // Count only top-level comments (for comments_count)
+    const topLevelComments = (data || []).filter((c: any) => !c.parent_comment_id);
+    
+    // Recalculate and update comments_count to match actual top-level comments
+    try {
+      await supabase
+        .from('skills')
+        .update({ comments_count: topLevelComments.length })
+        .eq('id', skillId);
+    } catch (err) {
+      console.warn('Failed to update comments_count:', err);
     }
 
     // Fetch user data separately to avoid foreign key relationship issues
@@ -128,32 +139,35 @@ export class SocialService {
 
     if (error) throw error;
 
-    // Update the skill's comments_count
-    try {
-      const { error: updateError } = await supabase.rpc('increment', {
-        table_name: 'skills',
-        column_name: 'comments_count',
-        row_id: request.skill_id,
-      });
-      
-      // If RPC doesn't work, do a direct update
-      if (updateError) {
-        const { data: skill } = await supabase
-          .from('skills')
-          .select('comments_count')
-          .eq('id', request.skill_id)
-          .single();
+    // Update the skill's comments_count (only count top-level comments, not replies)
+    // Only increment if this is a top-level comment (no parent_comment_id)
+    if (!request.parent_comment_id) {
+      try {
+        const { error: updateError } = await supabase.rpc('increment', {
+          table_name: 'skills',
+          column_name: 'comments_count',
+          row_id: request.skill_id,
+        });
         
-        if (skill) {
-          await supabase
+        // If RPC doesn't work, do a direct update
+        if (updateError) {
+          const { data: skill } = await supabase
             .from('skills')
-            .update({ comments_count: (skill.comments_count || 0) + 1 })
-            .eq('id', request.skill_id);
+            .select('comments_count')
+            .eq('id', request.skill_id)
+            .single();
+          
+          if (skill) {
+            await supabase
+              .from('skills')
+              .update({ comments_count: (skill.comments_count || 0) + 1 })
+              .eq('id', request.skill_id);
+          }
         }
+      } catch (countError) {
+        console.error('Failed to update comments_count:', countError);
+        // Don't throw - comment was created successfully
       }
-    } catch (countError) {
-      console.error('Failed to update comments_count:', countError);
-      // Don't throw - comment was created successfully
     }
 
     // Create notifications for mentions
@@ -214,17 +228,9 @@ export class SocialService {
     // Get the comment and skill_id before deleting
     const { data: comment } = await supabase
       .from('skill_comments')
-      .select('skill_id')
+      .select('skill_id, parent_comment_id')
       .eq('id', commentId)
       .single();
-
-    // Count how many comments will be deleted (including replies)
-    const { data: allComments } = await supabase
-      .from('skill_comments')
-      .select('id')
-      .or(`id.eq.${commentId},parent_comment_id.eq.${commentId}`);
-
-    const commentCountToDelete = allComments?.length || 1;
 
     // First delete all replies
     await supabase
@@ -240,8 +246,9 @@ export class SocialService {
 
     if (error) throw error;
 
-    // Update the skill's comments_count
-    if (comment?.skill_id) {
+    // Update the skill's comments_count (only count top-level comments, not replies)
+    // Only decrement if this is a top-level comment (no parent_comment_id)
+    if (comment?.skill_id && !comment.parent_comment_id) {
       try {
         const { data: skill } = await supabase
           .from('skills')
@@ -250,7 +257,8 @@ export class SocialService {
           .single();
         
         if (skill) {
-          const newCount = Math.max(0, (skill.comments_count || 0) - commentCountToDelete);
+          // Only decrement by 1 for top-level comment (replies don't count)
+          const newCount = Math.max(0, (skill.comments_count || 0) - 1);
           await supabase
             .from('skills')
             .update({ comments_count: newCount })

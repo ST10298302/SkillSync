@@ -120,6 +120,29 @@ export default function EnhancedSkillDetail() {
       // First check if skill is in context
       const contextSkill = skills.find(s => s.id === id);
       if (contextSkill) {
+        // Verify access even for context skills
+        if (!currentUser) {
+          if (contextSkill.visibility !== 'public') {
+            setSkill(null);
+            setLoadingSkill(false);
+            return;
+          }
+        } else {
+          const isOwner = contextSkill.user_id === currentUser.id;
+          
+          if (contextSkill.visibility === 'private' && !isOwner) {
+            setSkill(null);
+            setLoadingSkill(false);
+            return;
+          }
+          
+          if (contextSkill.visibility === 'tutor' && !isOwner && contextSkill.tutor_id !== currentUser.id) {
+            setSkill(null);
+            setLoadingSkill(false);
+            return;
+          }
+        }
+        
         setSkill(contextSkill);
         setLoadingSkill(false);
         return;
@@ -132,7 +155,7 @@ export default function EnhancedSkillDetail() {
           .from('skills')
           .select(`
             *,
-            users(
+            users!skills_user_id_fkey(
               id,
               name,
               email,
@@ -142,6 +165,82 @@ export default function EnhancedSkillDetail() {
           .eq('id', id)
           .single();
 
+        if (skillError) {
+          console.error('Error loading skill:', skillError);
+          setSkill(null);
+          setLoadingSkill(false);
+          return;
+        }
+
+        if (!skillData) {
+          setSkill(null);
+          setLoadingSkill(false);
+          return;
+        }
+
+        // Check if user has permission to view this skill
+        if (!currentUser) {
+          // No user logged in, only allow public skills
+          if (skillData.visibility !== 'public') {
+            console.warn('User not logged in, cannot view non-public skill');
+            setSkill(null);
+            setLoadingSkill(false);
+            return;
+          }
+        } else {
+          // Check access based on visibility
+          const isOwner = skillData.user_id === currentUser.id;
+          
+          if (skillData.visibility === 'private' && !isOwner) {
+            // Private skills can only be viewed by owner
+            console.warn('User does not have access to private skill');
+            setSkill(null);
+            setLoadingSkill(false);
+            return;
+          }
+          
+          if (skillData.visibility === 'tutor') {
+            // Only owner or assigned tutor can view
+            const isAssignedTutor = skillData.tutor_id === currentUser.id;
+            if (!isOwner && !isAssignedTutor) {
+              console.warn('User does not have access to tutor-only skill');
+              setSkill(null);
+              setLoadingSkill(false);
+              return;
+            }
+          }
+          
+          if (skillData.visibility === 'students') {
+            // Only owner or assigned students can view
+            if (!isOwner) {
+              // Check if user is in the students list
+              try {
+                const { data: studentAssignment } = await supabase
+                  .from('skill_students')
+                  .select('student_id')
+                  .eq('skill_id', id)
+                  .eq('student_id', currentUser.id)
+                  .single();
+                
+                if (!studentAssignment) {
+                  console.warn('User does not have access to student-only skill');
+                  setSkill(null);
+                  setLoadingSkill(false);
+                  return;
+                }
+              } catch (err) {
+                // If skill_students table doesn't exist, deny access
+                console.warn('Cannot verify student access, denying');
+                if (!isOwner) {
+                  setSkill(null);
+                  setLoadingSkill(false);
+                  return;
+                }
+              }
+            }
+          }
+        }
+        
         // Fetch entries and progress updates separately
         const { data: entriesData } = await supabase
           .from('skill_entries')
@@ -155,32 +254,30 @@ export default function EnhancedSkillDetail() {
           .eq('skill_id', id)
           .order('created_at', { ascending: false });
 
-        if (skillData && !skillError) {
-          // Ensure skill has all required properties with defaults
-          setSkill({
-            ...skillData,
-            progressUpdates: progressData?.map(p => ({
-              id: p.id,
-              skill_id: p.skill_id,
-              progress: p.progress,
-              created_at: p.created_at,
-              notes: p.notes,
-            })) || [],
-            entries: entriesData?.map(e => ({
-              id: e.id,
-              text: e.content,
-              date: e.created_at,
-              hours: e.hours,
-            })) || [],
-            description: skillData.description || '',
-            progress: skillData.progress || 0,
-            likes_count: skillData.likes_count || 0,
-            comments_count: skillData.comments_count || 0,
-            current_level: skillData.current_level || 'beginner',
-            user_id: skillData.user_id, // Include user_id for ownership checks
-            owner: (skillData as any).users || null, // Include owner information
-          });
-        }
+        // Ensure skill has all required properties with defaults
+        setSkill({
+          ...skillData,
+          progressUpdates: progressData?.map(p => ({
+            id: p.id,
+            skill_id: p.skill_id,
+            progress: p.progress,
+            created_at: p.created_at,
+            notes: p.notes,
+          })) || [],
+          entries: entriesData?.map(e => ({
+            id: e.id,
+            text: e.content,
+            date: e.created_at,
+            hours: e.hours,
+          })) || [],
+          description: skillData.description || '',
+          progress: skillData.progress || 0,
+          likes_count: skillData.likes_count || 0,
+          comments_count: skillData.comments_count || 0,
+          current_level: skillData.current_level || 'beginner',
+          user_id: skillData.user_id, // Include user_id for ownership checks
+          owner: (skillData as any).users || null, // Include owner information
+        });
       } catch (error) {
         console.error('Error loading skill:', error);
       } finally {

@@ -42,7 +42,6 @@ export default function AccountSettings() {
   const [newSpecialization, setNewSpecialization] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Load user profile data
   React.useEffect(() => {
@@ -143,22 +142,6 @@ export default function AccountSettings() {
     setSpecializations(specializations.filter((_, i) => i !== index));
   };
 
-  const handleDeleteAccount = async () => {
-    if (!user?.id) return;
-    
-    try {
-      setIsLoading(true);
-      await SupabaseService.deleteUserAccount(user.id);
-      Alert.alert(t('accountDeleted'), t('accountDeletedSuccess'));
-      router.replace('/');
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      Alert.alert(t('error'), t('deleteAccountFailed'));
-    } finally {
-      setIsLoading(false);
-      setShowDeleteConfirm(false);
-    }
-  };
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(50)).current;
@@ -605,21 +588,6 @@ export default function AccountSettings() {
           </View>
         </Animated.View>
 
-        {/* Delete Account Section */}
-        <Animated.View style={[styles.section, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.sectionTitle}>{t('dangerZone')}</Text>
-          <View style={styles.card}>
-            <View style={styles.formSection}>
-              <TouchableOpacity
-                style={[styles.button, styles.secondaryButton]}
-                onPress={() => setShowDeleteConfirm(true)}
-                disabled={isLoading}
-              >
-                <Text style={styles.secondaryButtonText}>{t('deleteAccount')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Animated.View>
       </ScrollView>
 
       {/* Role Modal */}
@@ -663,43 +631,6 @@ export default function AccountSettings() {
               >
                 <Text style={styles.modalButtonText}>{t('admin')}</Text>
               </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        visible={showDeleteConfirm}
-        onRequestClose={() => setShowDeleteConfirm(false)}
-        transparent={true}
-        animationType="fade"
-      >
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          onPress={() => setShowDeleteConfirm(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{t('confirmDeletion')}</Text>
-              <Text style={styles.modalText}>
-                {t('deleteAccountConfirmation')}
-              </Text>
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonSecondary]}
-                  onPress={() => setShowDeleteConfirm(false)}
-                >
-                  <Text style={styles.modalButtonText}>{t('cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonDanger]}
-                  onPress={handleDeleteAccount}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.modalButtonText}>{t('delete')}</Text>
-                </TouchableOpacity>
-              </View>
             </View>
           </View>
         </TouchableOpacity>
