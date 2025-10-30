@@ -392,7 +392,8 @@ export default function EnhancedSkillDetail() {
                     renderItem={({ item }) => {
                       // Check if notes contain level completion info
                       const hasLevelCompletion = item.notes && item.notes.includes('Level Completed');
-                      const completionMatch = item.notes?.match(/(\w+) Level Completed/);
+                      // Safer, bounded pattern to avoid excessive backtracking
+                      const completionMatch = item.notes?.match(/\b(Beginner|Novice|Intermediate|Advanced|Expert)\b(?=\s+Level Completed\b)/);
                       
                       return (
                         <View style={styles.updateItem}>
