@@ -280,7 +280,7 @@ export class TutorService {
     const completed_assignments = assignments?.filter(a => a.is_completed).length || 0;
 
     // Calculate average student progress
-    const studentIds = students?.map(s => s.student_id) || [];
+    const studentIds = students?.map(s => s.id) || [];
     let average_progress = 0;
 
     if (studentIds.length > 0) {

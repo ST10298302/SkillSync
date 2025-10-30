@@ -49,7 +49,7 @@ type TabType = 'overview' | 'milestones' | 'resources' | 'techniques' | 'challen
 
 export default function EnhancedSkillDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { skills, user } = useSkills();
+  const { skills } = useSkills();
   const { user: currentUser } = useAuth();
   const { 
     milestones: skillMilestones,

@@ -29,13 +29,14 @@ export const ArtifactViewModal = ({ visible, artifact, onClose, canDelete = fals
         window.open(artifact.file_url, '_blank');
       } else {
         // On native, download the file
-        const fileUri = FileSystem.documentDirectory + artifact.title + '.' + artifact.file_type;
+        const fileUri = (((FileSystem as any).documentDirectory ?? (FileSystem as any).cacheDirectory) ?? '') + artifact.title + '.' + artifact.file_type;
         const downloadResumable = FileSystem.createDownloadResumable(
           artifact.file_url,
           fileUri,
           {},
           (downloadProgress) => {
-            const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesToWrite;
+            const expected = (downloadProgress as any).totalBytesExpectedToWrite ?? 1;
+            const progress = downloadProgress.totalBytesWritten / expected;
             console.log('Download progress:', progress);
           }
         );

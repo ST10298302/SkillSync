@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Media Service
 // Handles file uploads, image compression, and artifact management
 

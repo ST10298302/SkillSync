@@ -136,7 +136,7 @@ export default function PrivacySecuritySettings() {
     }
   };
 
-  const toggleSecuritySetting = async (key: keyof typeof securitySettings) => {
+  const toggleSecuritySetting = async (key: 'biometricAuth' | 'requirePin' | 'autoLock') => {
     if (!user?.id) return;
     
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -306,7 +306,7 @@ export default function PrivacySecuritySettings() {
       });
       
       // Update PIN status if enabling PIN
-      if (key === 'requirePin' && newValue) {
+      if ((key as string) === 'requirePin' && newValue) {
         setPinStatus(prev => ({ ...prev, enabled: true }));
       }
     } catch (error) {
@@ -362,7 +362,7 @@ export default function PrivacySecuritySettings() {
     }
   };
 
-  const updateSessionTimeout = async (timeout: string) => {
+  const updateSessionTimeout = async (timeout: '1min' | '5min' | '15min' | '30min' | '1hour' | 'never') => {
     if (!user?.id) return;
     
     try {
@@ -381,7 +381,7 @@ export default function PrivacySecuritySettings() {
       
       // Update SessionTimeoutService
       const { SessionTimeoutService } = await import('../../services/sessionTimeoutService');
-      await SessionTimeoutService.setSessionTimeout(timeout as any);
+      await SessionTimeoutService.setSessionTimeout(timeout);
       
       // Refresh session timeout in PinLockContext
       setTimeout(() => {

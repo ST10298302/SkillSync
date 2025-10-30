@@ -265,8 +265,8 @@ export class AnalyticsService {
       // Get entries for this week
       const { data: entries } = await supabase
         .from('skill_entries')
-        .select('skill_id, hours, created_at')
-        .eq('skill_id', skills[0]?.id || '') // Would need to get all skill IDs
+        .select('skill_id, hours, created_at, user_id')
+        .eq('user_id', userId)
         .gte('created_at', weekStart.toISOString())
         .lt('created_at', weekEnd.toISOString());
 

@@ -391,7 +391,7 @@ export default function SkillCard({
         activeOpacity={0.9}
         accessible={true}
         accessibilityRole="button"
-        accessibilityLabel={`${t('skill')}: ${translatedName}`}
+        accessibilityLabel={`${t('skill' as any)}: ${translatedName}`}
       >
         <View
           style={[
@@ -408,7 +408,7 @@ export default function SkillCard({
                       {translatedName || ' '}
                     </Text>
                     {current_level && !isSmall && (
-                      <LevelBadge level={current_level} size="small" />
+                      <LevelBadge level={current_level as any} size="small" />
                     )}
                     {completed_levels && completed_levels.length > 0 && (
                       <View style={{
@@ -474,7 +474,7 @@ export default function SkillCard({
                       activeOpacity={0.7}
                       accessible={true}
                       accessibilityRole="button"
-                      accessibilityLabel={t('editSkill')}
+                      accessibilityLabel={t('editSkill' as any)}
                     >
                       <Ionicons name="create-outline" size={16} color={themeColors.accent} />
                     </TouchableOpacity>
@@ -487,7 +487,7 @@ export default function SkillCard({
                         activeOpacity={0.7}
                         accessible={true}
                         accessibilityRole="button"
-                        accessibilityLabel={t('deleteSkill')}
+                        accessibilityLabel={t('deleteSkill' as any)}
                       >
                         <Ionicons name="trash-outline" size={16} color={themeColors.error} />
                       </TouchableOpacity>

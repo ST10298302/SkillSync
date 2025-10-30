@@ -18,7 +18,7 @@ interface AnimatedInputProps extends TextInputProps {
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightIconPress?: () => void;
   textContentType?: 'emailAddress' | 'password' | 'username' | 'none' | 'newPassword';
-  autoComplete?: string;
+  autoComplete?: TextInputProps['autoComplete'];
 }
 
 export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
@@ -39,7 +39,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
   const [isFocused, setIsFocused] = useState(false);
   const focusAnim = useSharedValue(0);
   const scaleAnim = useSharedValue(1);
-  const blurTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const blurTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cleanup timer on unmount
   React.useEffect(() => {

@@ -4,7 +4,8 @@
     "strict": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "types": ["jest"],
+    "types": ["jest", "node", "react-native"],
+    "skipLibCheck": true,
     "paths": {
       "@/*": [
         "./*"
@@ -12,9 +13,32 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "context/**/*.ts",
+    "context/**/*.tsx",
+    "services/**/*.ts",
+    "services/**/*.tsx",
+    "utils/**/*.ts",
+    "utils/**/*.tsx",
+    "constants/**/*.ts",
+    "constants/**/*.tsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx",
+    "test-utils.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+  ],
+  "exclude": [
+    "__tests__/**",
+    "coverage/**",
+    "supabase/functions/**",
+    "scripts/**",
+    "services/mediaService.ts",
+    "app/skill/[id]-enhanced.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

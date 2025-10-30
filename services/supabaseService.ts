@@ -266,8 +266,8 @@ export class SupabaseService {
         }
       }
 
-      // Update user profile to remove image URL (set to null instead of undefined)
-      await this.updateUserProfile(userId, { profile_picture_url: null });
+      // Update user profile to remove image URL
+      await this.updateUserProfile(userId, { profile_picture_url: undefined });
     } catch (error) {
       console.error('Profile picture removal failed:', error);
       throw error;
