@@ -34,7 +34,7 @@ export const EditDiaryEntryModal = ({ visible, onClose, skillId, entry }: EditDi
 
     setLoading(true);
     try {
-      await updateEntry(skillId, entry.id, text.trim(), parseFloat(hours) || 0);
+      await updateEntry(skillId, entry.id, text.trim(), Number.parseFloat(hours) || 0);
       onClose();
     } catch (error) {
       console.error('Failed to update entry:', error);

@@ -99,11 +99,11 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
                 style={[styles.input, { color: themeColors.text, backgroundColor: themeColors.backgroundSecondary, borderColor: themeColors.border }]}
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor={themeColors.textSecondary}
-                value={targetDate && !isNaN(targetDate.getTime()) ? targetDate.toISOString().split('T')[0] : ''}
+                value={targetDate && !Number.isNaN(targetDate.getTime()) ? targetDate.toISOString().split('T')[0] : ''}
                 onChangeText={(text) => {
                   if (text) {
                     const date = new Date(text);
-                    if (!isNaN(date.getTime())) {
+                    if (!Number.isNaN(date.getTime())) {
                       setTargetDate(date);
                     }
                   } else {
@@ -119,7 +119,7 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
                 >
                   <Ionicons name="calendar-outline" size={20} color={themeColors.textSecondary} />
                   <Text style={[styles.datePickerText, { color: targetDate ? themeColors.text : themeColors.textSecondary }]}>
-                    {targetDate && !isNaN(targetDate.getTime()) ? targetDate.toLocaleDateString() : 'Select a date'}
+                    {targetDate && !Number.isNaN(targetDate.getTime()) ? targetDate.toLocaleDateString() : 'Select a date'}
                   </Text>
                   {targetDate && (
                     <TouchableOpacity
@@ -134,7 +134,7 @@ export const AddMilestoneModal = ({ visible, onClose, skillId }: AddMilestoneMod
                 {showDatePicker && Platform.OS === 'ios' && (
                   <View style={[styles.datePickerContainer, { backgroundColor: themeColors.backgroundSecondary }]}>
                     <Text style={[styles.datePickerHint, { color: themeColors.textSecondary }]}>
-                      {targetDate && !isNaN(targetDate.getTime()) ? 'Date: ' + targetDate.toLocaleDateString() : 'Select a date in MM/DD/YYYY format'}
+                      {targetDate && !Number.isNaN(targetDate.getTime()) ? 'Date: ' + targetDate.toLocaleDateString() : 'Select a date in MM/DD/YYYY format'}
                     </Text>
                     <TouchableOpacity
                       style={[styles.closeDatePickerButton, { backgroundColor: themeColors.accent }]}

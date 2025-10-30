@@ -80,7 +80,7 @@ export default function TabLayout() {
           paddingTop: getTabBarTopPadding(),
           paddingHorizontal: isTablet ? 24 : 8,
           // Enhanced shadows
-          shadowColor: safeTheme === 'dark' ? '#000' : '#000',
+          shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: safeTheme === 'dark' ? 0.3 : 0.08,
           shadowRadius: 12,

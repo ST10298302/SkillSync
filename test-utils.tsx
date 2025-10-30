@@ -17,7 +17,7 @@ beforeAll(() => {
   g.process.env = g.process.env || {};
   g.process.env.EXPO_PUBLIC_SUPABASE_URL = 'dummy';
   g.process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'dummy';
-  g.process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0';
+  g.process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0'; // NOSONAR - test stub, not a real key
 });
 
 export const renderWithProviders = (

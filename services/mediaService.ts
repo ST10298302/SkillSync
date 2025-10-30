@@ -128,13 +128,15 @@ export class MediaService {
       const binaryString = atob(base64);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+        const cp = binaryString.codePointAt(i) ?? 0;
+        bytes[i] = cp & 0xff;
       }
 
       const thumbnailBinaryString = atob(thumbnailBase64);
       const thumbnailBytes = new Uint8Array(thumbnailBinaryString.length);
       for (let i = 0; i < thumbnailBinaryString.length; i++) {
-        thumbnailBytes[i] = thumbnailBinaryString.charCodeAt(i);
+        const cp = thumbnailBinaryString.codePointAt(i) ?? 0;
+        thumbnailBytes[i] = cp & 0xff;
       }
 
       blob = new Blob([bytes], { type: 'image/jpeg' });
@@ -365,7 +367,7 @@ export class MediaService {
   static async getFileSize(uri: string): Promise<number> {
     const response = await fetch(uri, { method: 'HEAD' });
     const contentLength = response.headers.get('content-length');
-    return contentLength ? parseInt(contentLength, 10) : 0;
+    return contentLength ? Number.parseInt(contentLength, 10) : 0;
   }
 
   /**

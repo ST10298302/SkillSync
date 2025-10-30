@@ -97,7 +97,7 @@ EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # Google Translate API (for translations)
-EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key
+EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key 
 
 # App Configuration
 EXPO_PUBLIC_APP_NAME=SkillSync

@@ -16,11 +16,11 @@ g.process = g.process || {};
 g.process.env = g.process.env || {};
 g.process.env.EXPO_PUBLIC_SUPABASE_URL = g.process.env.EXPO_PUBLIC_SUPABASE_URL || 'dummy';
 g.process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = g.process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'dummy';
-g.process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0';
+g.process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0'; // NOSONAR - test stub, not a real key
 
 // Also set it on the global process object
 if (typeof process !== 'undefined') {
-  process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0';
+  process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY = 'AIzaSyBZaJmEhGIVZEev8LAWlYd5HrKEvHu2eg0'; // NOSONAR - test stub, not a real key
 }
 
 // Silence React Native warnings in test output (RN 0.79 may not expose this helper path)

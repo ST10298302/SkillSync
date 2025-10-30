@@ -27,7 +27,7 @@ export const AddDiaryEntryModal = ({ visible, onClose, skillId, onSuccess }: Add
 
     setLoading(true);
     try {
-      await addEntry(skillId, text.trim(), parseFloat(hours) || 0);
+      await addEntry(skillId, text.trim(), Number.parseFloat(hours) || 0);
       setText('');
       setHours('');
       onSuccess?.();

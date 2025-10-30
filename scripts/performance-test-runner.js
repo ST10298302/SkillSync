@@ -127,7 +127,7 @@ class PerformanceTestRunner {
     const memoryMatches = output.match(/Memory increase: ([\d.]+)MB/g);
     if (memoryMatches) {
       memoryMatches.forEach(match => {
-        const value = parseFloat(match.match(/([\d.]+)/)[1]);
+        const value = Number.parseFloat(match.match(/([\d.]+)/)[1]);
         this.results.performance.memoryUsage.push(value);
       });
     }
@@ -136,7 +136,7 @@ class PerformanceTestRunner {
     const queryTimeMatches = output.match(/(\d+\.?\d*)ms/g);
     if (queryTimeMatches) {
       queryTimeMatches.forEach(match => {
-        const value = parseFloat(match);
+        const value = Number.parseFloat(match);
         if (value > 0 && value < 10000) { // Filter reasonable values
           this.results.performance.queryTimes.push(value);
         }
@@ -147,7 +147,7 @@ class PerformanceTestRunner {
     const cacheMatches = output.match(/Cache hit ratio: ([\d.]+)%/g);
     if (cacheMatches) {
       cacheMatches.forEach(match => {
-        const value = parseFloat(match.match(/([\d.]+)/)[1]);
+        const value = Number.parseFloat(match.match(/([\d.]+)/)[1]);
         this.results.performance.cacheEfficiency.push(value);
       });
     }

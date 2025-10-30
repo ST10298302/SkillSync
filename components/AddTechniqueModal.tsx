@@ -49,7 +49,7 @@ export const AddTechniqueModal = ({ visible, onClose, skillId, onSuccess, editin
 
     setLoading(true);
     try {
-      const hours = parseFloat(practiceHours) || 0;
+      const hours = Number.parseFloat(practiceHours) || 0;
 
       if (editingTechnique) {
         // Update existing technique

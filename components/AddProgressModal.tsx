@@ -28,7 +28,7 @@ export const AddProgressModal = ({ visible, onClose, skillId, currentProgress, o
 
   const handleSubmit = async () => {
     const progressValue = parseInt(progress);
-    if (isNaN(progressValue) || progressValue < 0 || progressValue > 100) {
+    if (Number.isNaN(progressValue) || progressValue < 0 || progressValue > 100) {
       return;
     }
 
