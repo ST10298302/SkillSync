@@ -193,12 +193,8 @@ export class SupabaseService {
       const filePath = `${userId}/${fileName}`;
 
       // Convert base64 to Uint8Array for direct upload
-      const binaryString = atob(base64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        const cp = binaryString.codePointAt(i) ?? 0;
-        bytes[i] = cp & 0xff;
-      }
+      const { base64ToUint8Array } = await import('../utils/base64');
+      const bytes = base64ToUint8Array(base64);
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage

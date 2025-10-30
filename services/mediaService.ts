@@ -125,19 +125,11 @@ export class MediaService {
       });
 
       // Convert base64 to Uint8Array for Supabase
-      const binaryString = atob(base64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        const cp = binaryString.codePointAt(i) ?? 0;
-        bytes[i] = cp & 0xff;
-      }
+      const { base64ToUint8Array } = await import('../utils/base64');
+      const bytes = base64ToUint8Array(base64);
 
       const thumbnailBinaryString = atob(thumbnailBase64);
-      const thumbnailBytes = new Uint8Array(thumbnailBinaryString.length);
-      for (let i = 0; i < thumbnailBinaryString.length; i++) {
-        const cp = thumbnailBinaryString.codePointAt(i) ?? 0;
-        thumbnailBytes[i] = cp & 0xff;
-      }
+      const thumbnailBytes = base64ToUint8Array(thumbnailBase64);
 
       blob = new Blob([bytes], { type: 'image/jpeg' });
       thumbnailBlob = new Blob([thumbnailBytes], { type: 'image/jpeg' });
