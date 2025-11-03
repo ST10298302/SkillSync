@@ -1,223 +1,278 @@
 # SkillSync App Documentation
 
-A comprehensive guide to the SkillSync learning tracker app built with React Native and Expo, featuring built-in translation capabilities and comprehensive skill management.
+A complete guide to the SkillSync learning tracker app. Built with React Native and Expo, SkillSync helps you track your learning progress, manage skills, and maintain learning streaks with built-in translation support.
 
-## Table of Contents
+---
 
-1. [Getting Started](#getting-started)
-2. [App Overview](#app-overview)
-3. [Core Features](#core-features)
-4. [Development Guide](#development-guide)
-5. [Architecture](#architecture)
-6. [Testing](#testing)
-7. [Deployment](#deployment)
-8. [Troubleshooting](#troubleshooting)
+## Quick Navigation
+
+- [Getting Started](#getting-started) - Setup and installation
+- [App Overview](#app-overview) - What SkillSync does
+- [Core Features](#core-features) - What you can do with the app
+- [Development Guide](#development-guide) - How to work with the codebase
+- [Architecture](#architecture) - How the app is built
+- [Testing](#testing) - Running and writing tests
+- [Deployment](#deployment) - Building for production
+- [Troubleshooting](#troubleshooting) - Common issues and solutions
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-- **Node.js** v18+ ([Download](https://nodejs.org/)) (Node.js, 2025)
-- **Git** ([Download](https://git-scm.com/))
-- **VS Code** (Recommended)
-- **Expo CLI** - `npm install -g @expo/cli` (Docs, E., 2025)
+
+Before you start, make sure you have:
+
+- **Node.js** v18 or higher - [Download here](https://nodejs.org/)
+- **Git** - [Download here](https://git-scm.com/)
+- **VS Code** (Recommended editor, but any editor works)
+- **Expo CLI** - Install globally with: `npm install -g @expo/cli`
 
 ### Quick Setup
+
+Follow these steps to get the app running:
+
 ```bash
-# Clone repository
+# 1. Clone the repository
 git clone https://github.com/ST10298302/SkillSync.git
 cd SkillSyncApp
 
-# Install dependencies
+# 2. Install all dependencies
 npm install
 
-# Configure environment variables
+# 3. Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with your Supabase credentials
+# Open .env.local and add your Supabase credentials (see Environment Configuration below)
 
-# Start development server
+# 4. Start the development server
 npx expo start
 ```
-(Docs, E., 2025)
 
-### First Run Options
-- **Web**: Press `w` in terminal
-- **Mobile**: Scan QR code with Expo Go app
-- **Tunnel**: Press `t` for different WiFi networks
+**When the server starts:**
+
+- Press `w` to open in **web browser**
+- Scan the QR code with **Expo Go** app on your phone (for mobile testing)
+- Press `t` to use **tunnel mode** (if you're on different WiFi than your phone)
 
 ---
 
 ## App Overview
 
 ### What is SkillSync?
-SkillSync is an internal learning management application that helps users track their skill development progress, log learning sessions, and maintain learning streaks. The app includes built-in translation capabilities to support multi-language learning environments.
 
-### Key Benefits
-- **Centralized Learning Tracking** - All skills and progress in one place
-- **Multi-Language Support** - Built-in translation for global teams
-- **Progress Visualization** - Clear visual indicators of learning advancement
-- **Streak Motivation** - Maintain learning momentum with streak tracking
-- **Cross-Platform** - Works on iOS, Android, and Web
+SkillSync is a learning management app that helps you:
+- Track your skill development progress
+- Log your learning sessions with notes
+- Maintain learning streaks to stay motivated
+- Use multiple languages with built-in translation
+
+Think of it as a personal learning journal combined with progress tracking, all in one place.
+
+### Why Use SkillSync?
+
+- **Everything in one place** - Track all your skills and progress without switching between tools
+- **Works everywhere** - Use it on your phone (iOS/Android), tablet, or web browser
+- **Multi-language support** - Built-in translation means you can use it in any language
+- **Visual progress** - See exactly how far you've come with clear progress indicators
+- **Stay motivated** - Streak tracking helps you maintain consistent learning habits
 
 ---
 
 ## Core Features
 
 ### Skill Management
-- **Create Skills** - Add new learning goals with descriptions and categories
-- **Edit Skills** - Modify skill details, progress, and goals anytime
-- **Delete Skills** - Remove completed or abandoned skills
-- **Skill Categories** - Organize skills by learning domains
+
+Create, organize, and manage your learning goals:
+- **Create Skills** - Add new skills you want to learn (e.g., "React Native", "Spanish", "Piano")
+- **Edit Skills** - Update names, descriptions, categories, or progress anytime
+- **Delete Skills** - Remove skills you've completed or no longer need
+- **Organize by Category** - Group related skills together for easier management
 
 ### Progress Tracking
-- **Visual Progress Bars** - 0-100% progress indicators
-- **Percentage Display** - Exact progress numbers
-- **Streak System** - Track consecutive learning days
-- **Progress History** - View learning patterns over time
+
+Keep track of how you're doing:
+- **Progress Bars** - Visual 0-100% indicators show how close you are to mastery
+- **Exact Percentages** - See precise progress numbers for each skill
+- **Learning Streaks** - Track how many consecutive days you've practiced
+- **Progress History** - Review your learning patterns over weeks and months
 
 ### Learning Diary
-- **Session Logging** - Record study sessions with text notes
-- **Time Tracking** - Log hours spent on each skill
-- **Entry History** - Review past learning activities
-- **Skill Linking** - Connect diary entries to specific skills
+
+Journal your learning journey:
+- **Session Logging** - Write notes about what you learned in each session
+- **Time Tracking** - Log how many hours you spent on each skill
+- **Entry History** - Browse through all your past learning entries
+- **Skill Linking** - Connect diary entries to specific skills automatically
 
 ### Translation System
-- **Multi-Language Support** - Built-in Google Translate integration (Google, 2025)
-- **Real-Time Translation** - Translate text on-the-fly
-- **Batch Translation** - Translate multiple entries simultaneously
-- **Language Detection** - Automatic language identification
-- **Translation Memory** - Store and reuse common translations
+
+Use the app in any language:
+- **Multi-Language Support** - Built-in Google Translate integration lets you use the app in your preferred language
+- **Real-Time Translation** - Text gets translated instantly as you use the app
+- **Batch Translation** - Translate multiple entries at once for efficiency
+- **Auto-Detection** - The app detects which language you're using
 
 ### Theme System
-- **Light/Dark Mode** - Comfortable viewing in any lighting
-- **Auto-Detection** - Follows device theme preferences
-- **Persistent Settings** - Remembers theme choice
-- **Consistent Theming** - Unified visual experience
+
+Customize your experience:
+- **Light/Dark Mode** - Switch between themes for comfortable viewing
+- **Auto-Detection** - Automatically matches your device's theme preference
+- **Persistent Settings** - Remembers your theme choice
+- **Consistent Design** - Unified look and feel across all screens
 
 ### Dashboard & Analytics
-- **Home Statistics** - Quick overview of learning progress
-- **Progress Charts** - Visual representation of advancement
-- **Streak Tracking** - Monitor learning consistency
-- **Time Analytics** - Total learning hours and patterns
+
+See the big picture:
+- **Home Statistics** - Quick overview of all your skills and progress
+- **Progress Charts** - Visual charts showing your advancement over time
+- **Streak Tracking** - Monitor how consistent your learning habits are
+- **Time Analytics** - See total hours logged and learning patterns
 
 ---
 
 ## Development Guide
 
 ### Project Structure
+
+Here's how the codebase is organized:
+
 ```
 SkillSyncApp/
-├── app/                    # App screens and navigation
-│   ├── (auth)/            # Authentication flows
-│   ├── (tabs)/            # Main app tabs
-│   └── skill/             # Skill management
-├── components/             # Reusable UI components
-├── context/               # React Context providers
-├── services/              # API and external services
-├── utils/                 # Helper functions
-└── constants/             # App configuration
+├── app/                    # All app screens (login, home, skill details, etc.)
+│   ├── (auth)/            # Login and signup screens
+│   ├── (tabs)/            # Main screens: Home, Analytics, Community, Profile
+│   ├── settings/          # Settings screens
+│   └── skill/             # Skill management screens (create, edit, view)
+├── components/             # Reusable UI pieces (buttons, cards, modals)
+├── context/               # Global state management (user, skills, theme)
+├── services/              # Backend API calls and external services
+├── utils/                 # Helper functions (calculations, formatting)
+└── constants/             # App-wide settings (colors, text, config)
 ```
 
-**To see more, read:** [App Structure](./app-structure.md) - Detailed navigation flow and screen organization
+**Want more details?** Check out [App Structure](./app-structure.md) for a complete breakdown of navigation and screens.
 
 ### Key Technologies
-- **React Native** with Expo SDK 53 (Docs, E., 2025)
-- **TypeScript** for type safety
-- **Expo Router** for navigation (Docs, E., 2025)
-- **Supabase** for backend services (supabase, 2025)
-- **Google Translate API** for translations (Google, 2025)
-- **React Native Animated** for smooth interactions (React, 2025)
+
+The app is built with modern, reliable tools:
+
+- **React Native** with Expo SDK 53 - Cross-platform mobile app framework
+- **TypeScript** - Catches errors before they happen with type checking
+- **Expo Router** - File-based navigation (like Next.js for mobile)
+- **Supabase** - Handles authentication, database, and file storage
+- **Google Translate API** - Powers the multi-language features
+- **React Native Animated** - Smooth animations and transitions
 
 ### Development Commands
+
+Common commands you'll use while developing:
+
 ```bash
-# Start development
+# Start the development server
 npx expo start
 
-# Type checking
+# Check for TypeScript errors
 npx tsc --noEmit
 
-# Linting
+# Check code style
 npm run lint
 
-# Testing
-npm test                    # Run all tests
-npm run test:watch         # Watch mode for development
-npm run test:coverage      # Generate coverage report
+# Run tests
+npm test                    # Run all tests once
+npm run test:watch         # Watch mode - reruns tests when files change
+npm run test:coverage      # See how much of the code is tested
 
-# Clear cache
+# Clear cache (if things get weird)
 npx expo start --clear
 ```
-(Docs, E., 2025; Jest, 2025)
 
 ### Environment Configuration
-Create `.env.local` with your credentials:
+
+The app needs API keys to work. Create a `.env.local` file in the project root with:
+
 ```bash
-# Supabase Configuration
+# Supabase Configuration (database and authentication)
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Google Translate API
-EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key 
+# Google Translate API (for multi-language support)
+EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key
 ```
-(supabase, 2025; Google, 2025)
 
-**To see more, read:** [Development Setup](./development-setup.md) - Complete setup guide including Supabase and storage configuration
+**Getting these keys:**
+- **Supabase**: Sign up at [supabase.com](https://supabase.com), create a project, then find your URL and anon key in Project Settings
+- **Google Translate**: Set up at [Google Cloud Console](https://console.cloud.google.com), enable Translation API, and create an API key
+
+**Need help setting these up?** See [Development Setup](./development-setup.md) for a complete step-by-step guide.
 
 ---
 
 ## Architecture
 
 ### State Management
-- **AuthContext** - User authentication and session management (supabase, 2025; Docs, S., 2025)
-- **SkillsContext** - Skill data and CRUD operations (Kosisochukwu, M., 2025)
-- **ThemeContext** - Light/dark theme switching
-- **LanguageContext** - Multi-language support
 
-**To see more, read:** [Authentication](./authentication.md) - Detailed auth system implementation
+The app uses React Context to manage global state:
+
+- **AuthContext** - Handles user login, logout, and session management
+- **SkillsContext** - Manages all skill data (creating, updating, deleting skills)
+- **ThemeContext** - Controls light/dark mode switching
+- **LanguageContext** - Manages language selection and translations
+- **PinLockContext** - Handles PIN lock security features
+
+**How it works:** Components read data from these contexts instead of passing props down through many layers.
+
+**Want to dive deeper?** Check out [Authentication](./authentication.md) to see how the auth system works.
 
 ### Data Flow
-1. **User Input** → Component → Context
-2. **Context** → Service → Supabase/External APIs
-3. **Response** → Context → Component → UI Update
+
+Here's how data moves through the app:
+
+1. **User does something** (like adding a skill) → A component catches the action
+2. **Component calls Context** → Context calls a Service
+3. **Service talks to Supabase** → Saves data to the database
+4. **Response comes back** → Context updates → Component shows the new data
+
+Simple flow: User Action → Component → Context → Service → Database → Back up the chain
 
 ### Service Layer
-- **SupabaseService** - Database operations and authentication (supabase, 2025; Yüksel, M., 2023)
-- **GoogleTranslateAPI** - Translation services (Google, 2025)
-- **File System Service** - Local file management
-- **Image Service** - Profile picture handling
 
-**To see more, read:** [Database Schema](./database-schema.md) - Database structure and service integration
+Services handle all communication with external systems:
+
+- **SupabaseService** - Saves/loads data from the database, handles authentication
+- **GoogleTranslateAPI** - Translates text between languages
+- **File System Service** - Manages local files on the device
+- **Image Service** - Handles profile picture uploads
+
+**Database details:** See [Database Schema](./database-schema.md) to understand how data is stored.
 
 ### Component Architecture
-- **Atomic Design** principles (Coope, A. et al., 2014)
-- **Theme-aware** styling system
-- **Responsive** layouts for all screen sizes
-- **Accessibility** features built-in
 
-**To see more, read:** [Components](./components.md) - Complete component library and design system
+Components are built with these principles:
+
+- **Reusable pieces** - Small components that can be used in multiple places
+- **Theme-aware** - All components automatically adapt to light/dark mode
+- **Responsive** - Works on phones, tablets, and web browsers
+- **Accessible** - Built-in support for screen readers and accessibility tools
+
+**Component library:** Check out [Components](./components.md) for a complete list of available components.
 
 ---
 
 ## Testing
 
-### Comprehensive Testing Suite ✅
+### Test Overview
 
-SkillSync now features a complete testing foundation with **33 tests across 7 test suites**, all passing successfully.
+The app has a solid test foundation:
+- **33 tests** across **7 test suites**
+- All tests are currently passing ✅
+- **25% code coverage** (with room to grow)
 
-### Test Types
+### Types of Tests
 
-- **Unit Tests** - Component logic, utilities, and context state management (Jest, 2025)
-- **Integration Tests** - Complete user journeys and context interactions  
-- **Regression Tests** - Edge cases, race conditions, and memory leak prevention (Mandalchandan, 2024)
-- **Performance Tests** - Large datasets, concurrent operations, and rendering performance (React, 2025)
-
-### Current Test Results
-
-- **Total Tests**: 33 ✅
-- **Test Suites**: 7 ✅
-- **Coverage**: 25.33% (statements), 16.53% (branches)
-- **Status**: All tests passing
+- **Unit Tests** - Test individual components and functions in isolation
+- **Integration Tests** - Test complete user workflows (like creating a skill)
+- **Regression Tests** - Make sure bugs don't come back after fixing them
+- **Performance Tests** - Ensure the app stays fast with lots of data
 
 ### Running Tests
 
@@ -241,150 +296,148 @@ npm run test:coverage
 npm run test:ci
 ```
 
-### Test Structure
+### Test Organization
 
-- `__tests__/components/` - UI component tests (SkillCard, etc.)
-- `__tests__/context/` - Context provider tests (AuthContext, SkillsContext, etc.)
-- `__tests__/integration/` - End-to-end user flow tests
-- `__tests__/regression/` - Edge case and stability tests
-- `__tests__/performance/` - Performance and scalability tests
-- `__tests__/utils/` - Utility function tests (streakCalculator, etc.)
+Tests are organized by type:
 
-### Key Testing Achievements
+- `__tests__/components/` - Tests for UI components (buttons, cards, etc.)
+- `__tests__/context/` - Tests for state management (auth, skills, etc.)
+- `__tests__/integration/` - Tests for complete user workflows
+- `__tests__/regression/` - Tests that prevent bugs from coming back
+- `__tests__/performance/` - Tests that check app speed and efficiency
+- `__tests__/utils/` - Tests for helper functions (like calculating streaks)
 
-✅ **Fixed CI/CD pipeline** - TypeScript errors resolved  
-✅ **Stable test environment** - No more hanging tests  
-✅ **Comprehensive coverage** - Core functionality fully tested  
-✅ **Performance validation** - App scales efficiently  
-✅ **Regression prevention** - Previously fixed issues remain resolved  
-
-**To see more, read:** [Testing Strategy](./testing-strategy.md) - Comprehensive testing strategies and results
+**Testing strategies:** See [Testing Strategy](./testing-strategy.md) for detailed information about how tests are written and maintained.
 
 ---
 
 ## Deployment
 
-### Development Build
+### Building for Production
+
+The app uses Expo Application Services (EAS) for building. This handles all the complex setup for you.
+
+**Build commands:**
+
 ```bash
-# Build for development
-npx expo build --profile development
-
-# Platform-specific builds
-npx expo build:android --profile development
-npx expo build:ios --profile development
-```
-
-### Production Build
-```bash
-# Build for production
-npx expo build --profile production
-
-# Platform-specific builds
+# Build for Android
 npx expo build:android --profile production
+
+# Build for iOS
 npx expo build:ios --profile production
+
+# Or build for both
+npx expo build --profile production
 ```
 
-### Internal Distribution
-- Use Expo Application Services (EAS) for internal builds
-- Distribute via internal app stores or direct APK/IPA files
-- Configure app signing for internal certificates
+**Distribution:**
+
+- **Internal testing**: Share APK/IPA files directly with testers
+- **App stores**: Submit builds to Google Play Store or Apple App Store
+- **Internal app store**: Set up your own internal distribution channel
+
+**Note:** Production builds require proper app signing certificates. Expo can help you set these up.
 
 ---
 
 ## Troubleshooting
 
-### Common Issues
+### Common Issues & Solutions
 
-#### Development Server
+**Problem: App won't start or shows weird errors**
+
 ```bash
-# Clear cache
+# Clear the cache and restart
 npx expo start --clear
 
-# Reset Metro bundler
+# If that doesn't work, reset everything
 npx expo start --reset-cache
 ```
 
-#### Dependencies
+**Problem: Dependencies are broken**
+
 ```bash
-# Clean install
+# Remove and reinstall everything
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-#### TypeScript Errors
+**Problem: TypeScript errors**
+
 ```bash
-# Check types
+# Check what's wrong
 npx tsc --noEmit
 
-# Fix linting
+# Auto-fix code style issues
 npm run lint --fix
 ```
 
-#### Translation Issues
-```bash
-# Verify API key in .env.local
-# Check Google Translate API quota
-# Verify network connectivity
-```
+**Problem: Translations not working**
+
+- Check that `EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY` is set in `.env.local`
+- Verify your Google Translate API has quota remaining
+- Make sure you're connected to the internet
 
 ### Getting Help
-- Check terminal output for error messages
-- Review [Expo documentation](https://docs.expo.dev/) (Docs, E., 2025)
-- Search [React Native docs](https://reactnative.dev/)
-- Check internal development documentation
+
+1. **Check the terminal** - Error messages usually tell you what's wrong
+2. **Read the docs** - [Expo documentation](https://docs.expo.dev/) is very helpful
+3. **Search online** - [React Native docs](https://reactnative.dev/) have solutions for common issues
+4. **Check project docs** - The other documentation files in the `docs/` folder have more details
 
 ---
 
 ## Additional Resources
 
-### Documentation
-- [App Structure](./app-structure.md) - Navigation and screen organization
-- [Components](./components.md) - UI component library
-- [Authentication](./authentication.md) - Auth system details
-- [Development Setup](./development-setup.md) - Complete setup guide including Supabase and storage
-- [Database Schema](./database-schema.md) - Database structure and relationships
-- [Unit Testing](./unit-testing.md) - Testing strategies and examples
+### Documentation Files
 
-**To see more, read:**
-- **Getting Started**: [Development Setup](./development-setup.md) - Complete environment setup guide
-- **App Structure**: [App Structure](./app-structure.md) - Navigation flow and screen organization
-- **Components**: [Components](./components.md) - UI component library and design system
-- **Authentication**: [Authentication](./authentication.md) - Auth system implementation details
-- **Database**: [Database Schema](./database-schema.md) - Table structure and relationships
-- **Testing**: [Unit Testing](./unit-testing.md) - Testing strategies and examples
+- **[App Structure](./app-structure.md)** - How screens are organized and navigation works
+- **[Components](./components.md)** - Complete list of reusable UI components
+- **[Authentication](./authentication.md)** - How login and user management works
+- **[Development Setup](./development-setup.md)** - Detailed setup guide (Supabase, storage, etc.)
+- **[Database Schema](./database-schema.md)** - How data is organized in the database
+- **[Unit Testing](./unit-testing.md)** - How to write and run tests
 
-### External Links
-- [Expo Documentation](https://docs.expo.dev/) (Docs, E., 2025)
-- [React Native Guide](https://reactnative.dev/)
-- [Supabase Docs](https://supabase.com/docs) (supabase, 2025)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [Google Translate API](https://cloud.google.com/translate/docs) (Google, 2025)
+### External Documentation
+
+- **[Expo Documentation](https://docs.expo.dev/)** - Official Expo guides and API reference
+- **[React Native Guide](https://reactnative.dev/)** - Official React Native documentation
+- **[Supabase Docs](https://supabase.com/docs)** - Supabase setup and API reference
+- **[TypeScript Handbook](https://www.typescriptlang.org/docs/)** - Learn TypeScript
+- **[Google Translate API](https://cloud.google.com/translate/docs)** - Translation API docs
 
 ---
 
-## Internal Development Notes
+## For Developers
 
 ### Code Standards
-- Follow TypeScript best practices
-- Use consistent component naming (PascalCase)
-- Implement proper error handling
-- Write comprehensive tests for new features
 
-### Feature Development
-- Create feature branches from main
-- Update documentation for new features
-- Test on multiple platforms (iOS, Android, Web)
-- Verify translation functionality for new text
+When writing code, follow these guidelines:
 
-### Performance Considerations
-- Optimize image assets and bundle size
-- Use React.memo for expensive components (React, 2025)
-- Implement lazy loading where appropriate
-- Monitor app performance metrics (Mandalchandan, 2024)
+- **Use TypeScript properly** - Type everything, avoid `any` when possible
+- **Name things clearly** - Components use PascalCase (e.g., `SkillCard`), functions use camelCase (e.g., `calculateStreak`)
+- **Handle errors** - Always wrap API calls in try/catch and show helpful error messages
+- **Write tests** - Add tests when you add new features
+
+### Adding New Features
+
+1. **Create a feature branch** from `main`
+2. **Write the code** following the existing patterns
+3. **Add tests** for your new feature
+4. **Update docs** if you changed how something works
+5. **Test everywhere** - Make sure it works on iOS, Android, and Web
+6. **Check translations** - Verify text appears correctly in different languages
+
+### Performance Tips
+
+- **Optimize images** - Compress images before adding them
+- **Use React.memo** - Wrap expensive components to prevent unnecessary re-renders
+- **Lazy load** - Only load screens/components when they're actually needed
+- **Monitor performance** - Check app speed regularly, especially with lots of data
 
 ---
 
-**Happy learning and coding!**
+**Happy coding!** 🚀
 
 ---
 
