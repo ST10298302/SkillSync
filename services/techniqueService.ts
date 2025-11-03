@@ -1,3 +1,8 @@
+/**
+ * Technique Service
+ * Manages learning techniques for skills
+ * Uses Supabase for database operations (supabase, 2025)
+ */
 import { supabase } from '../utils/supabase';
 import { SkillTechnique } from '../utils/supabase-types';
 

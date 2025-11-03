@@ -1,6 +1,8 @@
-// Advanced Skill Management Service
-// Handles skill leveling, milestones, dependencies, and learning paths
-
+/**
+ * Advanced Skill Management Service
+ * Handles skill leveling, milestones, dependencies, and learning paths
+ * Uses Supabase for database operations (supabase, 2025; Kosisochukwu, M., 2025)
+ */
 import { supabase } from '../utils/supabase';
 import {
   CreateMilestoneRequest,

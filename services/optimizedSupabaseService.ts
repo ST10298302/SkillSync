@@ -1,3 +1,9 @@
+/**
+ * Optimized Supabase Service
+ * Implements query caching, connection pooling, and performance monitoring
+ * Uses Supabase for database operations (supabase, 2025; Group, P. G. D., 2025)
+ * Implements memory management to prevent leaks (Mandalchandan, 2024)
+ */
 import * as FileSystem from 'expo-file-system/legacy';
 import { ProgressUpdate, Skill, SkillEntry, supabase, User } from '../utils/supabase';
 

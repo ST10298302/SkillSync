@@ -22,6 +22,7 @@ export default function RecentActivity({ skills, onSkillPress }: RecentActivityP
   const themeColors = Colors[theme] || Colors.light;
 
   // Calculate and sort recent activities by last update time
+  // Memoized to prevent recalculation on every render (React, 2025)
   const recentActivities = React.useMemo(() => {
     const now = new Date();
     return skills

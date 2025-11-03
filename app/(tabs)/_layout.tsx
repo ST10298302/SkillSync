@@ -1,3 +1,7 @@
+/**
+ * Tab Layout Component
+ * Uses Expo Router Tabs for navigation (Docs, E., 2025)
+ */
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';

@@ -1,6 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+/**
+ * New Skill Creation Screen
+ * Uses Expo Router for navigation (Docs, E., 2025)
+ */
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {

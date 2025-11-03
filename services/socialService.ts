@@ -1,6 +1,8 @@
-// Social Service
-// Handles likes, comments, reactions, follows, and notifications
-
+/**
+ * Social Service
+ * Handles likes, comments, reactions, follows, and notifications
+ * Uses Supabase for database operations (supabase, 2025; Kosisochukwu, M., 2025)
+ */
 import { supabase } from '../utils/supabase';
 import {
     AddReactionRequest,

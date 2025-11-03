@@ -1,3 +1,7 @@
+/**
+ * Root Layout Component
+ * Uses Expo Router for file-based navigation (Docs, E., 2025)
+ */
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

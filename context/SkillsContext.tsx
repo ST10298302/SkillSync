@@ -1,3 +1,8 @@
+/**
+ * Skills Context Provider
+ * Uses React hooks (useCallback, useMemo) for performance optimization (React, 2025)
+ * Implements CRUD operations with Supabase (supabase, 2025; Kosisochukwu, M., 2025)
+ */
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { SupabaseService } from '../services/supabaseService';
 import { shouldProgressLevel } from '../utils/skillProgression';

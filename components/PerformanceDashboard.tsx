@@ -1,4 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+/**
+ * Performance Dashboard Component
+ * Uses useCallback for memoized event handlers (React, 2025)
+ */
 import React, { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BorderRadius, Colors, Spacing, Typography } from '../constants/Colors';
@@ -36,6 +40,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Memoized handlers to prevent re-renders (React, 2025)
   const handleClearCache = useCallback(() => {
     Alert.alert(
       'Clear Cache',

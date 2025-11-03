@@ -1,7 +1,9 @@
+/**
+ * Media Service
+ * Handles file uploads, image compression, and artifact management
+ * Uses Supabase Storage for file uploads (supabase, 2025)
+ */
 // @ts-nocheck
-// Media Service
-// Handles file uploads, image compression, and artifact management
-
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';

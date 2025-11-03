@@ -1,6 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+/**
+ * Signup Screen
+ * Uses Expo Router for navigation (Docs, E., 2025)
+ * Implements Supabase user registration (supabase, 2025; Docs, S., 2025)
+ */
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {

@@ -1,3 +1,7 @@
+/**
+ * Comment Modal Component
+ * Uses useCallback for performance optimization (React, 2025)
+ */
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -26,6 +30,7 @@ export default function CommentModal({ visible, onClose, skillId, onCommentAdded
   const [comments, setComments] = useState<SkillComment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
 
+  // Memoized callback to prevent unnecessary re-renders (React, 2025)
   const loadComments = useCallback(async () => {
     if (!skillId) {
       console.log('[CommentModal] loadComments: No skillId provided');

@@ -2,6 +2,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+/**
+ * Home Screen - Main Dashboard
+ * Uses Expo Router for navigation (Docs, E., 2025)
+ * Implements useCallback for performance optimization (React, 2025)
+ */
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {

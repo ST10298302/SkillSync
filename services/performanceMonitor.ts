@@ -1,4 +1,8 @@
-// Performance monitoring and auto-scaling service
+/**
+ * Performance Monitoring and Auto-scaling Service
+ * Tracks memory usage, query performance, and implements auto-scaling
+ * Implements memory leak prevention strategies (Mandalchandan, 2024)
+ */
 interface PerformanceMetrics {
   timestamp: number;
   memoryUsage: number;
