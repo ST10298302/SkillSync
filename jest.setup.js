@@ -1,3 +1,7 @@
+/**
+ * Jest Setup Configuration
+ * Configures testing environment for React Native with Jest (Jest, 2025)
+ */
 /* eslint-env jest */
 import '@testing-library/jest-native/extend-expect';
 

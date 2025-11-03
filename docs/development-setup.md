@@ -21,10 +21,10 @@ A comprehensive guide to setting up your development environment for SkillSync, 
 ## Prerequisites
 
 ### Required Software
-- **Node.js** - Version 18 or higher
+- **Node.js** - Version 18 or higher (Node.js, 2025)
 - **npm** - Version 8 or higher  
 - **Git** - Latest version
-- **Expo CLI** - `npm install -g @expo/cli`
+- **Expo CLI** - `npm install -g @expo/cli` (Docs, E., 2025)
 
 ### Platform-Specific Requirements
 
@@ -117,7 +117,7 @@ EXPO_PUBLIC_APP_VERSION=1.0.0
 
 ### Create Supabase Project
 
-1. **Visit Supabase**
+1. **Visit Supabase** (supabase, 2025)
    - Go to [supabase.com](https://supabase.com)
    - Sign up or log in
 
@@ -168,7 +168,7 @@ WHERE table_schema = 'public';
 -- Should show: users, skills, skill_entries, progress_updates
 ```
 
-### Authentication Setup
+### Authentication Setup (supabase, 2025; Docs, S., 2025)
 
 #### Configure Email Auth
 1. In your Supabase dashboard, go to **Authentication** → **Settings**
@@ -291,7 +291,7 @@ npx tsc --noEmit
 # Linting
 npm run lint
 
-# Testing
+# Testing (Jest, 2025)
 npm test
 npm run test:watch
 npm run test:coverage

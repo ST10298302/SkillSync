@@ -16,7 +16,7 @@ A comprehensive guide to SkillSync's reusable UI components, design system, and 
 
 ## Overview
 
-SkillSync uses a comprehensive component library built with React Native, featuring custom components designed for cross-platform compatibility and consistent user experience. All components follow the design system defined in `constants/Colors.ts`.
+SkillSync uses a comprehensive component library built with React Native, featuring custom components designed for cross-platform compatibility and consistent user experience. All components follow the design system defined in `constants/Colors.ts` (Coope, A. et al., 2014).
 
 ### Key Principles
 - **Consistent Design** - Unified visual language
@@ -380,7 +380,7 @@ interface ComponentProps {
 
 ### Styling Best Practices
 ```typescript
-// Use StyleSheet.create for performance
+// Use StyleSheet.create for performance (React, 2025)
 const styles = StyleSheet.create({
   container: {
     padding: Spacing.md,
@@ -419,7 +419,7 @@ const MyComponent = () => {
 
 ### Accessibility
 ```typescript
-// Always include accessibility props
+// Always include accessibility props (Coope, A. et al., 2014)
 <TouchableOpacity
   accessible={true}
   accessibilityLabel="Edit skill button"

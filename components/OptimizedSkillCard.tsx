@@ -18,7 +18,12 @@ interface OptimizedSkillCardProps {
   streak?: number;
 }
 
-// Memoized component to prevent unnecessary re-renders
+/**
+ * Optimized Skill Card Component
+ * Uses React.memo, useMemo, and useCallback for performance optimization (React, 2025)
+ * Implements memoization to reduce re-renders and improve rendering performance (Mandalchandan, 2024)
+ */
+// Memoized component to prevent unnecessary re-renders (React, 2025)
 const OptimizedSkillCard = React.memo<OptimizedSkillCardProps>(({
   id,
   name,
@@ -46,14 +51,14 @@ const OptimizedSkillCard = React.memo<OptimizedSkillCardProps>(({
   const flameAnim = useRef(new Animated.Value(1)).current;
   const deleteAnim = useRef(new Animated.Value(1)).current;
 
-  // Memoized progress calculations
+  // Memoized progress calculations (React, 2025)
   const progressData = useMemo(() => {
     const progressPercentage = Math.min(Math.max(typeof progress === 'number' ? progress : 0, 0), 100);
     const progressColor = progressPercentage >= 100 ? themeColors.success : themeColors.accent;
     return { progressPercentage, progressColor };
   }, [progress, themeColors.success, themeColors.accent]);
 
-  // Memoized date formatting
+  // Memoized date formatting (React, 2025)
   const formattedDate = useMemo(() => {
     if (!lastUpdated) return '';
     

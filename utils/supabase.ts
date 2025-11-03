@@ -1,3 +1,7 @@
+/**
+ * Supabase Client Configuration
+ * Initializes Supabase client with authentication and storage settings (supabase, 2025)
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 

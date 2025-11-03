@@ -44,6 +44,7 @@ const removeSecureItem = async (key: string) => {
  * AuthProvider manages simple email/password authentication.
  * It uses SecureStore (native) or AsyncStorage (web) to save credentials,
  * and AsyncStorage to persist the logged‑in state between launches.
+ * Implements Supabase authentication (supabase, 2025; Yüksel, M., 2023)
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);

@@ -15,7 +15,7 @@ A comprehensive guide to the SkillSync app's file structure, navigation flow, an
 
 ## Overview
 
-SkillSync uses **Expo Router** for file-based navigation, providing a seamless navigation experience across all platforms. The app structure is organized around authentication states and feature-based routing.
+SkillSync uses **Expo Router** for file-based navigation (Docs, E., 2025), providing a seamless navigation experience across all platforms. The app structure is organized around authentication states and feature-based routing.
 
 ### Key Principles
 - **File-based routing** - Each file represents a route
@@ -269,11 +269,12 @@ router.push('/(tabs)');
 - Check deep linking
 - Test platform-specific features
 
-### Performance
-- Lazy load screens when possible
+### Performance (React, 2025; Mandalchandan, 2024)
+- Lazy load screens when possible (React, 2025)
 - Optimize image assets
 - Minimize bundle size
-- Use React.memo for components
+- Use React.memo for components (React, 2025)
+- Monitor memory usage to prevent leaks (Mandalchandan, 2024)
 
 ---
 

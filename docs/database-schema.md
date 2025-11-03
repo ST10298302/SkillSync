@@ -4,7 +4,7 @@ This document describes the database structure for SkillSync, including table de
 
 ## Overview
 
-SkillSync uses Supabase (PostgreSQL) with Row Level Security (RLS) to ensure data isolation between users. All tables are protected by RLS policies that ensure users can only access their own data.
+SkillSync uses Supabase (PostgreSQL) (Group, P. G. D., 2025) with Row Level Security (RLS) to ensure data isolation between users. All tables are protected by RLS policies that ensure users can only access their own data (supabase, 2025).
 
 ## Table Structure
 

@@ -35,7 +35,7 @@ SkillSync uses a comprehensive testing setup to ensure code quality and reliabil
 ✅ **Performance validation** - App scales efficiently  
 ✅ **Regression prevention** - Previously fixed issues remain resolved
 
-### Testing Stack
+### Testing Stack (Jest, 2025)
 - **Test Runner**: Jest
 - **React Native Testing**: @testing-library/react-native
 - **Transform**: babel-jest with babel-preset-expo
@@ -77,7 +77,7 @@ npm i -D @testing-library/jest-native
 
 ## Configuration
 
-### Jest Configuration (`jest.config.js`)
+### Jest Configuration (`jest.config.js`) (Jest, 2025)
 
 ```javascript
 module.exports = {
@@ -120,7 +120,7 @@ module.exports = function (api) {
 };
 ```
 
-### Jest Setup (`jest.setup.js`)
+### Jest Setup (`jest.setup.js`) (Jest, 2025)
 
 Key mocks and configurations:
 

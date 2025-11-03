@@ -1,3 +1,7 @@
+/**
+ * Google Translate API Service
+ * Implements Cloud Translation API v2 for multi-language support (Google, 2025)
+ */
 interface TranslationResponse {
   translatedText: string;
   detectedSourceLanguage?: string;

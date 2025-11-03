@@ -1,3 +1,8 @@
+/**
+ * Optimized Skills Context Provider
+ * Uses React hooks (useMemo, useCallback) for performance optimization (React, 2025)
+ * Implements CRUD operations with Supabase (Kosisochukwu, M., 2025)
+ */
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { OptimizedSupabaseService } from '../services/optimizedSupabaseService';
 import { calculateSkillStreak } from '../utils/streakCalculator';

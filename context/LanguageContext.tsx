@@ -35,7 +35,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { user } = useAuth();
   const { skills, updateSkill } = useSkills();
 
-  // Initialize Google Translate API (only once)
+  // Initialize Google Translate API (only once) (Google, 2025)
   useEffect(() => {
     if (!isApiInitialized) {
       const apiKey = process.env.EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY;

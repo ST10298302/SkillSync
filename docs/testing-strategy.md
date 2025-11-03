@@ -152,7 +152,7 @@ npm run test:ci
 
 ## Test Configuration
 
-### Jest Configuration (`jest.config.js`)
+### Jest Configuration (`jest.config.js`) (Jest, 2025)
 
 The Jest configuration is organized into projects for different test types:
 
@@ -172,12 +172,12 @@ projects: [
 ]
 ```
 
-### Performance Testing Setup (`jest.performance.setup.js`)
+### Performance Testing Setup (`jest.performance.setup.js`) (Jest, 2025)
 
 Provides utilities for performance testing:
 
 - `performance.now()` for timing measurements
-- Memory usage tracking
+- Memory usage tracking (Mandalchandan, 2024)
 - Performance thresholds
 - Performance test utilities
 

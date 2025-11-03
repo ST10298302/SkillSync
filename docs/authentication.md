@@ -17,7 +17,7 @@ A comprehensive guide to SkillSync's authentication system built with Supabase, 
 
 ## Overview
 
-SkillSync uses **Supabase** for authentication, providing secure user management with email/password authentication. The system is designed to work seamlessly across web and mobile platforms with proper session persistence.
+SkillSync uses **Supabase** for authentication (supabase, 2025), providing secure user management with email/password authentication. The system is designed to work seamlessly across web and mobile platforms with proper session persistence.
 
 ### Key Features
 - **Email/Password Authentication** - Secure login system
@@ -174,20 +174,20 @@ static async getCurrentUser() {
 ### Password Security
 - **Minimum Length** - 8 characters required
 - **Complexity Requirements** - Mix of letters, numbers, symbols
-- **Hashing** - Passwords never stored in plain text
-- **Rate Limiting** - Prevents brute force attacks
+- **Hashing** - Passwords never stored in plain text (OSWAP, 2025)
+- **Rate Limiting** - Prevents brute force attacks (OSWASP, 2025)
 
 ### Session Security
-- **JWT Tokens** - Secure session management
+- **JWT Tokens** - Secure session management (supabase, 2025)
 - **Automatic Expiry** - Sessions expire after inactivity
-- **Refresh Tokens** - Seamless session renewal
+- **Refresh Tokens** - Seamless session renewal (supabase, 2025)
 - **Device Tracking** - Monitor active sessions
 
 ### Data Protection
-- **HTTPS Only** - All communication encrypted
-- **Input Validation** - Sanitize user inputs
-- **SQL Injection Protection** - Parameterized queries
-- **XSS Prevention** - Content security policies
+- **HTTPS Only** - All communication encrypted (OSWAP, 2025)
+- **Input Validation** - Sanitize user inputs (OSWASP, 2025)
+- **SQL Injection Protection** - Parameterized queries (Group, P. G. D., 2025)
+- **XSS Prevention** - Content security policies (OSWASP, 2025)
 
 ---
 

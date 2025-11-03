@@ -70,10 +70,10 @@ const metrics = getPerformanceMetrics();
 ### 3. Optimized Components (`OptimizedSkillCard`)
 
 #### Features:
-- **React.memo**: Prevents unnecessary re-renders
-- **useMemo**: Memoized calculations and styles
-- **useCallback**: Memoized event handlers
-- **Debounced Translations**: Optimized API calls
+- **React.memo**: Prevents unnecessary re-renders (React, 2025)
+- **useMemo**: Memoized calculations and styles (React, 2025)
+- **useCallback**: Memoized event handlers (React, 2025)
+- **Debounced Translations**: Optimized API calls (Google, 2025)
 
 #### Performance Benefits:
 - 60% reduction in re-renders
@@ -182,7 +182,7 @@ const CACHE_TTL = {
 
 ### 2. Component Optimization
 
-#### Memoization:
+#### Memoization (React, 2025):
 ```typescript
 // Memoize expensive calculations
 const expensiveValue = useMemo(() => {
@@ -195,7 +195,7 @@ const handleClick = useCallback(() => {
 }, [dependency]);
 ```
 
-#### Lazy Loading:
+#### Lazy Loading (React, 2025):
 ```typescript
 // Lazy load components
 const LazyComponent = React.lazy(() => import('./LazyComponent'));
@@ -206,7 +206,7 @@ const LazyComponent = React.lazy(() => import('./LazyComponent'));
 </Suspense>
 ```
 
-### 3. Memory Management
+### 3. Memory Management (Mandalchandan, 2024)
 
 #### Memory Leak Prevention:
 - Clean up event listeners

@@ -1,3 +1,8 @@
+/**
+ * Supabase Service - API layer for authentication and database operations
+ * Uses Supabase Auth API for secure user management (supabase, 2025; Docs, S., 2025)
+ * Implements CRUD operations with PostgreSQL database via Supabase (Group, P. G. D., 2025)
+ */
 import * as FileSystem from 'expo-file-system/legacy';
 import { ProgressUpdate, Skill, SkillEntry, supabase, User } from '../utils/supabase';
 

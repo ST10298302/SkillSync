@@ -18,10 +18,10 @@ A comprehensive guide to the SkillSync learning tracker app built with React Nat
 ## Getting Started
 
 ### Prerequisites
-- **Node.js** v18+ ([Download](https://nodejs.org/))
+- **Node.js** v18+ ([Download](https://nodejs.org/)) (Node.js, 2025)
 - **Git** ([Download](https://git-scm.com/))
 - **VS Code** (Recommended)
-- **Expo CLI** - `npm install -g @expo/cli`
+- **Expo CLI** - `npm install -g @expo/cli` (Docs, E., 2025)
 
 ### Quick Setup
 ```bash
@@ -39,6 +39,7 @@ cp .env.example .env.local
 # Start development server
 npx expo start
 ```
+(Docs, E., 2025)
 
 ### First Run Options
 - **Web**: Press `w` in terminal
@@ -82,7 +83,7 @@ SkillSync is an internal learning management application that helps users track 
 - **Skill Linking** - Connect diary entries to specific skills
 
 ### Translation System
-- **Multi-Language Support** - Built-in Google Translate integration
+- **Multi-Language Support** - Built-in Google Translate integration (Google, 2025)
 - **Real-Time Translation** - Translate text on-the-fly
 - **Batch Translation** - Translate multiple entries simultaneously
 - **Language Detection** - Automatic language identification
@@ -121,12 +122,12 @@ SkillSyncApp/
 **To see more, read:** [App Structure](./app-structure.md) - Detailed navigation flow and screen organization
 
 ### Key Technologies
-- **React Native** with Expo SDK 53
+- **React Native** with Expo SDK 53 (Docs, E., 2025)
 - **TypeScript** for type safety
-- **Expo Router** for navigation
-- **Supabase** for backend services
-- **Google Translate API** for translations
-- **React Native Animated** for smooth interactions
+- **Expo Router** for navigation (Docs, E., 2025)
+- **Supabase** for backend services (supabase, 2025)
+- **Google Translate API** for translations (Google, 2025)
+- **React Native Animated** for smooth interactions (React, 2025)
 
 ### Development Commands
 ```bash
@@ -147,6 +148,7 @@ npm run test:coverage      # Generate coverage report
 # Clear cache
 npx expo start --clear
 ```
+(Docs, E., 2025; Jest, 2025)
 
 ### Environment Configuration
 Create `.env.local` with your credentials:
@@ -158,6 +160,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 # Google Translate API
 EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key 
 ```
+(supabase, 2025; Google, 2025)
 
 **To see more, read:** [Development Setup](./development-setup.md) - Complete setup guide including Supabase and storage configuration
 
@@ -166,8 +169,8 @@ EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key
 ## Architecture
 
 ### State Management
-- **AuthContext** - User authentication and session management
-- **SkillsContext** - Skill data and CRUD operations
+- **AuthContext** - User authentication and session management (supabase, 2025; Docs, S., 2025)
+- **SkillsContext** - Skill data and CRUD operations (Kosisochukwu, M., 2025)
 - **ThemeContext** - Light/dark theme switching
 - **LanguageContext** - Multi-language support
 
@@ -179,15 +182,15 @@ EXPO_PUBLIC_GOOGLE_TRANSLATE_API_KEY=your_google_api_key
 3. **Response** → Context → Component → UI Update
 
 ### Service Layer
-- **SupabaseService** - Database operations and authentication
-- **GoogleTranslateAPI** - Translation services
+- **SupabaseService** - Database operations and authentication (supabase, 2025; Yüksel, M., 2023)
+- **GoogleTranslateAPI** - Translation services (Google, 2025)
 - **File System Service** - Local file management
 - **Image Service** - Profile picture handling
 
 **To see more, read:** [Database Schema](./database-schema.md) - Database structure and service integration
 
 ### Component Architecture
-- **Atomic Design** principles
+- **Atomic Design** principles (Coope, A. et al., 2014)
 - **Theme-aware** styling system
 - **Responsive** layouts for all screen sizes
 - **Accessibility** features built-in
@@ -204,10 +207,10 @@ SkillSync now features a complete testing foundation with **33 tests across 7 te
 
 ### Test Types
 
-- **Unit Tests** - Component logic, utilities, and context state management
+- **Unit Tests** - Component logic, utilities, and context state management (Jest, 2025)
 - **Integration Tests** - Complete user journeys and context interactions  
-- **Regression Tests** - Edge cases, race conditions, and memory leak prevention
-- **Performance Tests** - Large datasets, concurrent operations, and rendering performance
+- **Regression Tests** - Edge cases, race conditions, and memory leak prevention (Mandalchandan, 2024)
+- **Performance Tests** - Large datasets, concurrent operations, and rendering performance (React, 2025)
 
 ### Current Test Results
 
@@ -326,7 +329,7 @@ npm run lint --fix
 
 ### Getting Help
 - Check terminal output for error messages
-- Review [Expo documentation](https://docs.expo.dev/)
+- Review [Expo documentation](https://docs.expo.dev/) (Docs, E., 2025)
 - Search [React Native docs](https://reactnative.dev/)
 - Check internal development documentation
 
@@ -351,11 +354,11 @@ npm run lint --fix
 - **Testing**: [Unit Testing](./unit-testing.md) - Testing strategies and examples
 
 ### External Links
-- [Expo Documentation](https://docs.expo.dev/)
+- [Expo Documentation](https://docs.expo.dev/) (Docs, E., 2025)
 - [React Native Guide](https://reactnative.dev/)
-- [Supabase Docs](https://supabase.com/docs)
+- [Supabase Docs](https://supabase.com/docs) (supabase, 2025)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [Google Translate API](https://cloud.google.com/translate/docs)
+- [Google Translate API](https://cloud.google.com/translate/docs) (Google, 2025)
 
 ---
 
@@ -375,10 +378,114 @@ npm run lint --fix
 
 ### Performance Considerations
 - Optimize image assets and bundle size
-- Use React.memo for expensive components
+- Use React.memo for expensive components (React, 2025)
 - Implement lazy loading where appropriate
-- Monitor app performance metrics
+- Monitor app performance metrics (Mandalchandan, 2024)
 
 ---
 
 **Happy learning and coding!**
+
+---
+
+## References
+
+Agile Alliance, 2024. Agile Glossary: Definition of Ready. [Online] 
+Available at: https://agilealliance.org/glossary/definition-of-ready/
+[Accessed 15 June 2025].
+
+Coope, A., Reimann, R., Cronin, D. & Noessel, C., 2014. THE ESSENTIALS OF INTERACTION DESIGN. John Wiley & Sons, Inc., 1(4), pp. 167-189.
+
+Deterding, S., Dixon, D., Khaled, R. & Nacke, L., 2011. From game design elements to gamefulness: defining "gamification". MindTrek, 1(1), pp. 9-13.
+
+Docs, E., 2025. Create amazing apps that run everywhere. [Online] 
+Available at: https://docs.expo.dev/
+[Accessed 20 April 2025].
+
+Docs, S., 2025. Create a new user. [Online] 
+Available at: https://supabase.com/docs/reference/javascript/auth-signup
+[Accessed 15 June 2025].
+
+Expo, D., 2025. Add gestures. [Online] 
+Available at: https://docs.expo.dev/tutorial/gestures/
+[Accessed 8 October 2025].
+
+Google, 2025. Cloud Translation API. [Online] 
+Available at: https://cloud.google.com/translate/docs/reference/rest
+[Accessed 8 October 2025].
+
+Group, P. G. D., 2025. PostgreSQL 18.0 Documentation. [Online] 
+Available at: https://www.postgresql.org/docs/18/index.html
+[Accessed 31 July 2025].
+
+Hanna, K. T., Lawton, G. & Pratt, M. K., 2024. change management. [Online] 
+Available at: https://www.techtarget.com/searchcio/definition/change-management
+[Accessed 26 October 2025].
+
+Holistics, 2025. Draw Entity-Relationship Diagrams, Painlessly. [Online] 
+Available at: https://dbdiagram.io/home
+[Accessed 15 October 2025].
+
+Jest, 2025. Testing React Native Apps. [Online] 
+Available at: https://jestjs.io/docs/tutorial-react-native
+[Accessed 9 October 2025].
+
+Kosisochukwu, M., 2025. The Complete Tutorial to Building a CRUD App with React.js and Supabase. [Online] 
+Available at: https://adevait.com/react/building-crud-app-with-react-js-supabase
+[Accessed 25 August 2025].
+
+Link, I., 2025. Understanding the costs of software development: a complete breakdown. [Online] 
+Available at: https://idealink.tech/blog/understanding-the-costs-of-software-development-a-complete-breakdown
+[Accessed 20 October 2025].
+
+Mandalchandan, 2024. Understanding and Managing Memory Leaks in React Applications. [Online] 
+Available at: https://medium.com/@90mandalchandan/understanding-and-managing-memory-leaks-in-react-applications-bcfcc353e7a5
+[Accessed 10 October 2025].
+
+Node.js, 2025. Node.js v25.1.0 documentation. [Online] 
+Available at: https://nodejs.org/docs/latest/api/
+[Accessed 28 July 2025].
+
+OSWAP, 2025. OWASP Mobile Application Security. [Online] 
+Available at: https://owasp.org/www-project-mobile-app-security/
+[Accessed 5 August 2025].
+
+OSWASP, 2025. Explore the world. [Online] 
+Available at: https://owasp.org/
+[Accessed 2 October 2025].
+
+React, 2025. Optimizing Performance. [Online] 
+Available at: https://legacy.reactjs.org/docs/optimizing-performance.html
+[Accessed 8 October 2025].
+
+Schwaber, K. & Sutherland, J., 2020. The Scrum Guide: The Definitive Guide to Scrum: The Rules of the Game.. [Online] 
+Available at: https://scrumguides.org/scrum-guide.html
+[Accessed 15 June 2025].
+
+Shkurdoda, A. & Puczyk, A., 2025. Cost of Software Development: Tips for Calculating Your Project Budget. [Online] 
+Available at: https://neontri.com/blog/software-development-costs/
+[Accessed 20 October 2025].
+
+supabase, 2025. Auth. [Online] 
+Available at: https://supabase.com/docs/guides/auth
+[Accessed 22 August 2025].
+
+supabase, 2025. Supabase Documentation. [Online] 
+Available at: https://supabase.com/docs
+[Accessed 3 March 2025].
+
+Suscheck, C., 2024. Definition Of Done (DOD) Explanation and Example. [Online] 
+Available at: https://www.scrum.org/resources/blog/definition-done-dod-explanation-and-example
+[Accessed 15 June 2025].
+
+whatfix, 2025. What Is Change Management?. [Online] 
+Available at: https://whatfix.com/change-management/
+[Accessed 25 October 2025].
+
+(UML), U. C. D. -. U. M. L., 2025. GeeksforGeeks. [Online] 
+Available at: https://www.geeksforgeeks.org/system-design/use-case-diagram/
+[Accessed 26 August 2025].
+
+Yüksel, M., 2023. How to authenticate React applications with Supabase Auth. [Online] 
+Available at: https://blog.logrocket.com/authenticate-react-applications-supabase-auth/
+[Accessed 25 August 2025].

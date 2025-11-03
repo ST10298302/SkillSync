@@ -1,3 +1,7 @@
+/**
+ * Jest Configuration for React Native Testing
+ * Configured for testing React Native apps with Expo (Jest, 2025)
+ */
 module.exports = {
   preset: 'react-native',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
