@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 export class BiometricService {
-  // Platform-aware storage helpers
+  // Platform-aware storage helpers - uses SecureStore on native, AsyncStorage on web
   private static async getItem(key: string): Promise<string | null> {
     if (Platform.OS === 'web') {
       return await AsyncStorage.getItem(key);

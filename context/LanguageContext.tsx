@@ -56,7 +56,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setCurrentLanguage('en');
   }, [user?.id]);
 
-  // Static translation function
+  // Returns translated text for a given key, falls back to English if not found
   const t = (key: TranslationKey): string => {
     const translations = TRANSLATIONS[currentLanguage as keyof typeof TRANSLATIONS];
     if (translations && key in translations) {
@@ -66,6 +66,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return TRANSLATIONS.en[key] || key;
   };
 
+  // Translates dynamic text content using Google Translate API
   const translateText = async (text: string): Promise<string> => {
     if (currentLanguage === 'en' || !text.trim()) {
       return text;
@@ -80,6 +81,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  // Recursively translates objects/arrays - handles nested content structures
   const translateDynamicContent = async (content: any): Promise<any> => {
     if (currentLanguage === 'en') return content;
 

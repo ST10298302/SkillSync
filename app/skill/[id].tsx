@@ -85,8 +85,7 @@ export default function EnhancedSkillDetail() {
   const [loadingSkill, setLoadingSkill] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   
-  // Check if this is the user's own skill
-  // Debug logging
+  // Determines if current user owns this skill (for edit/delete permissions)
   const isOwnSkill = skill && currentUser && String(skill.user_id) === String(currentUser.id);
   
   // Debug logging
@@ -116,7 +115,7 @@ export default function EnhancedSkillDetail() {
   const [showChallengeModal, setShowChallengeModal] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState<any>(null);
 
-  // Load skill from database if not found in context
+  // Loads skill data from database on mount, including all related data (milestones, resources, etc.)
   useEffect(() => {
     const loadSkill = async () => {
       if (!id) return;

@@ -37,8 +37,9 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
   const router = useRouter();
   const { isLoggedIn, user } = useAuth();
 
+  // Checks if PIN lock is enabled and locks app if needed
   const checkPinStatus = async () => {
-    if (hasCheckedPinRef.current || !isLoggedIn || !user) return; // Only check if user is logged in
+    if (hasCheckedPinRef.current || !isLoggedIn || !user) return;
     
     try {
       hasCheckedPinRef.current = true;
@@ -70,6 +71,7 @@ export function PinLockProvider({ children }: PinLockProviderProps) {
     }
   };
 
+  // Manually refreshes PIN status and security settings from database
   const refreshPinStatus = async () => {
     if (!isLoggedIn || !user) return;
     

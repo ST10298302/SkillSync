@@ -10,10 +10,12 @@ interface TranslationResponse {
 export class GoogleTranslateAPI {
   private static apiKey: string | null = null;
 
+  // Sets the API key for Google Translate API
   static initialize(apiKey: string) {
     this.apiKey = apiKey;
   }
 
+  // Translates a single text string to the target language
   static async translateText(text: string, targetLanguage: string): Promise<TranslationResponse> {
     if (!this.apiKey) {
       throw new Error('Google Translate API not initialized. Please provide an API key.');
@@ -64,6 +66,7 @@ export class GoogleTranslateAPI {
     }
   }
 
+  // Translates multiple text strings at once (more efficient than individual calls)
   static async translateBatch(texts: string[], targetLanguage: string): Promise<string[]> {
     if (!this.apiKey) {
       throw new Error('Google Translate API not initialized. Please provide an API key.');
@@ -124,6 +127,7 @@ export class GoogleTranslateAPI {
     }
   }
 
+  // Checks if the API has been initialized with a key
   static isInitialized(): boolean {
     return this.apiKey !== null;
   }

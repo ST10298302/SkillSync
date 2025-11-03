@@ -41,7 +41,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
-  // Update local image URL when prop changes and verify URL accessibility
+  // Syncs local image state with prop and verifies image URL is accessible
   React.useEffect(() => {
     setLocalImageUrl(imageUrl);
     

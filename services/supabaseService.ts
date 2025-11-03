@@ -8,6 +8,8 @@ import { ProgressUpdate, Skill, SkillEntry, supabase, User } from '../utils/supa
 
 export class SupabaseService {
   // Helper methods
+  
+  // Determines MIME type based on file extension for image uploads
   private static getContentType(fileExt: string): string {
     const ext = fileExt.toLowerCase();
     switch (ext) {
@@ -26,6 +28,8 @@ export class SupabaseService {
   }
 
   // Auth methods
+  
+  // Creates a new user account and associated profile in the database
   static async signUp(email: string, password: string, name?: string) {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -65,6 +69,7 @@ export class SupabaseService {
     return data;
   }
 
+  // Authenticates user and ensures profile exists in database
   static async signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -76,7 +81,7 @@ export class SupabaseService {
       throw error;
     }
 
-    // Ensure user profile exists
+    // Ensure user profile exists - auto-creates if missing (handles legacy accounts)
     if (data.user) {
       try {
         const { data: profile, error: profileError } = await supabase
@@ -85,8 +90,9 @@ export class SupabaseService {
           .eq('id', data.user.id)
           .single();
 
+        // PGRST116 = "not found" error code from Supabase
         if (profileError && profileError.code === 'PGRST116') {
-          // Profile doesn't exist, create it
+          // Profile doesn't exist, create it automatically
           const { error: createError } = await supabase
             .from('users')
             .insert({
@@ -111,6 +117,7 @@ export class SupabaseService {
     return data;
   }
 
+  // Signs out the current user session
   static async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -119,6 +126,7 @@ export class SupabaseService {
     }
   }
 
+  // Retrieves the currently authenticated user, creating profile if needed
   static async getCurrentUser() {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -161,6 +169,8 @@ export class SupabaseService {
   }
 
   // User methods
+  
+  // Retrieves user profile data from the database
   static async getUserProfile(userId: string) {
     const { data, error } = await supabase
       .from('users')
@@ -185,6 +195,8 @@ export class SupabaseService {
   }
 
   // Profile picture methods
+  
+  // Uploads user profile picture to Supabase Storage and updates user record
   static async uploadProfilePicture(userId: string, imageUri: string): Promise<string> {
     try {
       // Convert image to base64 using legacy API
@@ -428,6 +440,7 @@ export class SupabaseService {
     }
   }
 
+  // Permanently deletes user account and all associated data
   static async deleteUserAccount(userId: string) {
     try {
       // First, get all skill IDs for this user
@@ -532,6 +545,8 @@ export class SupabaseService {
   }
 
   // Skills methods
+  
+  // Retrieves all skills for a user including their diary entries
   static async getSkills(userId: string) {
     const { data, error } = await supabase
       .from('skills')
@@ -557,6 +572,7 @@ export class SupabaseService {
     return skillsWithDefaults;
   }
 
+  // Gets a single skill with all its entries
   static async getSkill(skillId: string) {
     const { data, error } = await supabase
       .from('skills')
@@ -571,6 +587,7 @@ export class SupabaseService {
     return data;
   }
 
+  // Creates a new skill in the database
   static async createSkill(skill: Omit<Skill, 'id' | 'created_at' | 'updated_at'> & { visibility?: string }) {
     const { data, error } = await supabase
       .from('skills')
@@ -582,6 +599,7 @@ export class SupabaseService {
     return data;
   }
 
+  // Updates skill properties (progress, name, description, etc.)
   static async updateSkill(skillId: string, updates: Partial<Skill>) {
     const { data, error } = await supabase
       .from('skills')
@@ -594,6 +612,7 @@ export class SupabaseService {
     return data;
   }
 
+  // Deletes a skill and all associated entries (cascade delete)
   static async deleteSkill(skillId: string) {
     const { error } = await supabase
       .from('skills')
@@ -604,6 +623,7 @@ export class SupabaseService {
   }
 
   // Skill entries methods
+  // Gets all diary entries for a specific skill
   static async getSkillEntries(skillId: string) {
     const { data, error } = await supabase
       .from('skill_entries')
@@ -615,6 +635,7 @@ export class SupabaseService {
     return data || [];
   }
 
+  // Creates a new learning diary entry for a skill
   static async createSkillEntry(entry: Omit<SkillEntry, 'id' | 'created_at'>) {
     const { data, error } = await supabase
       .from('skill_entries')
@@ -648,6 +669,7 @@ export class SupabaseService {
   }
 
   // Progress updates methods
+  // Retrieves all progress update history for a skill
   static async getProgressUpdates(skillId: string) {
     const { data, error } = await supabase
       .from('progress_updates')
@@ -659,6 +681,7 @@ export class SupabaseService {
     return data || [];
   }
 
+  // Records a progress update (for tracking progress history)
   static async createProgressUpdate(update: Omit<ProgressUpdate, 'id' | 'created_at'>) {
     const { data, error } = await supabase
       .from('progress_updates')

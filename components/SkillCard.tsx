@@ -58,7 +58,7 @@ export default function SkillCard({
   const [translatedName, setTranslatedName] = useState(name);
   const [translatedDescription, setTranslatedDescription] = useState(description || '');
 
-  // Responsive sizing
+  // Calculate responsive sizing based on screen width
   const screenWidth = Dimensions.get('window').width;
   const isSmall = screenWidth < 375;
 
@@ -69,7 +69,7 @@ export default function SkillCard({
   const flameAnim = useRef(new Animated.Value(1)).current;
   const deleteAnim = useRef(new Animated.Value(1)).current;
 
-  // Create subtle animation loops for skills with active streaks to show momentum
+  // Animate streak indicator to show active learning momentum
   useEffect(() => {
     if (streak > 0) {
       const loop = Animated.loop(

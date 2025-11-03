@@ -36,6 +36,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
   const safeTheme = resolvedTheme === 'light' || resolvedTheme === 'dark' ? resolvedTheme : 'light';
   const themeColors = Colors[safeTheme] || Colors.light;
   
+  // Animation state for floating label and input effects
   const [isFocused, setIsFocused] = useState(false);
   const focusAnim = useSharedValue(0);
   const scaleAnim = useSharedValue(1);
@@ -50,7 +51,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(({
     };
   }, []);
 
-  // Handle input focus with smooth animations and state updates
+  // Handles input focus with label animation and visual feedback
   const handleFocus = (e: any) => {
     // Clear any pending blur if user refocuses quickly
     if (blurTimerRef.current) {

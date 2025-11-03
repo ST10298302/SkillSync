@@ -139,7 +139,7 @@ export default function Home() {
     }
   }, [refreshSkills]);
 
-  // Filter skills based on search query and completion status
+  // Filters skills by search text and completion filter (all/in-progress/completed)
   const filteredSkills = skills.filter(skill => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -153,7 +153,7 @@ export default function Home() {
     return matchesSearch;
   });
 
-  // Calculate dashboard statistics from skills data
+  // Calculates summary statistics for the dashboard (total, completed, in-progress, average)
   const getStats = () => {
     const total = skills.length;
     // Completed = skills with at least one completed level OR at 100%

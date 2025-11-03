@@ -127,6 +127,7 @@ export default function NewSkill() {
     }
   };
 
+  // Validates skill name and description before submission
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     
@@ -152,6 +153,7 @@ export default function NewSkill() {
     }
   };
 
+  // Handles skill creation with validation, visibility settings, and tutor/student assignment
   const handleCreateSkill = async () => {
     if (!validateForm()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);

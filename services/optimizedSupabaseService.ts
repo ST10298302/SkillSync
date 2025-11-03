@@ -110,7 +110,7 @@ export class OptimizedSupabaseService {
     }
   }
 
-  // Optimized query execution with caching and metrics
+  // Executes database queries with caching, performance tracking, and error handling
   private static async executeQuery<T>(
     queryName: string,
     queryFn: () => Promise<T>,
@@ -147,7 +147,7 @@ export class OptimizedSupabaseService {
     }
   }
 
-  // Batch operations for better performance
+  // Creates multiple skills in a single database transaction (faster than individual calls)
   static async batchCreateSkills(skills: Omit<Skill, 'id' | 'created_at' | 'updated_at'>[]) {
     const startTime = performance.now();
     

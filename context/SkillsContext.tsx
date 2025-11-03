@@ -64,6 +64,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const { user } = useAuth();
 
+  // Loads all skills for the current user from the database
   const loadSkills = useCallback(async () => {
     if (!user || typeof window === 'undefined') return;
     
@@ -74,7 +75,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
           // Load progress updates for this skill
           const progressUpdates = await SupabaseService.getProgressUpdates(supabaseSkill.id);
           
-          // Calculate streak for this skill
+          // Convert database entries to DiaryEntry format and calculate streak
           const entries = (supabaseSkill.skill_entries || []).map((entry: SkillEntry) => ({
             id: entry.id,
             text: entry.content,
@@ -122,7 +123,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  // Load skills from Supabase on mount and when user changes
+  // Automatically load skills when user logs in or changes
   useEffect(() => {
     // Only load skills in browser environment
     if (typeof window !== 'undefined' && user) {
@@ -132,13 +133,14 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, loadSkills]);
 
+  // Manually refresh the skills list from the database
   const refreshSkills = async () => {
     if (typeof window !== 'undefined') {
       await loadSkills();
     }
   };
 
-  // Add a new skill with defaults
+  // Creates a new skill in the database with default values (0% progress, no entries)
   const addSkill = async (
     skill: Omit<Skill, 'entries' | 'progress' | 'progressUpdates' | 'createdAt'> & { visibility?: string }
   ) => {
@@ -195,6 +197,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Removes a skill from the database and local state
   const deleteSkill = async (id: string) => {
     if (typeof window === 'undefined') return;
     
@@ -207,7 +210,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Add a diary entry to a skill
+  // Adds a learning diary entry and recalculates streak/total hours
   const addEntry = async (skillId: string, text: string, hours: number = 0) => {
     if (!user || typeof window === 'undefined') return;
 
@@ -262,7 +265,7 @@ export const SkillsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Update a diary entry
+  // Updates an existing diary entry and recalculates totals
   const updateEntry = async (skillId: string, entryId: string, text: string, hours: number = 0) => {
     if (!user || typeof window === 'undefined') return;
 

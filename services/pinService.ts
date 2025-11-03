@@ -8,7 +8,7 @@ export class PinService {
   private static readonly PIN_ENABLED_KEY = 'pin_enabled';
   private static readonly SALT = 'skillsync_salt';
 
-  // Use AsyncStorage on web, SecureStore on native
+  // Storage helpers - SecureStore on native for security, AsyncStorage on web
   private static async getItem(key: string): Promise<string | null> {
     if (Platform.OS === 'web') {
       return await AsyncStorage.getItem(key);
