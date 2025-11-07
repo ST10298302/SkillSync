@@ -5,7 +5,7 @@
  */
 // @ts-nocheck
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Platform } from 'react-native';
 import { supabase } from '../utils/supabase';
@@ -63,8 +63,8 @@ export class MediaService {
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) throw new Error('User not authenticated');
 
-    let blob: Blob;
-    let thumbnailBlob: Blob;
+    let blob: Blob | Uint8Array;
+    let thumbnailBlob: Blob | Uint8Array;
 
     if (Platform.OS === 'web') {
       // On web, fetch the image directly
@@ -119,6 +119,7 @@ export class MediaService {
       );
 
       // Read file as base64 on native
+      // Using legacy API which supports readAsStringAsync with EncodingType
       const base64 = await FileSystem.readAsStringAsync(manipResult.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
@@ -127,21 +128,22 @@ export class MediaService {
       });
 
       // Convert base64 to Uint8Array for Supabase
+      // On native, Supabase accepts Uint8Array directly (no need for Blob)
       const { base64ToUint8Array } = await import('../utils/base64');
       const bytes = base64ToUint8Array(base64);
-
-      const thumbnailBinaryString = atob(thumbnailBase64);
       const thumbnailBytes = base64ToUint8Array(thumbnailBase64);
 
-      blob = new Blob([bytes], { type: 'image/jpeg' });
-      thumbnailBlob = new Blob([thumbnailBytes], { type: 'image/jpeg' });
+      // For native, store as Uint8Array instead of Blob
+      blob = bytes as any;
+      thumbnailBlob = thumbnailBytes as any;
     }
 
     // Upload both images
     const fileName = `${user.id}/${Date.now()}.jpg`;
     const thumbnailFileName = `${user.id}/thumbnails/${Date.now()}.jpg`;
 
-    console.log('Uploading files:', { fileName, thumbnailFileName, blobSize: blob.size });
+    const blobSize = blob instanceof Blob ? blob.size : blob.length;
+    console.log('Uploading files:', { fileName, thumbnailFileName, blobSize });
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)

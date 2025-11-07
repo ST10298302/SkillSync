@@ -9,24 +9,24 @@
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		411AD13BF38C99C59629EE1D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE697E9768480BCD01A8406D /* ExpoModulesProvider.swift */; };
-		6AE05DE27FC7C25D2DE0CEBD /* libPods-SkillSyncApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 29FC121A6175B3C8C677D4DD /* libPods-SkillSyncApp.a */; };
+		44FC24E20A79EDE7242D4239 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A2D26C82C1316BA0C61B72 /* ExpoModulesProvider.swift */; };
+		A76351D76FFE36ADA4A90EFD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1D7122FA1F27B8E11C5FB740 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		EF4D9979DAC36ED9DEBC1EF3 /* libPods-SkillSyncApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B284BB529D2CB8FB34278098 /* libPods-SkillSyncApp.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		F434496AE9EA554C27D8EAA9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5CB3AF9D272EC0DA85CACB87 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* SkillSyncApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkillSyncApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = SkillSyncApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = SkillSyncApp/Info.plist; sourceTree = "<group>"; };
-		29FC121A6175B3C8C677D4DD /* libPods-SkillSyncApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SkillSyncApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5142C59EFD326D2168CED7CC /* Pods-SkillSyncApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SkillSyncApp.debug.xcconfig"; path = "Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp.debug.xcconfig"; sourceTree = "<group>"; };
-		5CB3AF9D272EC0DA85CACB87 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = SkillSyncApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1D7122FA1F27B8E11C5FB740 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = SkillSyncApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2735D31CE022A6A7064449BA /* Pods-SkillSyncApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SkillSyncApp.debug.xcconfig"; path = "Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp.debug.xcconfig"; sourceTree = "<group>"; };
+		291557FE0652EBA02DD20BF4 /* Pods-SkillSyncApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SkillSyncApp.release.xcconfig"; path = "Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp.release.xcconfig"; sourceTree = "<group>"; };
+		A6A2D26C82C1316BA0C61B72 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-SkillSyncApp/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = SkillSyncApp/SplashScreen.storyboard; sourceTree = "<group>"; };
+		B284BB529D2CB8FB34278098 /* libPods-SkillSyncApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SkillSyncApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		CE697E9768480BCD01A8406D /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-SkillSyncApp/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		D6E7CA3AA36D407D29C28AD9 /* Pods-SkillSyncApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SkillSyncApp.release.xcconfig"; path = "Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = SkillSyncApp/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* SkillSyncApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "SkillSyncApp-Bridging-Header.h"; path = "SkillSyncApp/SkillSyncApp-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,22 +37,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6AE05DE27FC7C25D2DE0CEBD /* libPods-SkillSyncApp.a in Frameworks */,
+				EF4D9979DAC36ED9DEBC1EF3 /* libPods-SkillSyncApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		125BCB67A458F8D73B111F33 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				5142C59EFD326D2168CED7CC /* Pods-SkillSyncApp.debug.xcconfig */,
-				D6E7CA3AA36D407D29C28AD9 /* Pods-SkillSyncApp.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* SkillSyncApp */ = {
 			isa = PBXGroup;
 			children = (
@@ -62,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				5CB3AF9D272EC0DA85CACB87 /* PrivacyInfo.xcprivacy */,
+				1D7122FA1F27B8E11C5FB740 /* PrivacyInfo.xcprivacy */,
 			);
 			name = SkillSyncApp;
 			sourceTree = "<group>";
@@ -71,17 +62,9 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				29FC121A6175B3C8C677D4DD /* libPods-SkillSyncApp.a */,
+				B284BB529D2CB8FB34278098 /* libPods-SkillSyncApp.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		42D173C9C94A4DCF041E68D0 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				B380C68A8E52431E24E28707 /* SkillSyncApp */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -98,8 +81,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				125BCB67A458F8D73B111F33 /* Pods */,
-				42D173C9C94A4DCF041E68D0 /* ExpoModulesProviders */,
+				A8EC8311626B57C16863AAC2 /* Pods */,
+				BCC14EF7E2C01918E0094E9A /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -114,12 +97,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B380C68A8E52431E24E28707 /* SkillSyncApp */ = {
+		A8EC8311626B57C16863AAC2 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				CE697E9768480BCD01A8406D /* ExpoModulesProvider.swift */,
+				2735D31CE022A6A7064449BA /* Pods-SkillSyncApp.debug.xcconfig */,
+				291557FE0652EBA02DD20BF4 /* Pods-SkillSyncApp.release.xcconfig */,
 			);
-			name = SkillSyncApp;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -131,6 +116,22 @@
 			path = SkillSyncApp/Supporting;
 			sourceTree = "<group>";
 		};
+		BCC14EF7E2C01918E0094E9A /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				FABE72C3D9A644EF5F0E007C /* SkillSyncApp */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		FABE72C3D9A644EF5F0E007C /* SkillSyncApp */ = {
+			isa = PBXGroup;
+			children = (
+				A6A2D26C82C1316BA0C61B72 /* ExpoModulesProvider.swift */,
+			);
+			name = SkillSyncApp;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -139,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "SkillSyncApp" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				D923C450406FF1B5F3F2CC53 /* [Expo] Configure project */,
+				D9177C4E3C222A0C61677D87 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				1C7E4E80E63E48DDC27D1805 /* [CP] Embed Pods Frameworks */,
+				F44119A0BC97B04B66261518 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -166,6 +167,8 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
+						DevelopmentTeam = "742M9S3LF2";
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -195,7 +198,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				F434496AE9EA554C27D8EAA9 /* PrivacyInfo.xcprivacy in Resources */,
+				A76351D76FFE36ADA4A90EFD /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,28 +244,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1C7E4E80E63E48DDC27D1805 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -299,7 +280,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D923C450406FF1B5F3F2CC53 /* [Expo] Configure project */ = {
+		D9177C4E3C222A0C61677D87 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -323,6 +304,28 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-SkillSyncApp/expo-configure-project.sh\"\n";
 		};
+		F44119A0BC97B04B66261518 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SkillSyncApp/Pods-SkillSyncApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -331,7 +334,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				411AD13BF38C99C59629EE1D /* ExpoModulesProvider.swift in Sources */,
+				44FC24E20A79EDE7242D4239 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,13 +343,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5142C59EFD326D2168CED7CC /* Pods-SkillSyncApp.debug.xcconfig */;
+			baseConfigurationReference = 2735D31CE022A6A7064449BA /* Pods-SkillSyncApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = SkillSyncApp/SkillSyncApp.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 742M9S3LF2;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -372,18 +374,20 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "742M9S3LF2";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D6E7CA3AA36D407D29C28AD9 /* Pods-SkillSyncApp.release.xcconfig */;
+			baseConfigurationReference = 291557FE0652EBA02DD20BF4 /* Pods-SkillSyncApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = SkillSyncApp/SkillSyncApp.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 742M9S3LF2;
 				INFOPLIST_FILE = SkillSyncApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -403,6 +407,9 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "742M9S3LF2";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};

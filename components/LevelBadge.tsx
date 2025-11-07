@@ -26,7 +26,7 @@ const levelConfig = {
     bgColor: 'rgba(245, 158, 11, 0.2)',
   },
   advanced: { 
-    icon: 'award-outline', 
+    icon: 'ribbon-outline', 
     color: '#8B5CF6',
     bgColor: 'rgba(139, 92, 246, 0.2)',
   },

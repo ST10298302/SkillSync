@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import {
     Alert,
     Animated,
-    FlatList,
     Modal,
     Platform,
     ScrollView,
@@ -503,27 +502,26 @@ export default function AccountSettings() {
               {isEditing && (
                 <View style={styles.formGroup}>
                   <Text style={styles.formLabel}>{t('tutorSpecializations')}</Text>
-                  <FlatList
-                    data={specializations}
-                    renderItem={({ item, index }) => (
-                      <View style={styles.specializationItem}>
-                        <Text style={styles.specializationText}>{item}</Text>
-                        <TouchableOpacity onPress={() => handleRemoveSpecialization(index)}>
-                          <Ionicons name="close" size={16} color={themeColors.textSecondary} />
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                    ListEmptyComponent={() => (
-                      <TouchableOpacity
-                        style={styles.addSpecializationButton}
-                        onPress={() => setNewSpecialization('')}
-                      >
-                        <Ionicons name="add-circle" size={20} color={themeColors.textSecondary} />
-                        <Text style={styles.addSpecializationText}>{t('addSpecialization')}</Text>
-                      </TouchableOpacity>
-                    )}
-                    keyExtractor={(item, index) => index.toString()}
-                  />
+                  {specializations.length === 0 ? (
+                    <TouchableOpacity
+                      style={styles.addSpecializationButton}
+                      onPress={() => setNewSpecialization('')}
+                    >
+                      <Ionicons name="add-circle" size={20} color={themeColors.textSecondary} />
+                      <Text style={styles.addSpecializationText}>{t('addSpecialization')}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View>
+                      {specializations.map((item, index) => (
+                        <View key={index.toString()} style={styles.specializationItem}>
+                          <Text style={styles.specializationText}>{item}</Text>
+                          <TouchableOpacity onPress={() => handleRemoveSpecialization(index)}>
+                            <Ionicons name="close" size={16} color={themeColors.textSecondary} />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                   {isEditing && (
                     <View style={styles.formGroup}>
                       <TextInput
